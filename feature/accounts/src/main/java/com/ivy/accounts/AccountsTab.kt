@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,8 +49,6 @@ import com.ivy.navigation.navigation
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.ui.rememberScrollPositionListState
-import com.ivy.wallet.ui.theme.Green
-import com.ivy.wallet.ui.theme.GreenLight
 import com.ivy.wallet.ui.theme.components.BalanceRow
 import com.ivy.wallet.ui.theme.components.BalanceRowMini
 import com.ivy.wallet.ui.theme.components.ItemIconSDefaultIcon
@@ -335,90 +332,65 @@ private fun AccountHeader(
     }
 }
 
+/** Generic sample data for previews and README screenshots (no real accounts or amounts). */
+@Suppress("MagicNumber")
+private fun sampleAccountsState(compact: Boolean): AccountsState {
+    fun account(name: String, color: Long, icon: String?, includeInBalance: Boolean = true) = Account(
+        id = AccountId(UUID.nameUUIDFromBytes(name.toByteArray())),
+        name = NotBlankTrimmedString.unsafe(name),
+        color = ColorInt(color.toInt()),
+        asset = AssetCode.unsafe("USD"),
+        icon = icon?.let { IconAsset.unsafe(it) },
+        includeInBalance = includeInBalance,
+        orderNum = 0.0,
+    )
+    return AccountsState(
+        baseCurrency = "USD",
+        accountsData = persistentListOf(
+            AccountData(
+                account = account("Everyday", 0xFF3F51B5, null),
+                balance = 3482.15,
+                balanceBaseCurrency = null,
+                monthlyExpenses = 1640.32,
+                monthlyIncome = 4250.0
+            ),
+            AccountData(
+                account = account("Savings", 0xFFF29F30, null),
+                balance = 8250.0,
+                balanceBaseCurrency = null,
+                monthlyExpenses = 0.0,
+                monthlyIncome = 500.0
+            ),
+            AccountData(
+                account = account("Cash", 0xFF00897B, "cash"),
+                balance = 186.5,
+                balanceBaseCurrency = null,
+                monthlyExpenses = 228.0,
+                monthlyIncome = 0.0
+            ),
+            AccountData(
+                account = account("Travel card", 0xFFD81B60, null, includeInBalance = false),
+                balance = 562.0,
+                balanceBaseCurrency = null,
+                monthlyExpenses = 0.0,
+                monthlyIncome = 0.0
+            ),
+        ),
+        totalBalanceWithExcluded = "12480.65",
+        totalBalanceWithExcludedText = "USD 12,480.65",
+        totalBalanceWithoutExcluded = "11918.65",
+        totalBalanceWithoutExcludedText = "USD 11,918.65",
+        reorderVisible = false,
+        compactAccountsModeEnabled = compact,
+        hideTotalBalance = false
+    )
+}
+
 @Preview
 @Composable
 private fun PreviewAccountsTabCompactModeDisabled(theme: Theme = Theme.LIGHT) {
     IvyWalletPreview(theme = theme) {
-        val acc1 = Account(
-            id = AccountId(UUID.randomUUID()),
-            name = NotBlankTrimmedString.unsafe("Phyre"),
-            color = ColorInt(Green.toArgb()),
-            asset = AssetCode.unsafe("USD"),
-            icon = null,
-            includeInBalance = true,
-            orderNum = 0.0,
-        )
-
-        val acc2 = Account(
-            id = AccountId(UUID.randomUUID()),
-            name = NotBlankTrimmedString.unsafe("DSK"),
-            color = ColorInt(GreenLight.toArgb()),
-            asset = AssetCode.unsafe("USD"),
-            icon = null,
-            includeInBalance = true,
-            orderNum = 0.0,
-        )
-
-        val acc3 = Account(
-            id = AccountId(UUID.randomUUID()),
-            name = NotBlankTrimmedString.unsafe("Revolut"),
-            color = ColorInt(Green.toArgb()),
-            asset = AssetCode.unsafe("USD"),
-            icon = IconAsset.unsafe("revolut"),
-            includeInBalance = true,
-            orderNum = 0.0,
-        )
-
-        val acc4 = Account(
-            id = AccountId(UUID.randomUUID()),
-            name = NotBlankTrimmedString.unsafe("Cash"),
-            color = ColorInt(Green.toArgb()),
-            asset = AssetCode.unsafe("USD"),
-            icon = IconAsset.unsafe("cash"),
-            includeInBalance = true,
-            orderNum = 0.0,
-        )
-        val state = AccountsState(
-            baseCurrency = "BGN",
-            accountsData = persistentListOf(
-                AccountData(
-                    account = acc1,
-                    balance = 2125.0,
-                    balanceBaseCurrency = null,
-                    monthlyExpenses = 920.0,
-                    monthlyIncome = 3045.0
-                ),
-                AccountData(
-                    account = acc2,
-                    balance = 12125.21,
-                    balanceBaseCurrency = null,
-                    monthlyExpenses = 1350.50,
-                    monthlyIncome = 8000.48
-                ),
-                AccountData(
-                    account = acc3,
-                    balance = 1200.0,
-                    balanceBaseCurrency = 1979.64,
-                    monthlyExpenses = 750.0,
-                    monthlyIncome = 1000.30
-                ),
-                AccountData(
-                    account = acc4,
-                    balance = 820.0,
-                    balanceBaseCurrency = null,
-                    monthlyExpenses = 340.0,
-                    monthlyIncome = 400.0
-                ),
-            ),
-            totalBalanceWithExcluded = "25.54",
-            totalBalanceWithExcludedText = "BGN 25.54",
-            totalBalanceWithoutExcluded = "25.54",
-            totalBalanceWithoutExcludedText = "BGN 25.54",
-            reorderVisible = false,
-            compactAccountsModeEnabled = false,
-            hideTotalBalance = false
-        )
-        UI(state = state)
+        UI(state = sampleAccountsState(compact = false))
     }
 }
 
@@ -426,86 +398,7 @@ private fun PreviewAccountsTabCompactModeDisabled(theme: Theme = Theme.LIGHT) {
 @Composable
 private fun PreviewAccountsTabCompactModeEnabled(theme: Theme = Theme.LIGHT) {
     IvyWalletPreview(theme = theme) {
-        val acc1 = Account(
-            id = AccountId(UUID.randomUUID()),
-            name = NotBlankTrimmedString.unsafe("Phyre"),
-            color = ColorInt(Green.toArgb()),
-            asset = AssetCode.unsafe("USD"),
-            icon = null,
-            includeInBalance = true,
-            orderNum = 0.0,
-        )
-
-        val acc2 = Account(
-            id = AccountId(UUID.randomUUID()),
-            name = NotBlankTrimmedString.unsafe("DSK"),
-            color = ColorInt(GreenLight.toArgb()),
-            asset = AssetCode.unsafe("USD"),
-            icon = null,
-            includeInBalance = true,
-            orderNum = 0.0,
-        )
-
-        val acc3 = Account(
-            id = AccountId(UUID.randomUUID()),
-            name = NotBlankTrimmedString.unsafe("Revolut"),
-            color = ColorInt(Green.toArgb()),
-            asset = AssetCode.unsafe("USD"),
-            icon = IconAsset.unsafe("revolut"),
-            includeInBalance = true,
-            orderNum = 0.0,
-        )
-
-        val acc4 = Account(
-            id = AccountId(UUID.randomUUID()),
-            name = NotBlankTrimmedString.unsafe("Cash"),
-            color = ColorInt(Green.toArgb()),
-            asset = AssetCode.unsafe("USD"),
-            icon = IconAsset.unsafe("cash"),
-            includeInBalance = true,
-            orderNum = 0.0,
-        )
-        val state = AccountsState(
-            baseCurrency = "BGN",
-            accountsData = persistentListOf(
-                AccountData(
-                    account = acc1,
-                    balance = 2125.0,
-                    balanceBaseCurrency = null,
-                    monthlyExpenses = 920.0,
-                    monthlyIncome = 3045.0
-                ),
-                AccountData(
-                    account = acc2,
-                    balance = 12125.21,
-                    balanceBaseCurrency = null,
-                    monthlyExpenses = 1350.50,
-                    monthlyIncome = 8000.48
-                ),
-                AccountData(
-                    account = acc3,
-                    balance = 1200.0,
-                    balanceBaseCurrency = 1979.64,
-                    monthlyExpenses = 750.0,
-                    monthlyIncome = 1000.30
-                ),
-                AccountData(
-                    account = acc4,
-                    balance = 820.0,
-                    balanceBaseCurrency = null,
-                    monthlyExpenses = 340.0,
-                    monthlyIncome = 400.0
-                ),
-            ),
-            totalBalanceWithExcluded = "25.54",
-            totalBalanceWithExcludedText = "BGN 25.54",
-            totalBalanceWithoutExcluded = "25.54",
-            totalBalanceWithoutExcludedText = "BGN 25.54",
-            reorderVisible = false,
-            compactAccountsModeEnabled = true,
-            hideTotalBalance = false
-        )
-        UI(state = state)
+        UI(state = sampleAccountsState(compact = true))
     }
 }
 

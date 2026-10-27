@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -18,6 +17,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,14 +35,17 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.ivy.base.legacy.Theme
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
 import com.ivy.design.utils.thenIf
+import com.ivy.home.HomeSampleUi
+import com.ivy.legacy.IvyWalletPreview
 import com.ivy.legacy.data.model.MainTab
 import com.ivy.legacy.ivyWalletCtx
 import com.ivy.legacy.utils.clickableNoIndication
@@ -73,7 +76,9 @@ import kotlin.math.roundToInt
 val TRN_BUTTON_CLICK_AREA_HEIGHT = 150.dp
 val FAB_BUTTON_SIZE = 56.dp
 
+/** @param initiallyExpanded only used by screenshot tests to render the add menu open. */
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
+@Suppress("LongMethod")
 @Composable
 fun BoxWithConstraintsScope.BottomBar(
     tab: MainTab,
@@ -85,10 +90,11 @@ fun BoxWithConstraintsScope.BottomBar(
     onAddPlannedPayment: () -> Unit,
 
     showAddAccountModal: () -> Unit,
+    initiallyExpanded: Boolean = false,
 ) {
     val ivyContext = ivyWalletCtx()
 
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(initiallyExpanded) }
 
     val modalId = remember { UUID.randomUUID() }
 
@@ -648,5 +654,23 @@ private fun RowScope.Tab(
                 )
             )
         }
+    }
+}
+
+/** For screenshot testing: Home with the add-transaction menu expanded (sample data). */
+@Composable
+fun MainFabMenuUiTest(isDark: Boolean) {
+    IvyWalletPreview(if (isDark) Theme.DARK else Theme.LIGHT) {
+        HomeSampleUi()
+        BottomBar(
+            tab = MainTab.HOME,
+            selectTab = {},
+            onAddIncome = {},
+            onAddExpense = {},
+            onAddTransfer = {},
+            onAddPlannedPayment = {},
+            showAddAccountModal = {},
+            initiallyExpanded = true,
+        )
     }
 }
