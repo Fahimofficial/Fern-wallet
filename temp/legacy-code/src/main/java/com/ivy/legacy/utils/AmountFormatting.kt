@@ -1,6 +1,8 @@
 package com.ivy.legacy.utils
 
 import com.ivy.wallet.domain.data.IvyCurrency
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import kotlin.math.abs
@@ -95,29 +97,39 @@ fun Double.formatCrypto(): String {
 
 private fun Double.formatFIAT(): String = DecimalFormat("#,##0.00").format(this)
 
+private const val BILLION = 1_000_000_000L
+
+/**
+ * Shortens big amounts for compact display, e.g. 114_434.33 -> "114.43k".
+ *
+ * The value is rounded (HALF_UP, 2 decimals) *before* choosing the unit so that
+ * values like 999_999 render as "1m" instead of "1000.00k". Trailing zeros are dropped
+ * ("1.50k" -> "1.5k") and the device locale's decimal separator is used.
+ */
 fun shortenAmount(amount: Double): String {
-    return when {
-        abs(amount) >= MILLION -> {
-            formatShortenedNumber(amount / MILLION, "m")
+    val value = amount.toBigDecimal()
+    val absValue = value.abs()
+    val units = listOf(
+        BILLION.toBigDecimal() to "b",
+        MILLION.toBigDecimal() to "m",
+        THOUSAND.toBigDecimal() to "k",
+    )
+    // Units are checked from largest to smallest on the *rounded* value, so a rounding
+    // carry (e.g. 999_999 -> 1.00m) is naturally promoted to the bigger unit.
+    for ((unit, suffix) in units) {
+        val scaled = absValue.divide(unit).setScale(2, RoundingMode.HALF_UP)
+        if (scaled >= BigDecimal.ONE) {
+            val sign = if (value.signum() < 0) "-" else ""
+            return "$sign${formatShortDecimal(scaled)}$suffix"
         }
-
-        abs(amount) >= THOUSAND -> {
-            formatShortenedNumber(amount / THOUSAND, "k")
-        }
-
-        else -> amount.toString()
     }
+    return formatShortDecimal(value.setScale(2, RoundingMode.HALF_UP))
 }
 
-private fun formatShortenedNumber(
-    number: Double,
-    extension: String,
-): String {
-    return if (hasSignificantDecimalPart(number)) {
-        "${number.format(2)}$extension"
-    } else {
-        "${number.toInt()}$extension"
-    }
+private fun formatShortDecimal(value: BigDecimal): String {
+    val format = DecimalFormat("0.##")
+    format.roundingMode = RoundingMode.HALF_UP
+    return format.format(value)
 }
 
 fun hasSignificantDecimalPart(number: Double): Boolean {

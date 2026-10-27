@@ -2,6 +2,7 @@ package com.ivy.data.backup
 
 import com.ivy.base.TestDispatchersProvider
 import com.ivy.base.di.KotlinxSerializationModule
+import com.ivy.base.legacy.SharedPrefs
 import com.ivy.data.DataObserver
 import com.ivy.data.db.dao.fake.FakeAccountDao
 import com.ivy.data.db.dao.fake.FakeBudgetDao
@@ -20,7 +21,9 @@ import com.ivy.data.repository.mapper.AccountMapper
 import com.ivy.data.testResource
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
@@ -35,7 +38,8 @@ class BackupDataUseCaseTest {
         loanDao: FakeLoanDao = FakeLoanDao(),
         loanRecordDao: FakeLoanRecordDao = FakeLoanRecordDao(),
         tagDao: FakeTagDao = FakeTagDao(),
-        tagAssociationDao: FakeTagAssociationDao = FakeTagAssociationDao()
+        tagAssociationDao: FakeTagAssociationDao = FakeTagAssociationDao(),
+        sharedPrefs: SharedPrefs = mockk(relaxed = true),
     ): BackupDataUseCase {
         val accountMapper = AccountMapper(
             CurrencyRepository(
@@ -70,7 +74,7 @@ class BackupDataUseCaseTest {
             plannedPaymentRuleWriter = plannedPaymentDao,
 
             context = mockk(relaxed = true),
-            sharedPrefs = mockk(relaxed = true),
+            sharedPrefs = sharedPrefs,
             json = KotlinxSerializationModule.provideJson(),
             dispatchersProvider = TestDispatchersProvider,
             fileSystem = mockk(relaxed = true),
@@ -114,5 +118,21 @@ class BackupDataUseCaseTest {
     @Test
     fun `backup compatibility with 450 (150)`() = runTest {
         backupTestCase("450-150")
+    }
+
+    @Test
+    fun `importing a backup never disables an enabled app lock`() = runTest {
+        // given: app lock is enabled on this device; the backup has it disabled
+        val sharedPrefs = mockk<SharedPrefs>(relaxed = true)
+        every { sharedPrefs.getBoolean(SharedPrefs.APP_LOCK_ENABLED, any()) } returns true
+        val useCase = newBackupDataUseCase(sharedPrefs = sharedPrefs)
+        val backupJsonData = testResource("backups/450-150.json").readText(Charsets.UTF_16)
+
+        // when
+        useCase.importJson(backupJsonData, onProgress = {})
+
+        // then
+        verify { sharedPrefs.putBoolean(SharedPrefs.APP_LOCK_ENABLED, true) }
+        verify(exactly = 0) { sharedPrefs.putBoolean(SharedPrefs.APP_LOCK_ENABLED, false) }
     }
 }
