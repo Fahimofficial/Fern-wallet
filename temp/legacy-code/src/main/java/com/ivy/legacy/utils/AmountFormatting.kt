@@ -102,28 +102,37 @@ private const val BILLION = 1_000_000_000L
 /**
  * Shortens big amounts for compact display, e.g. 114_434.33 -> "114.43k".
  *
- * The value is rounded (HALF_UP, 2 decimals) *before* choosing the unit so that
- * values like 999_999 render as "1m" instead of "1000.00k". Trailing zeros are dropped
- * ("1.50k" -> "1.5k") and the device locale's decimal separator is used.
+ * The unit is chosen from the raw amount (k for >= 1,000, m for >= 1,000,000, ...) and the
+ * value is rounded HALF_UP to 2 decimals in that unit. Only if rounding carries the value to
+ * 1000 is it promoted to the next unit, so 999_999 -> "1m" (not "1000.00k") while
+ * 995_000 stays "995k". Trailing zeros are dropped ("1.50k" -> "1.5k") and the device
+ * locale's decimal separator is used.
  */
 fun shortenAmount(amount: Double): String {
     val value = amount.toBigDecimal()
     val absValue = value.abs()
+    val sign = if (value.signum() < 0) "-" else ""
+    // Smallest to largest.
     val units = listOf(
-        BILLION.toBigDecimal() to "b",
-        MILLION.toBigDecimal() to "m",
         THOUSAND.toBigDecimal() to "k",
+        MILLION.toBigDecimal() to "m",
+        BILLION.toBigDecimal() to "b",
     )
-    // Units are checked from largest to smallest on the *rounded* value, so a rounding
-    // carry (e.g. 999_999 -> 1.00m) is naturally promoted to the bigger unit.
-    for ((unit, suffix) in units) {
-        val scaled = absValue.divide(unit).setScale(2, RoundingMode.HALF_UP)
-        if (scaled >= BigDecimal.ONE) {
-            val sign = if (value.signum() < 0) "-" else ""
-            return "$sign${formatShortDecimal(scaled)}$suffix"
+    var index = units.indexOfLast { (unit, _) -> absValue >= unit }
+    if (index < 0) {
+        val rounded = absValue.setScale(2, RoundingMode.HALF_UP)
+        if (rounded < THOUSAND.toBigDecimal()) {
+            return "$sign${formatShortDecimal(rounded)}"
         }
+        // e.g. 999.996 rounds to 1000.00 -> "1k"
+        index = 0
     }
-    return formatShortDecimal(value.setScale(2, RoundingMode.HALF_UP))
+    var scaled = absValue.divide(units[index].first).setScale(2, RoundingMode.HALF_UP)
+    if (scaled >= THOUSAND.toBigDecimal() && index < units.lastIndex) {
+        index++
+        scaled = absValue.divide(units[index].first).setScale(2, RoundingMode.HALF_UP)
+    }
+    return "$sign${formatShortDecimal(scaled)}${units[index].second}"
 }
 
 private fun formatShortDecimal(value: BigDecimal): String {

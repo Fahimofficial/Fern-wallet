@@ -36,6 +36,24 @@ class ShortenAmountTest {
         ALMOST_MILLION(999_999.0, "1m"),
         ROUNDS_TO_MILLION(999_995.0, "1m"),
         JUST_BELOW_ROUNDING(994_999.0, "995k"),
+
+        // Between 995,000 and 999,995: stays in "k" until rounding reaches 1000.00k
+        K_995(995_000.0, "995k"),
+        K_997_5(997_500.0, "997.5k"),
+        K_999_99(999_990.0, "999.99k"),
+        K_999_994(999_994.0, "999.99k"),
+        K_999_995_PROMOTES(999_995.0, "1m"),
+        M_995(995_000_000.0, "995m"),
+        M_999_99(999_990_000.0, "999.99m"),
+        M_999_995_PROMOTES(999_995_000.0, "1b"),
+        NEGATIVE_995K(-995_000.0, "-995k"),
+
+        // Below 1,000: only promoted when rounding reaches 1000
+        BELOW_K(999.99, "999.99"),
+        BELOW_K_PROMOTES(999.996, "1k"),
+
+        // Largest unit is never promoted further
+        HUGE(2_500_000_000_000.0, "2500b"),
         MILLIONS(2_345_678.0, "2.35m"),
 
         // Previously rendered as "1000.00m"
