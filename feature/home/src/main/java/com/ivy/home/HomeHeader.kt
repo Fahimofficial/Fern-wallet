@@ -276,7 +276,7 @@ fun CashFlowInfo(
                     currency,
                 ),
                 style = UI.typo.nB2.style(
-                    color = if (cashflow < 0) Gray else incomeTextColor(),
+                    color = if (cashflow < 0) Gray else incomeTextColor(UI.colors.isLight),
                 ),
             )
 

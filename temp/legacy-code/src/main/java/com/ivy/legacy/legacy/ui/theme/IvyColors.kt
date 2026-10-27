@@ -103,8 +103,7 @@ val GradientIvy = Gradient(Ivy, Color(0xFF1C9878))
  * Income color for *text*. The bright [Green] fails WCAG contrast on light surfaces
  * (~1.9:1), so a deeper green is used in light themes.
  */
-@Composable
-fun incomeTextColor(): Color = if (UI.colors.isLight) IncomeTextLight else Green
+fun incomeTextColor(isLight: Boolean): Color = if (isLight) IncomeTextLight else Green
 
 private val IncomeTextLight = Color(0xFF077D59)
 

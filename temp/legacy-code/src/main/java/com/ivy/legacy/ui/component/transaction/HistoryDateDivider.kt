@@ -87,7 +87,7 @@ fun HistoryDateDivider(
             text = "${cashflow.format(baseCurrency)} $baseCurrency",
             style = UI.typo.nB2.style(
                 fontWeight = FontWeight.Bold,
-                color = if (cashflow > 0) incomeTextColor() else Gray
+                color = if (cashflow > 0) incomeTextColor(UI.colors.isLight) else Gray
             )
         )
 

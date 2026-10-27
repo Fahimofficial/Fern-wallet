@@ -574,7 +574,7 @@ fun TypeAmountCurrency(
                     icon = R.drawable.ic_income,
                     gradient = GradientGreen,
                     iconTint = White,
-                    textColor = incomeTextColor()
+                    textColor = incomeTextColor(UI.colors.isLight)
                 )
             }
 
