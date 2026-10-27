@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,7 +61,8 @@ fun PeriodSelector(
                     }
                     .padding(all = 8.dp)
                     .rotate(-180f),
-                icon = R.drawable.ic_arrow_right
+                icon = R.drawable.ic_arrow_right,
+                contentDescription = stringResource(R.string.cd_previous_month)
             )
         }
 
@@ -109,7 +111,8 @@ fun PeriodSelector(
                         onNextMonth()
                     }
                     .padding(all = 8.dp),
-                icon = R.drawable.ic_arrow_right
+                icon = R.drawable.ic_arrow_right,
+                contentDescription = stringResource(R.string.cd_next_month)
             )
         }
 

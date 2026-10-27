@@ -21,8 +21,9 @@ val White = Color(0xFFFAFAFA)
 val Black = Color(0xFF111114)
 
 // Primary
+/** Fern Wallet brand primary (token name kept for source compatibility). */
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-val Ivy = Color(0xFF6B4DFF)
+val Ivy = Color(0xFF13876A)
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 val Blue = Color(0xFF4CC3FF)
@@ -41,7 +42,7 @@ val Red3 = Color(0xFFFF4CA6)
 
 // Light
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-val IvyLight = Color(0xFFD5CCFF)
+val IvyLight = Color(0xFFC6EEE1)
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 val GreenLight = Color(0xFFAAF2E0)
@@ -57,7 +58,7 @@ val Red3Light = Color(0xFFFFCCE6)
 
 // Dark
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-val IvyDark = Color(0xFF352680)
+val IvyDark = Color(0xFF0B5747)
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 val Purple1Dark = Color(0xFF622680)
@@ -88,14 +89,27 @@ val GradientRed = Gradient(Red, Color(0xFFFF99AB))
 
 val GradientPurple = Gradient(Purple, Color(0xFFED3EF7))
 
+// Subtle, near-flat gradients: depth without the neon glow.
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-val GradientGreen = Gradient(Green, Color(0xFF49F2C8))
+val GradientGreen = Gradient(Green, Color(0xFF2ED6AC))
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 val GradientOrangeRevert = Gradient(Color(0xFFF2CD9E), Orange)
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-val GradientIvy = Gradient(Ivy, Color(0xFFAA99FF))
+val GradientIvy = Gradient(Ivy, Color(0xFF1C9878))
+
+/**
+ * Income color for *text*. The bright [Green] fails WCAG contrast on light surfaces
+ * (~1.9:1), so a deeper green is used in light themes.
+ */
+fun incomeTextColor(isLight: Boolean): Color = if (isLight) IncomeTextLight else Green
+
+private val IncomeTextLight = Color(0xFF077D59)
+
+/** Semantic color for account transfers (distinct from the green brand and income). */
+val TransferBlue = Color(0xFF3D6FE0)
+val GradientTransfer = Gradient(TransferBlue, Color(0xFF4F7FEA))
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 fun Modifier.gradientCutBackgroundTop(
@@ -139,9 +153,10 @@ fun pureBlur() = UI.colors.pure.copy(alpha = 0.95f)
 @Composable
 fun mediumBlur() = UI.colors.medium.copy(alpha = 0.95f)
 
+/** Expenses are shown in a calm, solid ink color rather than an alarming red or a muddy gradient. */
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
-fun gradientExpenses() = Gradient(UI.colors.pureInverse, UI.colors.gray)
+fun gradientExpenses(): Gradient = Gradient(UI.colors.pureInverse, UI.colors.pureInverse)
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 data class Gradient(

@@ -1,6 +1,8 @@
 package com.ivy.legacy.utils
 
 import com.ivy.wallet.domain.data.IvyCurrency
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import kotlin.math.abs
@@ -95,29 +97,48 @@ fun Double.formatCrypto(): String {
 
 private fun Double.formatFIAT(): String = DecimalFormat("#,##0.00").format(this)
 
+private const val BILLION = 1_000_000_000L
+
+/**
+ * Shortens big amounts for compact display, e.g. 114_434.33 -> "114.43k".
+ *
+ * The unit is chosen from the raw amount (k for >= 1,000, m for >= 1,000,000, ...) and the
+ * value is rounded HALF_UP to 2 decimals in that unit. Only if rounding carries the value to
+ * 1000 is it promoted to the next unit, so 999_999 -> "1m" (not "1000.00k") while
+ * 995_000 stays "995k". Trailing zeros are dropped ("1.50k" -> "1.5k") and the device
+ * locale's decimal separator is used.
+ */
 fun shortenAmount(amount: Double): String {
-    return when {
-        abs(amount) >= MILLION -> {
-            formatShortenedNumber(amount / MILLION, "m")
+    val value = amount.toBigDecimal()
+    val absValue = value.abs()
+    val sign = if (value.signum() < 0) "-" else ""
+    // Smallest to largest.
+    val units = listOf(
+        THOUSAND.toBigDecimal() to "k",
+        MILLION.toBigDecimal() to "m",
+        BILLION.toBigDecimal() to "b",
+    )
+    var index = units.indexOfLast { (unit, _) -> absValue >= unit }
+    if (index < 0) {
+        val rounded = absValue.setScale(2, RoundingMode.HALF_UP)
+        if (rounded < THOUSAND.toBigDecimal()) {
+            return "$sign${formatShortDecimal(rounded)}"
         }
-
-        abs(amount) >= THOUSAND -> {
-            formatShortenedNumber(amount / THOUSAND, "k")
-        }
-
-        else -> amount.toString()
+        // e.g. 999.996 rounds to 1000.00 -> "1k"
+        index = 0
     }
+    var scaled = absValue.divide(units[index].first).setScale(2, RoundingMode.HALF_UP)
+    if (scaled >= THOUSAND.toBigDecimal() && index < units.lastIndex) {
+        index++
+        scaled = absValue.divide(units[index].first).setScale(2, RoundingMode.HALF_UP)
+    }
+    return "$sign${formatShortDecimal(scaled)}${units[index].second}"
 }
 
-private fun formatShortenedNumber(
-    number: Double,
-    extension: String,
-): String {
-    return if (hasSignificantDecimalPart(number)) {
-        "${number.format(2)}$extension"
-    } else {
-        "${number.toInt()}$extension"
-    }
+private fun formatShortDecimal(value: BigDecimal): String {
+    val format = DecimalFormat("0.##")
+    format.roundingMode = RoundingMode.HALF_UP
+    return format.format(value)
 }
 
 fun hasSignificantDecimalPart(number: Double): Boolean {

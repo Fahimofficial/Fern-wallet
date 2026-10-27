@@ -3,14 +3,13 @@ package com.ivy.legacy.data.model
 import androidx.compose.runtime.Immutable
 import com.ivy.base.time.TimeConverter
 import com.ivy.base.time.TimeProvider
-import com.ivy.legacy.utils.atEndOfDay
-import com.ivy.legacy.utils.dateNowUTC
 import com.ivy.legacy.utils.endOfMonth
 import com.ivy.legacy.utils.startOfMonth
 import com.ivy.legacy.utils.withDayOfMonthSafe
 import com.ivy.ui.time.TimeFormatter
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 
 private const val MonthNameAbbreviationLength = 3
 
@@ -34,28 +33,48 @@ data class TimePeriod(
          * 3. startDateOfMonth = 10, today = Nov. 10
          * return Nov. 10 - Dec. 9
          */
-        fun currentMonth(startDayOfMonth: Int): TimePeriod {
-            val dateNowUTC = dateNowUTC()
-            val dayToday = dateNowUTC.dayOfMonth
+        fun currentMonth(startDayOfMonth: Int): TimePeriod = currentMonth(
+            startDayOfMonth = startDayOfMonth,
+            // Period boundaries are computed in the device's local time zone
+            // (see toRange), so "today" must be local too. Using UTC here picked the
+            // wrong month around midnight for users far from UTC.
+            today = LocalDate.now(),
+        )
 
-            // Examples month = Nov. startDate = 7; Period = from Nov (7) till Dec (6)
-            // => new period starts if today => startDayOfMonth
-            val newPeriodStarted = dayToday >= startDayOfMonth
-
-            val periodDate = if (newPeriodStarted) {
-                // new monthly period has already started then observe it => current month
-                dateNowUTC
-            } else {
-                // new monthly period hasn't yet started then observe the ongoing one => previous month
-                dateNowUTC.minusMonths(1)
-            }
-
+        /**
+         * 4. startDateOfMonth = 31, today = Feb. 28 (non-leap)
+         * return Feb. 28 - Mar. 30 (the start day is clamped to the month length,
+         * consistent with [toRange]); previously Jan. 31 - Feb. 27 was returned,
+         * which didn't contain today.
+         */
+        fun currentMonth(startDayOfMonth: Int, today: LocalDate): TimePeriod {
+            val periodDate = currentMonthPeriodDate(startDayOfMonth, today)
             return TimePeriod(
                 month = Month.fromMonthValue(
                     periodDate.monthValue
                 ),
                 year = periodDate.year
             )
+        }
+
+        /**
+         * Returns a date in the month whose period contains [today]
+         * (pure; unit-tested in TimePeriodCurrentMonthTest).
+         */
+        fun currentMonthPeriodDate(startDayOfMonth: Int, today: LocalDate): LocalDate {
+            // Examples month = Nov. startDate = 7; Period = from Nov (7) till Dec (6)
+            // => new period starts if today => startDayOfMonth
+            // The start day is clamped to the month length (e.g. 31 -> 28 in Feb.)
+            val effectiveStartDay = startDayOfMonth.coerceAtMost(today.lengthOfMonth())
+            val newPeriodStarted = today.dayOfMonth >= effectiveStartDay
+
+            return if (newPeriodStarted) {
+                // new monthly period has already started then observe it => current month
+                today
+            } else {
+                // new monthly period hasn't yet started then observe the ongoing one => previous month
+                today.minusMonths(1)
+            }
         }
     }
 
@@ -98,7 +117,7 @@ data class TimePeriod(
             }
 
             else -> {
-                val date = dateNowUTC()
+                val date = timeProvider.localNow().toLocalDate()
                 FromToTimeRange(
                     from = startOfMonth(date, timeConverter),
                     to = endOfMonth(date, timeConverter)
@@ -123,7 +142,8 @@ data class TimePeriod(
             .withDayOfMonthSafe(startDateOfMonth)
             // e.g. Correct: 14.10-13.11 (Incorrect: 14.10-14.11)
             .minusDays(1)
-            .atEndOfDay()
+            // Include the whole last day (consistent with endOfMonth)
+            .atTime(LocalTime.MAX)
             .toUTC()
 
         from to to

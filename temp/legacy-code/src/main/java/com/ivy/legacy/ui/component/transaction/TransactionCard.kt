@@ -67,22 +67,23 @@ import com.ivy.wallet.domain.data.IvyCurrency
 import com.ivy.wallet.ui.theme.Blue
 import com.ivy.wallet.ui.theme.Gradient
 import com.ivy.wallet.ui.theme.GradientGreen
-import com.ivy.wallet.ui.theme.GradientIvy
+import com.ivy.wallet.ui.theme.GradientTransfer
 import com.ivy.wallet.ui.theme.GradientOrangeRevert
 import com.ivy.wallet.ui.theme.GradientRed
 import com.ivy.wallet.ui.theme.Gray
 import com.ivy.wallet.ui.theme.Green
 import com.ivy.wallet.ui.theme.GreenDark
-import com.ivy.wallet.ui.theme.Ivy
 import com.ivy.wallet.ui.theme.IvyDark
 import com.ivy.wallet.ui.theme.Orange
 import com.ivy.wallet.ui.theme.Red
+import com.ivy.wallet.ui.theme.TransferBlue
 import com.ivy.wallet.ui.theme.White
 import com.ivy.wallet.ui.theme.components.ItemIconSDefaultIcon
 import com.ivy.wallet.ui.theme.components.IvyButton
 import com.ivy.wallet.ui.theme.components.IvyIcon
 import com.ivy.wallet.ui.theme.findContrastTextColor
 import com.ivy.wallet.ui.theme.gradientExpenses
+import com.ivy.wallet.ui.theme.incomeTextColor
 import com.ivy.wallet.ui.theme.toComposeColor
 import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
 import kotlinx.collections.immutable.ImmutableList
@@ -107,7 +108,7 @@ fun TransactionCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .padding(top = 12.dp)
+            .padding(top = 10.dp)
             .clip(UI.shapes.r4)
             .clickable {
                 if (baseData.accounts.find { it.id == transaction.accountId } != null) {
@@ -126,7 +127,8 @@ fun TransactionCard(
             baseData.accounts.find { it.id == transaction.toAccountId }?.currency
                 ?: baseData.baseCurrency
 
-        Spacer(Modifier.height(20.dp))
+        // Compact vertical rhythm: transaction cards are scanned in long lists.
+        Spacer(Modifier.height(16.dp))
 
         TransactionHeaderRow(
             transaction = transaction,
@@ -193,11 +195,7 @@ fun TransactionCard(
             )
         }
 
-        if (transaction.dueDate != null) {
-            Spacer(Modifier.height(12.dp))
-        } else {
-            Spacer(Modifier.height(16.dp))
-        }
+        Spacer(Modifier.height(12.dp))
 
         TypeAmountCurrency(
             transactionType = transaction.type,
@@ -265,7 +263,7 @@ fun TransactionCard(
             TransactionTags(transaction.tags)
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
     }
 }
 
@@ -576,7 +574,7 @@ fun TypeAmountCurrency(
                     icon = R.drawable.ic_income,
                     gradient = GradientGreen,
                     iconTint = White,
-                    textColor = Green
+                    textColor = incomeTextColor(UI.colors.isLight)
                 )
             }
 
@@ -606,8 +604,9 @@ fun TypeAmountCurrency(
                         // Normal Expense
                         AmountTypeStyle(
                             icon = R.drawable.ic_expense,
-                            gradient = Gradient.black(),
-                            iconTint = White,
+                            // Solid ink badge; icon inverts so it stays visible in dark themes
+                            gradient = Gradient.solid(UI.colors.pureInverse),
+                            iconTint = UI.colors.pure,
                             textColor = UI.colors.pureInverse
                         )
                     }
@@ -618,9 +617,9 @@ fun TypeAmountCurrency(
                 // Transfer
                 AmountTypeStyle(
                     icon = R.drawable.ic_transfer,
-                    gradient = GradientIvy,
+                    gradient = GradientTransfer,
                     iconTint = White,
-                    textColor = Ivy
+                    textColor = TransferBlue
                 )
             }
         }

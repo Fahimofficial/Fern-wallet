@@ -11,10 +11,11 @@ import com.ivy.design.l0_system.UI
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
 fun IvyIcon(
-    modifier: Modifier = Modifier,
     @DrawableRes icon: Int,
+    modifier: Modifier = Modifier,
     tint: Color = UI.colors.pureInverse,
-    contentDescription: String = "icon"
+    // Decorative by default: icons next to text shouldn't be announced as "icon".
+    contentDescription: String? = null
 ) {
     Icon(
         modifier = modifier,

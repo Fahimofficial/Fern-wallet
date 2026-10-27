@@ -152,6 +152,14 @@ fun Int.toDensityDp() = densityScope { toDp() }
 fun Float.toDensityDp() = densityScope { toDp() }
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
+@Suppress("SwallowedException")
 fun openUrl(uriHandler: UriHandler, url: String) {
-    uriHandler.openUri(url)
+    // Compose's UriHandler throws when no app can handle the URL; never crash for that.
+    try {
+        uriHandler.openUri(url)
+    } catch (e: android.content.ActivityNotFoundException) {
+        timber.log.Timber.w(e, "No app can open URL")
+    } catch (e: IllegalArgumentException) {
+        timber.log.Timber.w(e, "No app can open URL")
+    }
 }

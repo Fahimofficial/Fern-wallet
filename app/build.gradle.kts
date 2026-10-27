@@ -6,17 +6,17 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
     id("io.gitlab.arturbosch.detekt")
 }
 
 android {
-    namespace = "com.ivy.wallet"
+    // Fern Wallet's own identity. Kotlin sources keep the upstream `com.ivy.*` packages
+    // (see docs/Package-Identity.md); only the generated R/BuildConfig live here.
+    namespace = "com.fernwallet.app"
     compileSdk = libs.versions.compile.sdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.ivy.wallet"
+        applicationId = "com.fernwallet.app"
         minSdk = libs.versions.min.sdk.get().toInt()
         targetSdk = libs.versions.compile.sdk.get().toInt()
         versionName = libs.versions.version.name.get()
@@ -35,8 +35,10 @@ android {
             keyPassword = "IVY7834!DEbug"
         }
 
+        // Release signing comes only from the environment (CI secrets). The keystore path
+        // defaults to ../sign.jks, which is git-ignored and never committed.
         create("release") {
-            storeFile = file("../sign.jks")
+            storeFile = file(System.getenv("SIGNING_STORE_FILE") ?: "../sign.jks")
             storePassword = System.getenv("SIGNING_STORE_PASSWORD")
             keyAlias = System.getenv("SIGNING_KEY_ALIAS")
             keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
@@ -57,7 +59,7 @@ android {
 
             signingConfig = signingConfigs.getByName("release")
 
-            resValue("string", "app_name", "Ivy Wallet")
+            resValue("string", "app_name", "Fern Wallet")
         }
 
         debug {
@@ -70,7 +72,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
 
             applicationIdSuffix = ".debug"
-            resValue("string", "app_name", "Ivy Wallet Debug")
+            resValue("string", "app_name", "Fern Wallet Debug")
         }
 
         create("demo") {
@@ -86,10 +88,11 @@ android {
             isDebuggable = false
             isDefault = false
 
+            // Demo builds are signed with the public debug key: never distribute them as releases.
             signingConfig = signingConfigs.getByName("debug")
 
-            applicationIdSuffix = ".debug"
-            resValue("string", "app_name", "Ivy Wallet")
+            applicationIdSuffix = ".demo"
+            resValue("string", "app_name", "Fern Wallet Demo")
         }
     }
 
@@ -138,14 +141,11 @@ dependencies {
     implementation(projects.feature.onboarding)
     implementation(projects.feature.piechart)
     implementation(projects.feature.plannedPayments)
-    implementation(projects.feature.poll.impl)
-    implementation(projects.feature.poll.public)
     implementation(projects.feature.releases)
     implementation(projects.feature.reports)
     implementation(projects.feature.search)
     implementation(projects.feature.settings)
     implementation(projects.feature.transactions)
-    implementation(projects.feature.poll.impl)
     implementation(projects.shared.base)
     implementation(projects.shared.data.core)
     implementation(projects.shared.domain)
@@ -163,7 +163,6 @@ dependencies {
     implementation(libs.bundles.compose)
     implementation(libs.bundles.activity)
     implementation(libs.bundles.google)
-    implementation(libs.bundles.firebase)
     implementation(libs.datastore)
     implementation(libs.androidx.security)
     implementation(libs.androidx.biometrics)

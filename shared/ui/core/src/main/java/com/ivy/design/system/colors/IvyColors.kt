@@ -68,6 +68,17 @@ object IvyColors {
         dark = Color(0xFF36248F),
         extraDark = Color(0xFF1F1452),
     )
+
+    /** Fern Wallet brand color (primary actions, selection, focus). */
+    val Fern = ColorShades(
+        extraLight = Color(0xFFC6EEE1),
+        light = Color(0xFF7FD3B7),
+        kindaLight = Color(0xFF3FB592),
+        primary = Color(0xFF13876A),
+        kindaDark = Color(0xFF0F7059),
+        dark = Color(0xFF0B5747),
+        extraDark = Color(0xFF073A2F),
+    )
     val Pink = ColorShades(
         extraLight = Color(0xFFF5ABD0),
         light = Color(0xFFF587BE),

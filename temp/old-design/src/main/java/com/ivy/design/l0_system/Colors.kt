@@ -15,8 +15,9 @@ val White = Color(0xFFFAFAFA)
 val Black = Color(0xFF111114)
 
 // Primary
+/** Fern Wallet brand primary (token name kept for source compatibility). */
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-val Ivy = Color(0xFF6B4DFF)
+val Ivy = Color(0xFF13876A)
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 val Purple = Color(0xFF6B4DFF)
@@ -71,7 +72,7 @@ val Red3 = Color(0xFFFF4CA6)
 
 // Light
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-val IvyLight = Color(0xFFD5CCFF)
+val IvyLight = Color(0xFFC6EEE1)
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 val Purple1Light = Color(0xFFEECCFF)
@@ -123,7 +124,7 @@ val Red3Light = Color(0xFFFFCCE6)
 
 // Dark
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-val IvyDark = Color(0xFF352680)
+val IvyDark = Color(0xFF0B5747)
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 val Purple1Dark = Color(0xFF622680)
@@ -189,8 +190,9 @@ val MediumWhite = Color(0xFFEFEEF0)
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 val Transparent = Color(0x00000000)
 
+// Subtle, near-flat gradient: depth without the neon glow.
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-val GradientGreen = Gradient(Green, Color(0xFF49F2C8))
+val GradientGreen = Gradient(Green, Color(0xFF2ED6AC))
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Immutable

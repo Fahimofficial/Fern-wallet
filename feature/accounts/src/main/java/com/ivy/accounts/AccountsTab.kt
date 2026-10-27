@@ -215,7 +215,7 @@ private fun AccountCard(
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .clip(UI.shapes.r4)
-            .border(2.dp, UI.colors.medium, UI.shapes.r4)
+            .border(1.dp, UI.colors.medium, UI.shapes.r4)
             .clickable(
                 onClick = onClick
             )

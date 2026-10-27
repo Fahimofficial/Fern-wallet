@@ -3,6 +3,7 @@ package com.ivy.wallet
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.fernwallet.app.BuildConfig
 import com.ivy.base.legacy.appContext
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber

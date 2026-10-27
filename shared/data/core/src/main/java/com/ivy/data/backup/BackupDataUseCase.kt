@@ -290,9 +290,14 @@ class BackupDataUseCase @Inject constructor(
                 (completeData.sharedPrefs[SharedPrefs.SHOW_NOTIFICATIONS] ?: "true").toBoolean()
             )
 
+            // Importing a backup may turn the app lock on, but must never silently turn it off
+            // on a device where the user has enabled it.
+            val appLockCurrentlyEnabled = sharedPrefs.getBoolean(SharedPrefs.APP_LOCK_ENABLED, false)
+            val appLockInBackup =
+                (completeData.sharedPrefs[SharedPrefs.APP_LOCK_ENABLED] ?: "false").toBoolean()
             sharedPrefs.putBoolean(
                 SharedPrefs.APP_LOCK_ENABLED,
-                (completeData.sharedPrefs[SharedPrefs.APP_LOCK_ENABLED] ?: "false").toBoolean()
+                appLockCurrentlyEnabled || appLockInBackup
             )
 
             sharedPrefs.putBoolean(

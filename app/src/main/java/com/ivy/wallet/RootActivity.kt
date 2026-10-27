@@ -2,12 +2,16 @@ package com.ivy.wallet
 
 import android.appwidget.AppWidgetManager
 import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.DocumentsContract
+import android.provider.Settings
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.setContent
@@ -26,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.fernwallet.app.BuildConfig
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
@@ -42,8 +47,8 @@ import com.ivy.home.customerjourney.CustomerJourneyCardsProvider
 import com.ivy.legacy.Constants
 import com.ivy.legacy.IvyWalletCtx
 import com.ivy.legacy.appDesign
+import com.ivy.legacy.utils.MotionPreferences
 import com.ivy.legacy.utils.activityForResultLauncher
-import com.ivy.legacy.utils.sendToCrashlytics
 import com.ivy.legacy.utils.simpleActivityForResultLauncher
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.NavigationRoot
@@ -57,6 +62,7 @@ import com.ivy.widget.transaction.AddTransactionWidgetCompact
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
 import java.time.LocalTime
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -309,6 +315,12 @@ class RootActivity : AppCompatActivity(), RootScreen {
 
     override fun onResume() {
         super.onResume()
+        // Respect "Remove animations" (animator duration scale = 0) in the legacy springs.
+        MotionPreferences.reduceMotion = Settings.Global.getFloat(
+            contentResolver,
+            Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f
+        ) == 0f
         if (viewModel.isAppLockEnabled()) {
             viewModel.checkUserInactiveTimeStatus()
         }
@@ -358,20 +370,62 @@ class RootActivity : AppCompatActivity(), RootScreen {
         }
     }
 
-    @Suppress("TooGenericExceptionCaught", "PrintStackTrace")
     override fun openUrlInBrowser(url: String) {
+        val uri = Uri.parse(url)
+        if (uri.scheme != "https" && uri.scheme != "http") {
+            // Only web links are opened through this entry point.
+            Timber.w("Refusing to open non-web URL: %s", url)
+            return
+        }
+        val browserIntent = Intent(Intent.ACTION_VIEW, uri)
+            .addCategory(Intent.CATEGORY_BROWSABLE)
         try {
-            val browserIntent = Intent(Intent.ACTION_VIEW)
-            browserIntent.data = Uri.parse(url)
             startActivity(browserIntent)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            e.sendToCrashlytics("Cannot open URL in browser, intent not supported.")
+        } catch (e: ActivityNotFoundException) {
+            Timber.w(e, "No app can open URL")
+            copyToClipboard(label = url, text = url, showToast = false)
             Toast.makeText(
                 this,
-                "No browser app found. Visit manually: $url",
+                getString(R.string.no_app_to_open_link, url),
                 Toast.LENGTH_LONG
             ).show()
+        }
+    }
+
+    override fun openUpiPayment(upiUri: String) {
+        val uri = Uri.parse(upiUri)
+        if (uri.scheme != "upi") {
+            Timber.w("Refusing to open non-UPI payment URI")
+            return
+        }
+        try {
+            // Explicit user action; the UPI app shows the payee and asks for amount/confirmation.
+            startActivity(Intent(Intent.ACTION_VIEW, uri))
+        } catch (e: ActivityNotFoundException) {
+            Timber.w(e, "No UPI app installed")
+            val upiId = uri.getQueryParameter("pa").orEmpty()
+            if (upiId.isNotBlank()) {
+                copyToClipboard(label = upiId, text = upiId, showToast = false)
+            }
+            Toast.makeText(
+                this,
+                getString(R.string.support_no_upi_app),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    override fun copyToClipboard(label: String, text: String) {
+        copyToClipboard(label = label, text = text, showToast = true)
+    }
+
+    private fun copyToClipboard(label: String, text: String, showToast: Boolean) {
+        val clipboard = getSystemService(ClipboardManager::class.java) ?: return
+        clipboard.setPrimaryClip(ClipData.newPlainText(label, text))
+        // Android 13+ shows its own clipboard confirmation.
+        if (showToast && Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            Toast.makeText(this, getString(R.string.copied_to_clipboard, text), Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -379,7 +433,10 @@ class RootActivity : AppCompatActivity(), RootScreen {
         val share = Intent.createChooser(
             Intent().apply {
                 action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, Constants.URL_IVY_WALLET_GOOGLE_PLAY)
+                putExtra(
+                    Intent.EXTRA_TEXT,
+                    getString(R.string.share_fern_wallet_message, Constants.URL_IVY_WALLET_REPO)
+                )
                 type = "text/plain"
             },
             null
@@ -392,12 +449,8 @@ class RootActivity : AppCompatActivity(), RootScreen {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appId")))
         } catch (e: ActivityNotFoundException) {
-            startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("https://play.google.com/store/apps/details?id=$appId")
-                )
-            )
+            // No Play Store: fall back to the web page (safe, never crashes).
+            openUrlInBrowser("https://play.google.com/store/apps/details?id=$appId")
         }
     }
 

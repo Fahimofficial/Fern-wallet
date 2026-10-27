@@ -107,7 +107,8 @@ fun BoxWithConstraintsScope.AmountModal(
                     .testTag("btn_calculator")
                     .padding(all = 4.dp),
                 icon = R.drawable.ic_custom_calculator_m,
-                tint = UI.colors.pureInverse
+                tint = UI.colors.pureInverse,
+                contentDescription = stringResource(R.string.calculator)
             )
 
             Spacer(Modifier.width(16.dp))
@@ -421,7 +422,8 @@ fun AmountKeyboard(
                 .padding(all = 24.dp)
                 .testTag("key_del"),
             icon = R.drawable.ic_backspace,
-            tint = Red
+            tint = Red,
+            contentDescription = stringResource(R.string.cd_backspace)
         )
 
         FourthRowExtra?.invoke(this)

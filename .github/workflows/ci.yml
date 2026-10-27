@@ -1,0 +1,123 @@
+name: CI
+
+# Runs on every pull request and on pushes to main.
+# Untrusted PR code only ever gets a read-only token and no secrets.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '17' # matches `jvm-target` in gradle/libs.versions.toml
+
+jobs:
+  wrapper-validation:
+    name: Gradle wrapper validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: gradle/actions/wrapper-validation@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+
+  build:
+    name: Build debug APK
+    needs: wrapper-validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+
+      - name: Assemble debug
+        run: ./gradlew :app:assembleDebug
+
+      - name: Verify package identity
+        run: |
+          AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          BADGING=$("$AAPT2" dump badging app/build/outputs/apk/debug/app-debug.apk)
+          echo "$BADGING" | grep -E "^package|application-label:"
+          echo "$BADGING" | grep -q "package: name='com.fernwallet.app.debug'" \
+            || { echo "::error::Unexpected applicationId"; exit 1; }
+          echo "$BADGING" | grep -q "application-label:'Fern Wallet Debug'" \
+            || { echo "::error::Unexpected app label"; exit 1; }
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: FernWallet-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+  unit-tests:
+    name: Unit & screenshot tests
+    needs: wrapper-validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --continue
+
+      - name: Paparazzi screenshot verification
+        run: ./gradlew verifyPaparazziDebug
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/paparazzi/failures/
+          retention-days: 7
+
+  static-analysis:
+    name: Detekt & Android lint
+    needs: wrapper-validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+
+      - name: Detekt (static analysis + ktlint formatting rules)
+        run: ./gradlew detekt
+
+      - name: Android lint (release)
+        run: ./gradlew lintRelease
+
+      - name: Fail on lint errors
+        run: |
+          if grep -qE 'severity="(Error|Fatal)"' build/reports/lint/lint.xml; then
+            echo "::error::Android lint reported errors. See the lint-report artifact."
+            grep -B1 -A4 -E 'severity="(Error|Fatal)"' build/reports/lint/lint.xml | grep -E 'id=|message=|file=' || true
+            exit 1
+          fi
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: static-analysis-reports
+          path: |
+            build/reports/lint/
+            build/reports/detekt/
+          retention-days: 7
