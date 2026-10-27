@@ -8,7 +8,8 @@ Release notes for published builds are generated on the
 First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 
 ### Identity
-- Renamed to **Fern Wallet** with a new fern icon (adaptive + monochrome) and brand color.
+- Renamed to **Fern Wallet** with the wallet-and-leaf logo, a GitHub wordmark, and four selectable
+  app icons (Settings → App icon: Fern, Mono, Graphite, Midnight) with Material You themed-icon support.
 - New application ID `com.fernwallet.app`; installs alongside Ivy Wallet (see `docs/Package-Identity.md`).
 - Project links (GitHub, issues, releases, contributors, privacy, license) point to this repository.
   Ivy Wallet is credited under **Settings → Attributions**.

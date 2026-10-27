@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fern Wallet logo (mono, with background). Generated from the brand artwork; do not edit by hand. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:fillColor="#000000" android:pathData="M0,0h108v108h-108z" />
+    <group android:scaleX="0.099" android:scaleY="0.099" android:translateX="1.2" android:translateY="5.4">
+        <path android:fillColor="#FFFFFF" android:pathData="M240,292L700,140C752,124 790,160 790,215L790,352L240,352Z" />
+        <path android:fillColor="#000000" android:pathData="M268,292L790,292L790,352L268,352C251,352 238,339 238,322C238,305 251,292 268,292Z" />
+        <path android:fillColor="#FFFFFF" android:pathData="M244,352L780,352C819.8,352 852,384.2 852,424L852,770C852,809.8 819.8,842 780,842L244,842C204.2,842 172,809.8 172,770L172,424C172,384.2 204.2,352 244,352Z" />
+        <path android:fillColor="#000000" android:pathData="M295,835C290,640 390,490 545,452C612,436 655,415 683,380C675,470 625,545 500,566C392,586 330,645 303,760Z" />
+        <path android:fillColor="#000000" android:pathData="M300,832C330,700 420,612 605,570C575,690 470,792 300,836Z" />
+        <path android:fillColor="#000000" android:strokeColor="#FFFFFF" android:strokeWidth="6" android:pathData="M748,495L847,495C873.5,495 895,516.5 895,543L895,640C895,666.5 873.5,688 847,688L748,688C721.5,688 700,666.5 700,640L700,543C700,516.5 721.5,495 748,495Z" />
+        <path android:fillColor="#FFFFFF" android:pathData="M841,591C841,615.3 821.3,635 797,635C772.7,635 753,615.3 753,591C753,566.7 772.7,547 797,547C821.3,547 841,566.7 841,591Z" />
+    </group>
+</vector>

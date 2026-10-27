@@ -1,8 +1,9 @@
 <p align="center">
-  <img src="docs/screenshots/icon.png" width="96" alt="Fern Wallet icon" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/branding/wordmark-dark.png" />
+    <img src="docs/branding/wordmark-light.png" width="420" alt="Fern Wallet" />
+  </picture>
 </p>
-
-<h1 align="center">Fern Wallet</h1>
 
 <p align="center">
   A free, open-source money manager for Android: accounts, transactions, budgets, planned payments, loans and reports.
@@ -48,7 +49,7 @@ contributors, which is no longer maintained upstream. Fern Wallet continues deve
 - Backup/restore to a ZIP file, CSV import from several apps
 - Home-screen widgets, app shortcuts and a Quick Settings tile
 - App lock (biometric / device credential), hide balance/income
-- Light, dark and AMOLED-black themes
+- Light, dark and AMOLED-black themes, and four app icons (Fern, Mono, Graphite, Midnight)
 
 ## Download
 

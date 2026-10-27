@@ -6,6 +6,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -43,6 +44,7 @@ import com.ivy.design.api.IvyDesign
 import com.ivy.design.api.IvyUI
 import com.ivy.design.system.IvyMaterial3Theme
 import com.ivy.domain.RootScreen
+import com.ivy.domain.appicon.AppIcon
 import com.ivy.home.customerjourney.CustomerJourneyCardsProvider
 import com.ivy.legacy.Constants
 import com.ivy.legacy.IvyWalletCtx
@@ -509,6 +511,36 @@ class RootActivity : AppCompatActivity(), RootScreen {
                 openGooglePlayAppPage(packageName)
             }
         }
+    }
+
+    override val currentAppIcon: AppIcon
+        get() = AppIcon.entries.firstOrNull { isAppIconEnabled(it) } ?: AppIcon.Default
+
+    override fun setAppIcon(icon: AppIcon) {
+        if (icon == currentAppIcon) return
+        // Enable the new launcher entry before disabling the others so there is never
+        // a moment without a launcher icon.
+        setAppIconEnabled(icon, enabled = true)
+        AppIcon.entries.filter { it != icon }.forEach { setAppIconEnabled(it, enabled = false) }
+    }
+
+    private fun isAppIconEnabled(icon: AppIcon): Boolean =
+        when (packageManager.getComponentEnabledSetting(ComponentName(this, icon.aliasClassName))) {
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED -> true
+            PackageManager.COMPONENT_ENABLED_STATE_DEFAULT -> icon == AppIcon.Default
+            else -> false
+        }
+
+    private fun setAppIconEnabled(icon: AppIcon, enabled: Boolean) {
+        packageManager.setComponentEnabledSetting(
+            ComponentName(this, icon.aliasClassName),
+            if (enabled) {
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+            } else {
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+            },
+            PackageManager.DONT_KILL_APP
+        )
     }
 
     override fun <T> pinWidget(widget: Class<T>) {

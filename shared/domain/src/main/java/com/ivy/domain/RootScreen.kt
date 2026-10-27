@@ -1,6 +1,7 @@
 package com.ivy.domain
 
 import android.net.Uri
+import com.ivy.domain.appicon.AppIcon
 
 interface RootScreen {
     /**
@@ -43,4 +44,13 @@ interface RootScreen {
     fun openGooglePlayAppPage(appId: String)
 
     fun <T> pinWidget(widget: Class<T>)
+
+    /** The launcher icon that is currently enabled. */
+    val currentAppIcon: AppIcon
+
+    /**
+     * Switches the launcher icon. Some launchers take a few seconds to refresh,
+     * and may remove the old icon from the home screen.
+     */
+    fun setAppIcon(icon: AppIcon)
 }

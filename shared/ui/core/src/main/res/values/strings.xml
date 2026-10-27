@@ -506,6 +506,13 @@
     <string name="cd_previous_month">Previous month</string>
     <string name="cd_next_month">Next month</string>
     <string name="cd_refresh_exchange_rate">Refresh exchange rate</string>
+    <!-- App icon -->
+    <string name="app_icon">App icon</string>
+    <string name="app_icon_description">Your launcher may take a few seconds to show the new icon.</string>
+    <string name="app_icon_default">Fern</string>
+    <string name="app_icon_mono">Mono</string>
+    <string name="app_icon_graphite">Graphite</string>
+    <string name="app_icon_midnight">Midnight</string>
     <!-- Support -->
     <string name="support_the_developer">Support the developer</string>
     <string name="support_the_developer_description">Fern Wallet is free and has no ads or trackers. It is maintained by %1$s, who also builds the %2$s media player. The options below are %2$s\'s official support channels, so any support goes directly to the developer.</string>
