@@ -1,27 +1,18 @@
 package com.ivy.legacy
 
+import com.ivy.base.links.FernLinks
+
 object Constants {
-    const val URL_TC =
-        "https://github.com/ILIYANGERMANOV/privacy-policies/blob/master/ivy-wallet-tc.md"
-    const val URL_PRIVACY_POLICY =
-        "https://github.com/ILIYANGERMANOV/privacy-policies/blob/master/ivy-wallet-privacy-policy.md"
+    /**
+     * Fern Wallet is distributed under the GPL-3.0 license; there are no separate
+     * terms of service. (Ivy Wallet's own T&C/privacy documents no longer apply.)
+     */
+    const val URL_TC = FernLinks.LICENSE
+    const val URL_PRIVACY_POLICY = FernLinks.PRIVACY_POLICY
 
-    const val URL_IVY_WALLET_REPO = "https://github.com/Ivy-Apps/ivy-wallet"
+    const val URL_IVY_WALLET_REPO = FernLinks.REPOSITORY
 
-    const val URL_GITHUB_NEW_ISSUE = "https://github.com/Ivy-Apps/ivy-wallet/issues/new/choose"
-
-    const val URL_HELP_CENTER = "https://t.me/+ETavgioAvWg4NThk"
-
-    const val URL_IVY_TELEGRAM_INVITE = "https://t.me/+ETavgioAvWg4NThk"
-
-    const val URL_IVY_WALLET_GOOGLE_PLAY =
-        "https://play.google.com/store/apps/details?id=com.ivy.wallet"
+    const val URL_GITHUB_NEW_ISSUE = FernLinks.NEW_ISSUE
 
     const val CATEGORY_UNSPECIFIED_NAME = "Unspecified"
-
-    const val URL_IVY_CONTRIBUTORS =
-        "https://github.com/Ivy-Apps/ivy-wallet#contributors-wall"
-
-    const val URL_GITHUB_SPONSORS =
-        "https://github.com/sponsors/Ivy-Apps"
 }

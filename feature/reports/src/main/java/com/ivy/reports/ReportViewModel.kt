@@ -529,7 +529,7 @@ class ReportViewModel @Inject constructor(
         if (!filter.validate()) return
 
         ivyContext.createNewFile(
-            "IvyWalletReport-${
+            "FernWalletReport-${
                 timeNowUTC().getISOFormattedDateTime()
             }.csv"
         ) { fileUri ->

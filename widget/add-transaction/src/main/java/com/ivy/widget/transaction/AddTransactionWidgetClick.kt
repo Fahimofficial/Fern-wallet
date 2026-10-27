@@ -14,9 +14,9 @@ class AddTransactionWidgetClick @Inject constructor(
     private val appStarter: AppStarter
 ) {
     companion object {
-        const val ACTION_ADD_INCOME = "com.ivy.wallet.ACTION_ADD_INCOME"
-        const val ACTION_ADD_EXPENSE = "com.ivy.wallet.ACTION_ADD_EXPENSE"
-        const val ACTION_ADD_TRANSFER = "com.ivy.wallet.ACTION_ADD_TRANSFER"
+        const val ACTION_ADD_INCOME = "com.fernwallet.app.ACTION_ADD_INCOME"
+        const val ACTION_ADD_EXPENSE = "com.fernwallet.app.ACTION_ADD_EXPENSE"
+        const val ACTION_ADD_TRANSFER = "com.fernwallet.app.ACTION_ADD_TRANSFER"
     }
 
     // ============================= <HANDLE> =======================================================

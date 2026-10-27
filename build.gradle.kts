@@ -34,8 +34,8 @@ subprojects {
 
 wrapperUpgrade {
     gradle {
-        create("ivyWallet") {
-            repo.set("Ivy-Apps/ivy-wallet")
+        create("fernWallet") {
+            repo.set("Fahimofficial/Fern-wallet")
             baseBranch.set("main")
         }
     }
