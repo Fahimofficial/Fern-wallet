@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ivy.base.legacy.Theme
+import com.ivy.base.links.SupportDestinations
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
 import com.ivy.design.l1_buildingBlocks.IconScale
@@ -58,14 +58,10 @@ import com.ivy.navigation.navigation
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.wallet.domain.data.IvyCurrency
-import com.ivy.wallet.ui.theme.Blue
 import com.ivy.wallet.ui.theme.Gradient
 import com.ivy.wallet.ui.theme.GradientGreen
-import com.ivy.wallet.ui.theme.GradientIvy
 import com.ivy.wallet.ui.theme.Gray
-import com.ivy.wallet.ui.theme.MediumBlack
 import com.ivy.wallet.ui.theme.Red
-import com.ivy.wallet.ui.theme.Red3
 import com.ivy.wallet.ui.theme.White
 import com.ivy.wallet.ui.theme.components.IvySwitch
 import com.ivy.wallet.ui.theme.components.IvyToolbar
@@ -404,51 +400,28 @@ private fun BoxWithConstraintsScope.UI(
 //        }
 
         item {
-            SettingsSectionDivider(text = stringResource(R.string.other))
+            SettingsSectionDivider(text = stringResource(R.string.about_fern_wallet))
 
             Spacer(Modifier.height(16.dp))
 
             val rootScreen = rootScreen()
-            SettingsPrimaryButton(
-                icon = R.drawable.ic_custom_star_m,
-                text = stringResource(R.string.rate_us_on_google_play),
-                backgroundGradient = GradientIvy
-            ) {
-                rootScreen.reviewIvyWallet(dismissReviewCard = false)
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            SettingsPrimaryButton(
-                icon = R.drawable.ic_custom_family_m,
-                text = stringResource(R.string.share_ivy_wallet),
-                backgroundGradient = Gradient.solid(Red3)
-            ) {
-                rootScreen.shareIvyWallet()
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            SettingsPrimaryButton(
+            SettingsDefaultButton(
                 icon = R.drawable.github_logo,
                 iconPadding = 10.dp,
                 text = stringResource(R.string.ivy_wallet_is_opensource),
-                backgroundGradient = Gradient.solid(MediumBlack)
+                description = stringResource(R.string.ivy_wallet_is_opensource_description),
             ) {
                 rootScreen.openUrlInBrowser(url = Constants.URL_IVY_WALLET_REPO)
             }
-        }
-
-        item {
-            SettingsSectionDivider(text = stringResource(R.string.product))
 
             Spacer(Modifier.height(12.dp))
 
-            IvyTelegram()
-
-            Spacer(Modifier.height(16.dp))
-
-            HelpCenter()
+            SettingsDefaultButton(
+                icon = R.drawable.ic_custom_family_m,
+                text = stringResource(R.string.share_ivy_wallet),
+            ) {
+                rootScreen.shareIvyWallet()
+            }
 
             Spacer(Modifier.height(12.dp))
 
@@ -460,14 +433,9 @@ private fun BoxWithConstraintsScope.UI(
 
             Spacer(Modifier.height(12.dp))
 
-            val rootActivity = rootScreen()
             RequestFeature {
-                rootActivity.openUrlInBrowser(Constants.URL_GITHUB_NEW_ISSUE)
+                rootScreen.openUrlInBrowser(Constants.URL_GITHUB_NEW_ISSUE)
             }
-
-            Spacer(Modifier.height(12.dp))
-
-            ContactSupport()
 
             Spacer(Modifier.height(12.dp))
 
@@ -480,6 +448,22 @@ private fun BoxWithConstraintsScope.UI(
             Spacer(Modifier.height(12.dp))
 
             TCAndPrivacyPolicy()
+        }
+
+        item {
+            val rootScreen = rootScreen()
+            SupportSection(
+                actions = SupportActions(
+                    onOpenUrl = { url -> rootScreen.openUrlInBrowser(url) },
+                    onPayViaUpi = { rootScreen.openUpiPayment(SupportDestinations.upiPaymentUri()) },
+                    onCopyUpiId = {
+                        rootScreen.copyToClipboard(
+                            label = SupportDestinations.UPI_ID,
+                            text = SupportDestinations.UPI_ID,
+                        )
+                    },
+                )
+            )
         }
 
         item {
@@ -649,38 +633,14 @@ private fun CustomFeatures(
 }
 
 @Composable
-private fun IvyTelegram() {
-    val rootActivity = rootScreen()
-    SettingsPrimaryButton(
-        icon = R.drawable.ic_telegram_24dp,
-        text = stringResource(R.string.ivy_telegram),
-        backgroundGradient = Gradient.solid(Blue),
-        iconPadding = 10.dp
-    ) {
-        rootActivity.openUrlInBrowser(Constants.URL_IVY_TELEGRAM_INVITE)
-    }
-}
-
-@Composable
-private fun HelpCenter() {
-    val uriHandler = LocalUriHandler.current
-    SettingsDefaultButton(
-        icon = R.drawable.ic_custom_education_m,
-        text = stringResource(R.string.help_center),
-    ) {
-        uriHandler.openUri(Constants.URL_HELP_CENTER)
-    }
-}
-
-@Composable
 private fun ReportBug() {
-    val uriHandler = LocalUriHandler.current
+    val rootScreen = rootScreen()
     SettingsDefaultButton(
         icon = R.drawable.ic_vue_dev_arrow,
         text = stringResource(R.string.report_bug),
         iconPadding = 10.dp,
     ) {
-        uriHandler.openUri(Constants.URL_GITHUB_NEW_ISSUE)
+        rootScreen.openUrlInBrowser(Constants.URL_GITHUB_NEW_ISSUE)
     }
 }
 
@@ -693,17 +653,6 @@ private fun RequestFeature(
         text = stringResource(R.string.request_a_feature),
     ) {
         onClick()
-    }
-}
-
-@Composable
-private fun ContactSupport() {
-    val rootActivity = rootScreen()
-    SettingsDefaultButton(
-        icon = R.drawable.ic_support,
-        text = stringResource(R.string.contact_support),
-    ) {
-        rootActivity.openUrlInBrowser(Constants.URL_IVY_TELEGRAM_INVITE)
     }
 }
 
@@ -915,7 +864,7 @@ private fun TCAndPrivacyPolicy() {
     ) {
         Spacer(Modifier.width(16.dp))
 
-        val uriHandler = LocalUriHandler.current
+        val rootScreen = rootScreen()
 
         Text(
             modifier = Modifier
@@ -923,7 +872,7 @@ private fun TCAndPrivacyPolicy() {
                 .clip(UI.shapes.rFull)
                 .border(2.dp, UI.colors.medium, UI.shapes.rFull)
                 .clickable {
-                    uriHandler.openUri(Constants.URL_TC)
+                    rootScreen.openUrlInBrowser(Constants.URL_TC)
                 }
                 .padding(vertical = 14.dp),
             text = stringResource(R.string.terms_conditions),
@@ -942,7 +891,7 @@ private fun TCAndPrivacyPolicy() {
                 .clip(UI.shapes.rFull)
                 .border(2.dp, UI.colors.medium, UI.shapes.rFull)
                 .clickable {
-                    uriHandler.openUri(Constants.URL_PRIVACY_POLICY)
+                    rootScreen.openUrlInBrowser(Constants.URL_PRIVACY_POLICY)
                 }
                 .padding(vertical = 14.dp),
             text = stringResource(R.string.privacy_policy),
@@ -1132,7 +1081,7 @@ private fun CurrencyButton(
 }
 
 @Composable
-private fun SettingsSectionDivider(
+internal fun SettingsSectionDivider(
     text: String,
     color: Color = Gray
 ) {
@@ -1151,7 +1100,7 @@ private fun SettingsSectionDivider(
 }
 
 @Composable
-private fun SettingsDefaultButton(
+internal fun SettingsDefaultButton(
     @DrawableRes icon: Int,
     text: String,
     iconPadding: Dp = 0.dp,

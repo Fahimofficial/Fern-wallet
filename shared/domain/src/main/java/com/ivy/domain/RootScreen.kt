@@ -22,7 +22,19 @@ interface RootScreen {
 
     fun shareIvyWallet()
 
+    /**
+     * Opens an http(s) URL in an external app. Never throws: if no app can handle it,
+     * the user is told and the URL is copied to the clipboard instead.
+     */
     fun openUrlInBrowser(url: String)
+
+    /**
+     * Opens a `upi://pay` link in the user's UPI app as an explicit user action.
+     * If no UPI app is installed, the payee's UPI ID is copied and the user is informed.
+     */
+    fun openUpiPayment(upiUri: String)
+
+    fun copyToClipboard(label: String, text: String)
 
     fun shareCSVFile(fileUri: Uri)
 
