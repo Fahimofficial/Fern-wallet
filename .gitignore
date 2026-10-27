@@ -107,3 +107,10 @@ node_modules/*
 /.idea/AndroidProjectSystem.xml
 /.idea/runConfigurations.xml
 .idea
+
+# Release signing material & store credentials (never commit)
+sign.jks
+*.keystore
+release-keystore.*
+google-play-console-user.json
+play_config.json*

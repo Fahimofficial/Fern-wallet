@@ -10,7 +10,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "IvyWallet"
+rootProject.name = "FernWallet"
 include(":app")
 include(":ci-actions:base")
 include(":ci-actions:compose-stability")
@@ -34,8 +34,6 @@ include(":feature:main")
 include(":feature:onboarding")
 include(":feature:piechart")
 include(":feature:planned-payments")
-include(":feature:poll:impl")
-include(":feature:poll:public")
 include(":feature:releases")
 include(":feature:reports")
 include(":feature:search")

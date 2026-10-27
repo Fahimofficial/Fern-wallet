@@ -3,26 +3,11 @@ package com.ivy.base.legacy
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
 import android.provider.OpenableColumns
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
-
-@Deprecated("useless")
-fun saveFile(
-    context: Context,
-    directoryType: String,
-    fileName: String,
-    content: String
-) {
-    val dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        ?: return
-    val newFile = File("$dirPath/$fileName")
-    newFile.createNewFile()
-    newFile.writeText(content)
-}
 
 fun writeToFile(context: Context, uri: Uri, content: String) {
     try {
