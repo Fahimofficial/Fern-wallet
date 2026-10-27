@@ -24,7 +24,7 @@ import com.ivy.legacy.utils.format
 import com.ivy.legacy.utils.formatLocal
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Gray
-import com.ivy.wallet.ui.theme.Green
+import com.ivy.wallet.ui.theme.incomeTextColor
 import java.time.LocalDate
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
@@ -87,7 +87,7 @@ fun HistoryDateDivider(
             text = "${cashflow.format(baseCurrency)} $baseCurrency",
             style = UI.typo.nB2.style(
                 fontWeight = FontWeight.Bold,
-                color = if (cashflow > 0) Green else Gray
+                color = if (cashflow > 0) incomeTextColor() else Gray
             )
         )
 

@@ -56,7 +56,7 @@ import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Gradient
 import com.ivy.wallet.ui.theme.GradientGreen
 import com.ivy.wallet.ui.theme.GradientIvy
-import com.ivy.wallet.ui.theme.Green
+import com.ivy.wallet.ui.theme.GradientTransfer
 import com.ivy.wallet.ui.theme.Ivy
 import com.ivy.wallet.ui.theme.White
 import com.ivy.wallet.ui.theme.components.IvyCircleButton
@@ -141,7 +141,7 @@ fun BoxWithConstraintsScope.BottomBar(
             icon = R.drawable.ic_accounts,
             name = stringResource(R.string.accounts),
             selected = tab == MainTab.ACCOUNTS,
-            selectedColor = Green
+            selectedColor = Ivy
         ) {
             selectTab(MainTab.ACCOUNTS)
         }
@@ -244,8 +244,9 @@ fun BoxWithConstraintsScope.BottomBar(
                 if (!expanded) GradientIvy else Gradient.solid(UI.colors.gray)
             }
 
+            // One primary-action color across tabs (was purple on Home, green on Accounts).
             MainTab.ACCOUNTS -> {
-                GradientGreen
+                GradientIvy
             }
         },
         hasShadow = !expanded,
@@ -555,7 +556,7 @@ private fun AddTransferButton(
             .size(FAB_BUTTON_SIZE)
             .zIndex(200f),
         icon = R.drawable.ic_transfer,
-        backgroundGradient = GradientIvy,
+        backgroundGradient = GradientTransfer,
         tint = White,
         onClick = onAddTransfer
     )

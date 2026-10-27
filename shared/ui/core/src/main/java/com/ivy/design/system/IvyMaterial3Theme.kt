@@ -19,11 +19,11 @@ fun IvyMaterial3Theme(
 }
 
 private fun ivyLightColorScheme(): ColorScheme = ColorScheme(
-    primary = IvyColors.Purple.primary,
+    primary = IvyColors.Fern.primary,
     onPrimary = IvyColors.White,
-    primaryContainer = IvyColors.Purple.light,
-    onPrimaryContainer = IvyColors.White,
-    inversePrimary = IvyColors.Purple.dark,
+    primaryContainer = IvyColors.Fern.extraLight,
+    onPrimaryContainer = IvyColors.Fern.extraDark,
+    inversePrimary = IvyColors.Fern.light,
     secondary = IvyColors.Green.primary,
     onSecondary = IvyColors.White,
     secondaryContainer = IvyColors.Green.light,
@@ -54,11 +54,11 @@ private fun ivyLightColorScheme(): ColorScheme = ColorScheme(
 )
 
 private fun ivyDarkColorScheme(isTrueBlack: Boolean): ColorScheme = ColorScheme(
-    primary = IvyColors.Purple.primary,
-    onPrimary = IvyColors.White,
-    primaryContainer = IvyColors.Purple.light,
-    onPrimaryContainer = IvyColors.White,
-    inversePrimary = IvyColors.Purple.dark,
+    primary = IvyColors.Fern.light,
+    onPrimary = IvyColors.Fern.extraDark,
+    primaryContainer = IvyColors.Fern.dark,
+    onPrimaryContainer = IvyColors.Fern.extraLight,
+    inversePrimary = IvyColors.Fern.primary,
     secondary = IvyColors.Green.primary,
     onSecondary = IvyColors.White,
     secondaryContainer = IvyColors.Green.light,

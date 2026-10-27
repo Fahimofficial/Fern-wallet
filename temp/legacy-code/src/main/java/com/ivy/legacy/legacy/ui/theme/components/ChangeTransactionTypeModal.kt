@@ -32,7 +32,7 @@ import com.ivy.legacy.IvyWalletPreview
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Gradient
 import com.ivy.wallet.ui.theme.GradientGreen
-import com.ivy.wallet.ui.theme.GradientIvy
+import com.ivy.wallet.ui.theme.GradientTransfer
 import com.ivy.wallet.ui.theme.White
 import com.ivy.wallet.ui.theme.modal.IvyModal
 import com.ivy.wallet.ui.theme.modal.ModalSet
@@ -111,7 +111,7 @@ fun BoxWithConstraintsScope.ChangeTransactionTypeModal(
             TransactionTypeButton(
                 transactionType = TransactionType.TRANSFER,
                 selected = transactionType == TransactionType.TRANSFER,
-                selectedGradient = GradientIvy,
+                selectedGradient = GradientTransfer,
                 textSelectedColor = White
             ) {
                 transactionType = TransactionType.TRANSFER

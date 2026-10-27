@@ -54,6 +54,7 @@ import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.ui.rememberScrollPositionListState
 import com.ivy.wallet.domain.data.IvyCurrency
+import com.ivy.wallet.domain.data.TransactionHistoryDateDivider
 import com.ivy.wallet.domain.pure.data.IncomeExpensePair
 import com.ivy.wallet.ui.theme.modal.BufferModal
 import com.ivy.wallet.ui.theme.modal.BufferModalData
@@ -352,7 +353,6 @@ fun HomeLazyColumn(
                 onOpenMoreMenu = onOpenMoreMenu,
                 onBalanceClick = onBalanceClick,
                 onHiddenBalanceClick = onHiddenBalanceClick,
-                percentExpanded = 1f,
                 hideIncome = hideIncome,
                 onHiddenIncomeClick = onHiddenIncomeClick
             )
@@ -398,26 +398,66 @@ fun HomeLazyColumn(
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Preview
+@Suppress("MagicNumber")
 @Composable
 private fun BoxWithConstraintsScope.PreviewHomeTab(isDark: Boolean = false) {
+    val wallet = com.ivy.legacy.datamodel.Account(
+        name = "Wallet",
+        color = 0xFFC04DFF.toInt(),
+        currency = "INR",
+        id = java.util.UUID(1L, 1L),
+    )
+    val bank = com.ivy.legacy.datamodel.Account(
+        name = "Bank",
+        color = 0xFFE53935.toInt(),
+        currency = "INR",
+        id = java.util.UUID(1L, 2L),
+    )
+    val day1 = java.time.LocalDate.of(2023, 1, 26)
+    val day2 = java.time.LocalDate.of(2023, 1, 25)
+    fun trn(
+        account: com.ivy.legacy.datamodel.Account,
+        type: com.ivy.base.model.TransactionType,
+        amount: Long,
+        date: java.time.LocalDate,
+        idx: Long,
+        title: String? = null,
+    ) =
+        Transaction(
+            accountId = account.id,
+            type = type,
+            amount = BigDecimal.valueOf(amount),
+            title = title,
+            dateTime = date.atTime(12, 0).toInstant(java.time.ZoneOffset.UTC),
+            id = java.util.UUID(2L, idx),
+        )
     IvyPreview(isDark) {
         HomeUi(
             uiState = HomeState(
                 theme = Theme.AUTO,
-                name = "",
+                name = "Alex",
                 baseData = AppBaseData(
-                    baseCurrency = "",
-                    accounts = persistentListOf(),
+                    baseCurrency = "INR",
+                    accounts = persistentListOf(wallet, bank),
                     categories = persistentListOf()
                 ),
-                balance = BigDecimal.ZERO,
+                balance = BigDecimal("114434.33"),
                 buffer = BufferInfo(
                     amount = BigDecimal.ZERO,
                     bufferDiff = BigDecimal.ZERO,
                 ),
                 customerJourneyCards = persistentListOf(),
-                history = persistentListOf(),
-                stats = IncomeExpensePair.zero(),
+                history = persistentListOf(
+                    TransactionHistoryDateDivider(day1, income = 0.0, expenses = 220.0),
+                    trn(bank, com.ivy.base.model.TransactionType.EXPENSE, 110, day1, 1, title = "Groceries"),
+                    trn(bank, com.ivy.base.model.TransactionType.EXPENSE, 110, day1, 2),
+                    TransactionHistoryDateDivider(day2, income = 780.0, expenses = 20.0),
+                    trn(wallet, com.ivy.base.model.TransactionType.INCOME, 780, day2, 3, title = "Salary"),
+                ),
+                stats = IncomeExpensePair(
+                    income = BigDecimal("6281.25"),
+                    expense = BigDecimal("3600.71"),
+                ),
                 upcoming = LegacyDueSection(
                     trns = persistentListOf(),
                     stats = IncomeExpensePair.zero(),
@@ -431,8 +471,8 @@ private fun BoxWithConstraintsScope.PreviewHomeTab(isDark: Boolean = false) {
                 period = TimePeriod(month = Month.monthsList().first(), year = 2023),
                 hideBalance = false,
                 hideIncome = false,
-                expanded = false,
-                shouldShowAccountSpecificColorInTransactions = false
+                expanded = true,
+                shouldShowAccountSpecificColorInTransactions = true
             ),
             onEvent = {}
         )
