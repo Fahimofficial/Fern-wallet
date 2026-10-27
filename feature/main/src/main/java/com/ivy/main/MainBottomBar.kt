@@ -4,9 +4,9 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.ivy.design.l0_system.UI
@@ -622,7 +623,8 @@ private fun RowScope.Tab(
         modifier = Modifier
             .weight(1f)
             .clip(UI.shapes.rFull)
-            .clickable(onClick = onClick)
+            // Announced as "<name>, Tab, Selected/Not selected"; descendants are merged.
+            .selectable(selected = selected, role = Role.Tab, onClick = onClick)
             .padding(top = 12.dp, bottom = 16.dp)
             .testTag(name.lowercase()),
         horizontalArrangement = Arrangement.Center,
@@ -630,7 +632,9 @@ private fun RowScope.Tab(
     ) {
         IvyIcon(
             icon = icon,
-            tint = if (selected) selectedColor else UI.colors.pureInverse
+            tint = if (selected) selectedColor else UI.colors.pureInverse,
+            // The label text is only visible when selected; otherwise the icon carries the name.
+            contentDescription = if (selected) null else name
         )
 
         if (selected) {

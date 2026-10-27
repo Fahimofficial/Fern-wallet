@@ -501,6 +501,11 @@
     <string name="no_app_to_open_link">No app found to open this link. It was copied to your clipboard: %1$s</string>
     <string name="copied_to_clipboard">Copied: %1$s</string>
     <string name="fern_wallet_logo">Fern Wallet logo</string>
+    <!-- Accessibility labels for icon-only controls -->
+    <string name="cd_backspace">Delete last digit</string>
+    <string name="cd_previous_month">Previous month</string>
+    <string name="cd_next_month">Next month</string>
+    <string name="cd_refresh_exchange_rate">Refresh exchange rate</string>
     <!-- Support -->
     <string name="support_the_developer">Support the developer</string>
     <string name="support_the_developer_description">Fern Wallet is free and has no ads or trackers. It is maintained by %1$s, who also builds the %2$s media player. The options below are %2$s\'s official support channels, so any support goes directly to the developer.</string>

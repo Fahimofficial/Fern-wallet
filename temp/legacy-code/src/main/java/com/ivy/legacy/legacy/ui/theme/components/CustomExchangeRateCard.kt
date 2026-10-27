@@ -117,7 +117,8 @@ fun CustomExchangeRateCard(
                 .padding(end = 16.dp)
                 .clickable {
                     onRefresh()
-                }
+                },
+            contentDescription = stringResource(R.string.cd_refresh_exchange_rate)
         )
     }
 }
