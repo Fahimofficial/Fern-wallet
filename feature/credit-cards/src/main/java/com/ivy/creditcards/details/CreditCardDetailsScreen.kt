@@ -143,6 +143,7 @@ internal fun CreditCardDetailsUi(state: CardDetailsState, onEvent: (CardDetailsE
         )
     }
     if (confirmDelete) {
+        val paymentTitle = stringResource(R.string.cc_deleted_card_payment, state.name)
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text(stringResource(R.string.cc_delete_card_title)) },
@@ -158,7 +159,7 @@ internal fun CreditCardDetailsUi(state: CardDetailsState, onEvent: (CardDetailsE
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
-                    onEvent(CardDetailsEvent.Delete)
+                    onEvent(CardDetailsEvent.Delete(paymentTitle))
                 }) { Text(stringResource(R.string.cc_delete_permanently), color = Red) }
             },
             dismissButton = {

@@ -12,6 +12,7 @@ import com.ivy.base.time.TimeConverter
 import com.ivy.base.time.TimeProvider
 import com.ivy.data.db.dao.read.LoanRecordDao
 import com.ivy.data.db.dao.read.SettingsDao
+import com.ivy.data.repository.CreditCardRepository
 import com.ivy.data.repository.TransactionRepository
 import com.ivy.data.repository.mapper.TransactionMapper
 import com.ivy.frp.test.TestIdlingResource
@@ -33,6 +34,7 @@ import com.ivy.navigation.Navigation
 import com.ivy.ui.ComposeViewModel
 import com.ivy.ui.time.impl.DateTimePicker
 import com.ivy.wallet.domain.action.account.AccountsAct
+import com.ivy.wallet.domain.action.account.selectable
 import com.ivy.wallet.domain.action.loan.LoanByIdAct
 import com.ivy.wallet.domain.deprecated.logic.LoanCreator
 import com.ivy.wallet.domain.deprecated.logic.LoanRecordCreator
@@ -65,6 +67,7 @@ class LoanDetailsViewModel @Inject constructor(
     private val loanTransactionsLogic: LoanTransactionsLogic,
     private val nav: Navigation,
     private val accountsAct: AccountsAct,
+    private val creditCardRepository: CreditCardRepository,
     private val loanByIdAct: LoanByIdAct,
     private val timeConverter: TimeConverter,
     private val timeProvider: TimeProvider,
@@ -73,6 +76,7 @@ class LoanDetailsViewModel @Inject constructor(
 
     private val baseCurrency = mutableStateOf("")
     private val loan = mutableStateOf<Loan?>(null)
+    private val closedCardIds = mutableStateOf<Set<UUID>>(emptySet())
     private val displayLoanRecords =
         mutableStateOf<ImmutableList<DisplayLoanRecord>>(persistentListOf())
     private val loanTotalAmount = mutableDoubleStateOf(0.0)
@@ -103,7 +107,11 @@ class LoanDetailsViewModel @Inject constructor(
             loanTotalAmount = loanTotalAmount.doubleValue,
             amountPaid = amountPaid.doubleValue,
             loanAmountPaid = loanInterestAmountPaid.doubleValue,
-            accounts = accounts.value,
+            // Full list stays in [accounts] so existing records on a closed card still resolve.
+            accounts = accounts.value.selectable(
+                closedCardIds.value,
+                setOfNotNull(loan.value?.accountId) + displayLoanRecords.value.mapNotNull { it.loanRecord.accountId },
+            ),
             selectedLoanAccount = selectedLoanAccount.value,
             createLoanTransaction = createLoanTransaction.value,
             loanModalData = loanModalData.value,
@@ -261,6 +269,7 @@ class LoanDetailsViewModel @Inject constructor(
             }
 
             accounts.value = accountsAct(Unit)
+            closedCardIds.value = creditCardRepository.findClosedCardIds()
 
             loan.value = loanByIdAct(loanId)
 

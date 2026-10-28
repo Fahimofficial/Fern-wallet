@@ -29,6 +29,7 @@ import com.ivy.data.repository.TagRepository
 import com.ivy.data.repository.TransactionRepository
 import com.ivy.data.repository.mapper.TransactionMapper
 import com.ivy.design.l0_system.RedLight
+import com.ivy.domain.creditcard.DeleteCreditCardUseCase
 import com.ivy.domain.features.Features
 import com.ivy.frp.then
 import com.ivy.legacy.IvyWalletCtx
@@ -58,6 +59,7 @@ import com.ivy.wallet.domain.deprecated.logic.CategoryCreator
 import com.ivy.wallet.domain.deprecated.logic.PlannedPaymentsLogic
 import com.ivy.wallet.domain.deprecated.logic.WalletAccountLogic
 import com.ivy.wallet.domain.deprecated.logic.WalletCategoryLogic
+import com.ivy.wallet.domain.deprecated.logic.notification.CreditCardNotifications
 import com.ivy.wallet.domain.pure.exchange.ExchangeData
 import com.ivy.wallet.ui.theme.modal.ChoosePeriodModalData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -99,6 +101,8 @@ class TransactionsViewModel @Inject constructor(
     private val timeConverter: TimeConverter,
     private val features: Features,
     private val creditCardRepository: CreditCardRepository,
+    private val creditCardNotifications: CreditCardNotifications,
+    private val deleteCreditCardUseCase: DeleteCreditCardUseCase,
 ) : ComposeViewModel<TransactionsState, TransactionsEvent>() {
 
     private val period = mutableStateOf(ivyContext.selectedPeriod)
@@ -738,10 +742,16 @@ class TransactionsViewModel @Inject constructor(
 
     private suspend fun deleteAccount(accountId: UUID) {
         ioThread {
-            transactionRepository.deleteAllByAccountId(accountId = AccountId(accountId))
-            plannedPaymentRuleWriter.deletedByAccountId(accountId = accountId)
-            creditCardRepository.deleteByAccountId(AccountId(accountId))
-            accountRepository.deleteById(AccountId(accountId))
+            val id = AccountId(accountId)
+            if (creditCardRepository.findByAccountId(id) != null) {
+                // Keeps bill payments in the paying accounts instead of orphaning them.
+                creditCardNotifications.cancelForCard(accountId)
+                deleteCreditCardUseCase.delete(id, fallbackTitle = null)
+            } else {
+                transactionRepository.deleteAllByAccountId(accountId = id)
+                plannedPaymentRuleWriter.deletedByAccountId(accountId = accountId)
+                accountRepository.deleteById(id)
+            }
 
             nav.back()
         }

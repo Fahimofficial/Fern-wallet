@@ -99,6 +99,17 @@ data class CardOverview(
 ) {
     val latestStatement: CardStatement? get() = statements.firstOrNull()
 
+    /**
+     * The bill to show as "due": the unpaid statement with the earliest due date that hasn't
+     * passed yet (an older bill can still be pending under a long due-date rule), otherwise the
+     * latest statement.
+     */
+    val urgentStatement: CardStatement?
+        get() = statements
+            .filter { it.remainingDue.signum() > 0 && it.status != StatementStatus.CARRIED_FORWARD }
+            .minByOrNull { it.dueDate ?: LocalDate.MAX }
+            ?: latestStatement
+
     val creditBalance: BigDecimal
         get() = outstanding.negate().max(BigDecimal.ZERO)
 }

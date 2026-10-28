@@ -25,10 +25,12 @@ import com.ivy.data.repository.AccountRepository
 import com.ivy.data.repository.CreditCardRepository
 import com.ivy.data.repository.CurrencyRepository
 import com.ivy.data.repository.TransactionRepository
+import com.ivy.domain.creditcard.StatementOverrideRemapper
 import com.ivy.navigation.CreditCardDetailsScreen
 import com.ivy.navigation.EditCreditCardScreen
 import com.ivy.navigation.Navigation
 import com.ivy.ui.ComposeViewModel
+import com.ivy.wallet.domain.deprecated.logic.notification.CreditCardReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -54,6 +56,8 @@ data class EditCardState(
     val hasTransactions: Boolean,
     val today: LocalDate,
     val catalogueVerifiedOn: String,
+    /** True while the card is being written; the save button is disabled. */
+    val saving: Boolean,
 )
 
 sealed interface EditCardEvent {
@@ -78,6 +82,7 @@ class EditCreditCardViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val timeProvider: TimeProvider,
     private val navigation: Navigation,
+    private val reminderScheduler: CreditCardReminderScheduler,
 ) : ComposeViewModel<EditCardState, EditCardEvent>() {
 
     private var accountId: AccountId? = null
@@ -90,6 +95,7 @@ class EditCreditCardViewModel @Inject constructor(
     private var productQuery by mutableStateOf("")
     private var errors by mutableStateOf<Map<CardFormField, CardFormError>>(emptyMap())
     private var hasTransactions by mutableStateOf(false)
+    private var saving by mutableStateOf(false)
 
     fun start(screen: EditCreditCardScreen) {
         if (started) return
@@ -105,18 +111,25 @@ class EditCreditCardViewModel @Inject constructor(
                 val card = creditCardRepository.findByAccountId(id)
                 existingAccount = account
                 if (account != null && card != null) {
-                    hasTransactions = transactionRepository.findAllByAccountAndBetween(
-                        id,
-                        INSTANT_MIN_SAFE,
-                        INSTANT_MAX_SAFE
-                    ).isNotEmpty()
+                    // Incoming transfers (bill payments) and entered bank-statement figures are
+                    // stored in the card's currency too.
+                    hasTransactions = creditCardRepository.findStatementOverrides(id).isNotEmpty() ||
+                        transactionRepository.findAllByAccountAndBetween(id, INSTANT_MIN_SAFE, INSTANT_MAX_SAFE)
+                            .isNotEmpty() ||
+                        transactionRepository.findAllToAccountAndBetween(id, INSTANT_MIN_SAFE, INSTANT_MAX_SAFE)
+                            .isNotEmpty()
+                    // Catalogue entries can be removed in an app update. A card pointing at one
+                    // that's gone keeps its saved name as a custom entry instead of losing it.
+                    val bankKnown = card.bankId != null && catalogue.bank(card.bankId) != null
+                    val productKnown = bankKnown && card.productId != null && catalogue.product(card.productId) != null
                     form = CardForm(
-                        bankId = card.bankId,
-                        customBankName = card.customBankName.orEmpty(),
-                        useCustomBank = card.bankId == null,
-                        productId = card.productId,
-                        customProductName = if (card.productId == null) card.productName.orEmpty() else "",
-                        useCustomProduct = card.productId == null && card.productName != null,
+                        bankId = card.bankId.takeIf { bankKnown },
+                        customBankName = card.customBankName
+                            ?: card.bankId.takeIf { !bankKnown }?.let(::bankNameFromId).orEmpty(),
+                        useCustomBank = !bankKnown,
+                        productId = card.productId.takeIf { productKnown },
+                        customProductName = if (productKnown) "" else card.productName.orEmpty(),
+                        useCustomProduct = !productKnown && card.productName != null,
                         nickname = account.name.value,
                         currency = account.asset.code,
                         network = card.network,
@@ -176,6 +189,7 @@ class EditCreditCardViewModel @Inject constructor(
             hasTransactions = hasTransactions,
             today = timeProvider.localDateNow(),
             catalogueVerifiedOn = catalogue.verifiedOn,
+            saving = saving,
         )
     }
 
@@ -225,51 +239,95 @@ class EditCreditCardViewModel @Inject constructor(
         productQuery = ""
     }
 
-    private fun productName(): String? = if (form.useCustomProduct) {
-        form.customProductName
-    } else {
-        catalogue.product(form.productId)?.name
+    /**
+     * Mirrors what ProductSection shows: the typed name is used in custom mode and also when the
+     * chosen bank has no catalogue products (the screen shows the free-text field in that case).
+     */
+    private fun productName(): String? {
+        val catalogueProduct = if (form.useCustomProduct) null else catalogue.product(form.productId)
+        val bank = if (form.useCustomBank) null else catalogue.bank(form.bankId)
+        val customFieldVisible = form.useCustomProduct || form.useCustomBank ||
+            (bank != null && catalogue.productsOf(bank.id).isEmpty())
+        return catalogueProduct?.name ?: form.customProductName.takeIf { customFieldVisible }
     }
 
     private fun save() {
+        // In-flight guard: a second tap must not create a second card/account.
+        if (saving) return
+        saving = true
         viewModelScope.launch {
-            val id = accountId ?: AccountId(UUID.randomUUID())
-            val result = CardFormValidator.validate(
-                form = form.copy(
-                    nickname = form.nickname.ifBlank {
-                        productName() ?: catalogue.bank(form.bankId)?.displayName?.let { "$it Card" }
-                            ?: form.customBankName.takeIf { it.isNotBlank() }?.let { "$it Card" }.orEmpty()
-                    }
-                ),
-                accountId = id,
-                productName = productName(),
-                today = timeProvider.localDateNow(),
-            )
-            when (result) {
-                is CardFormResult.Invalid -> errors = result.errors
-                is CardFormResult.Valid -> {
-                    errors = emptyMap()
-                    val existing = existingAccount
-                    val account = Account(
-                        id = id,
-                        name = NotBlankTrimmedString.unsafe(result.nickname),
-                        // Changing the currency of a card with history would reinterpret its amounts.
-                        asset = if (existing != null && hasTransactions) existing.asset else result.currency,
-                        color = ColorInt(result.card.appearance.accountColor().toArgb()),
-                        icon = existing?.icon,
-                        includeInBalance = result.includeInBalance,
-                        orderNum = existing?.orderNum ?: (accountRepository.findMaxOrderNum() + 1),
-                        type = AccountType.CREDIT_CARD,
-                    )
-                    // Save the card details first so the account never appears without them.
-                    creditCardRepository.save(result.card)
-                    accountRepository.save(account)
-                    navigation.back()
-                    if (existing == null) navigation.navigateTo(CreditCardDetailsScreen(id.value))
-                }
+            var saved = false
+            try {
+                saved = saveCard()
+            } finally {
+                // Stay disabled after success: the screen is closing.
+                if (!saved) saving = false
             }
         }
     }
+
+    /** Returns true once the card was written. */
+    private suspend fun saveCard(): Boolean {
+        val id = accountId ?: AccountId(UUID.randomUUID())
+        val result = CardFormValidator.validate(
+            form = form.copy(
+                nickname = form.nickname.ifBlank {
+                    productName() ?: catalogue.bank(form.bankId)?.displayName?.let { "$it Card" }
+                        ?: form.customBankName.takeIf { it.isNotBlank() }?.let { "$it Card" }.orEmpty()
+                }
+            ),
+            accountId = id,
+            productName = productName(),
+            today = timeProvider.localDateNow(),
+        )
+        return when (result) {
+            is CardFormResult.Invalid -> {
+                errors = result.errors
+                false
+            }
+            is CardFormResult.Valid -> {
+                errors = emptyMap()
+                val existing = existingAccount
+                val account = Account(
+                    id = id,
+                    name = NotBlankTrimmedString.unsafe(result.nickname),
+                    // Changing the currency of a card with history would reinterpret its amounts.
+                    asset = if (existing != null && hasTransactions) existing.asset else result.currency,
+                    color = ColorInt(result.card.appearance.accountColor().toArgb()),
+                    icon = existing?.icon,
+                    includeInBalance = result.includeInBalance,
+                    orderNum = existing?.orderNum ?: (accountRepository.findMaxOrderNum() + 1),
+                    type = AccountType.CREDIT_CARD,
+                )
+                moveSavedStatements(id, result.card.statementDay)
+                // Save the card details first so the account never appears without them.
+                creditCardRepository.save(result.card)
+                accountRepository.save(account)
+                // Idempotent (KEEP); covers cards added before the app was restarted after onboarding.
+                reminderScheduler.schedule()
+                reminderScheduler.refreshNow()
+                navigation.back()
+                if (existing == null) navigation.navigateTo(CreditCardDetailsScreen(id.value))
+                true
+            }
+        }
+    }
+
+    /**
+     * Saved bank-statement values are keyed by the old schedule's closing dates; when the
+     * statement day changes they're moved to the new schedule instead of silently detaching.
+     */
+    private suspend fun moveSavedStatements(id: AccountId, newStatementDay: Int?) {
+        val oldStatementDay = creditCardRepository.findByAccountId(id)?.statementDay
+        if (newStatementDay == null || newStatementDay == oldStatementDay) return
+        val saved = creditCardRepository.findStatementOverrides(id)
+        if (saved.isEmpty()) return
+        creditCardRepository.replaceStatementOverrides(id, StatementOverrideRemapper.remap(saved, newStatementDay))
+    }
+
+    /** Readable fallback for a bank id no longer in the catalogue, e.g. "hdfc-bank" -> "Hdfc Bank". */
+    private fun bankNameFromId(id: String): String =
+        id.split('-').filter { it.isNotBlank() }.joinToString(" ") { it.replaceFirstChar(Char::uppercase) }
 
     companion object {
         private const val MAX_RESULTS = 8

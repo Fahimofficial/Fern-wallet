@@ -10,11 +10,10 @@ import com.ivy.base.legacy.Theme
 import com.ivy.data.db.dao.read.AccountDao
 import com.ivy.data.db.dao.read.SettingsDao
 import com.ivy.data.db.dao.write.WriteSettingsDao
-import com.ivy.ui.ComposeViewModel
-import com.ivy.domain.usecase.exchange.SyncExchangeRatesUseCase
-import com.ivy.legacy.LogoutLogic
 import com.ivy.data.model.Category
 import com.ivy.data.repository.CategoryRepository
+import com.ivy.domain.usecase.exchange.SyncExchangeRatesUseCase
+import com.ivy.legacy.LogoutLogic
 import com.ivy.legacy.data.model.AccountBalance
 import com.ivy.legacy.datamodel.Account
 import com.ivy.legacy.datamodel.Settings
@@ -26,6 +25,7 @@ import com.ivy.navigation.OnboardingScreen
 import com.ivy.onboarding.OnboardingDetailState
 import com.ivy.onboarding.OnboardingEvent
 import com.ivy.onboarding.OnboardingState
+import com.ivy.ui.ComposeViewModel
 import com.ivy.wallet.domain.action.account.AccountsAct
 import com.ivy.wallet.domain.data.IvyCurrency
 import com.ivy.wallet.domain.deprecated.logic.CategoryCreator
@@ -33,6 +33,7 @@ import com.ivy.wallet.domain.deprecated.logic.PreloadDataLogic
 import com.ivy.wallet.domain.deprecated.logic.WalletAccountLogic
 import com.ivy.wallet.domain.deprecated.logic.model.CreateAccountData
 import com.ivy.wallet.domain.deprecated.logic.model.CreateCategoryData
+import com.ivy.wallet.domain.deprecated.logic.notification.CreditCardReminderScheduler
 import com.ivy.wallet.domain.deprecated.logic.notification.TransactionReminderLogic
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -58,6 +59,7 @@ class OnboardingViewModel @Inject constructor(
     // Only OnboardingRouter stuff
     sharedPrefs: SharedPrefs,
     transactionReminderLogic: TransactionReminderLogic,
+    creditCardReminderScheduler: CreditCardReminderScheduler,
     preloadDataLogic: PreloadDataLogic,
     logoutLogic: LogoutLogic,
 ) : ComposeViewModel<OnboardingDetailState, OnboardingEvent>() {
@@ -98,6 +100,7 @@ class OnboardingViewModel @Inject constructor(
         categoryRepository = categoryRepository,
         preloadDataLogic = preloadDataLogic,
         transactionReminderLogic = transactionReminderLogic,
+        creditCardReminderScheduler = creditCardReminderScheduler,
         logoutLogic = logoutLogic,
         syncExchangeRatesUseCase = syncExchangeRatesUseCase,
     )

@@ -391,4 +391,27 @@ class CreditCardCalculatorTest {
         val ledger = (1..10).map { e("2026-01-0${(it % 9) + 1}", "0.10", CHARGE) }
         calc(ledger = ledger, today = "2026-01-10").outstanding shouldBeEqualComparingTo BigDecimal("1.00")
     }
+
+    @Test
+    fun `an older bill that isn't due yet keeps its own status and is the urgent one`() {
+        // Jan 15 statement due Mar 1 (45 days); by Feb 20 the Feb 15 statement has closed too.
+        val longRule = card(dueRule = DueDateRule.DaysAfterStatement(45))
+        val ledger = listOf(e("2026-01-10", "1000", CHARGE), e("2026-02-10", "500", CHARGE))
+        val result = calc(card = longRule, ledger = ledger, today = "2026-02-20")
+
+        val (feb, jan) = result.statements
+        jan.status shouldBe StatementStatus.UPCOMING
+        feb.status shouldBe StatementStatus.UPCOMING
+        result.urgentStatement?.closingDate shouldBe jan.closingDate
+    }
+
+    @Test
+    fun `an older bill past its due date is carried forward and the latest one is urgent`() {
+        val ledger = listOf(e("2026-01-10", "1000", CHARGE), e("2026-02-10", "500", CHARGE))
+        val result = calc(ledger = ledger, today = "2026-02-20")
+
+        val (feb, jan) = result.statements
+        jan.status shouldBe StatementStatus.CARRIED_FORWARD
+        result.urgentStatement shouldBe feb
+    }
 }

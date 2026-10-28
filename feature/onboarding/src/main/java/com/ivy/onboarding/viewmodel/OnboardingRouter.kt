@@ -1,13 +1,13 @@
 package com.ivy.onboarding.viewmodel
 
 import androidx.compose.runtime.MutableState
-import com.ivy.data.db.dao.read.AccountDao
-import com.ivy.domain.usecase.exchange.SyncExchangeRatesUseCase
-import com.ivy.legacy.LogoutLogic
 import com.ivy.base.legacy.SharedPrefs
+import com.ivy.data.db.dao.read.AccountDao
 import com.ivy.data.model.Category
 import com.ivy.data.model.primitive.AssetCode
 import com.ivy.data.repository.CategoryRepository
+import com.ivy.domain.usecase.exchange.SyncExchangeRatesUseCase
+import com.ivy.legacy.LogoutLogic
 import com.ivy.legacy.data.model.AccountBalance
 import com.ivy.legacy.utils.OpResult
 import com.ivy.legacy.utils.ioThread
@@ -20,6 +20,7 @@ import com.ivy.wallet.domain.data.IvyCurrency
 import com.ivy.wallet.domain.deprecated.logic.PreloadDataLogic
 import com.ivy.wallet.domain.deprecated.logic.model.CreateAccountData
 import com.ivy.wallet.domain.deprecated.logic.model.CreateCategoryData
+import com.ivy.wallet.domain.deprecated.logic.notification.CreditCardReminderScheduler
 import com.ivy.wallet.domain.deprecated.logic.notification.TransactionReminderLogic
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -39,6 +40,7 @@ class OnboardingRouter(
     private val accountDao: AccountDao,
     private val sharedPrefs: SharedPrefs,
     private val transactionReminderLogic: TransactionReminderLogic,
+    private val creditCardReminderScheduler: CreditCardReminderScheduler,
     private val preloadDataLogic: PreloadDataLogic,
     private val categoryRepository: CategoryRepository,
     private val logoutLogic: LogoutLogic,
@@ -233,6 +235,7 @@ class OnboardingRouter(
         // the rest below is not UI stuff so I don't care
         ioThread {
             transactionReminderLogic.scheduleReminder()
+            creditCardReminderScheduler.schedule()
 
             AssetCode.from(baseCurrency?.code ?: IvyCurrency.getDefault().code)
                 .onRight {

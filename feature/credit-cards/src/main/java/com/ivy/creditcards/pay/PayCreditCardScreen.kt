@@ -57,7 +57,7 @@ internal fun PayCreditCardUi(state: PayState, onEvent: (PayEvent) -> Unit) {
                     .fillMaxWidth()
                     .padding(16.dp),
                 text = stringResource(R.string.cc_record_payment),
-                enabled = !state.loading && state.sources.isNotEmpty(),
+                enabled = !state.loading && !state.saving && !state.converting && state.sources.isNotEmpty(),
                 onClick = { onEvent(PayEvent.Save(defaultTitle)) }
             )
         }

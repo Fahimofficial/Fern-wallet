@@ -91,7 +91,8 @@ object CreditCardCalculator {
             val status = when {
                 basis.signum() <= 0 -> StatementStatus.NOTHING_DUE
                 remaining.signum() == 0 -> StatementStatus.PAID
-                !isLatest -> StatementStatus.CARRIED_FORWARD
+                // With a long due-date rule an older bill can still be ahead of its due date.
+                !isLatest && (dueDate == null || today.isAfter(dueDate)) -> StatementStatus.CARRIED_FORWARD
                 dueDate != null && today.isAfter(dueDate) -> StatementStatus.OVERDUE
                 dueDate != null && today == dueDate -> StatementStatus.DUE_TODAY
                 paidSinceClosing.signum() > 0 -> StatementStatus.PARTIALLY_PAID

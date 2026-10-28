@@ -662,6 +662,7 @@
     <string name="cc_delete_card">Delete card</string>
     <string name="cc_delete_card_title">Delete this card permanently?</string>
     <string name="cc_delete_permanently">Delete permanently</string>
+    <string name="cc_deleted_card_payment">Payment to %1$s</string>
     <string name="cc_not_found">This card couldn\'t be found.</string>
     <string name="cc_amount">Amount</string>
     <string name="cc_amount_in">Amount (%1$s)</string>

@@ -23,6 +23,7 @@ class CardReminderPlannerTest {
         remindersEnabled: Boolean = true,
         daysBefore: Int = 3,
         status: CardStatus = CardStatus.ACTIVE,
+        dueRule: DueDateRule = DueDateRule.DaysAfterStatement(20),
     ) = CreditCard(
         accountId = AccountId(UUID(0, 7)),
         bankId = null,
@@ -33,7 +34,7 @@ class CardReminderPlannerTest {
         lastFour = null,
         creditLimit = BigDecimal("50000"),
         statementDay = 15,
-        dueDateRule = DueDateRule.DaysAfterStatement(20),
+        dueDateRule = dueRule,
         openingOutstanding = BigDecimal.ZERO,
         openingDate = LocalDate.of(2026, 1, 1),
         status = status,
@@ -91,13 +92,38 @@ class CardReminderPlannerTest {
         reminder("2026-02-02", ledger = paid) shouldBe null
         val c = card()
         val overview = CreditCardCalculator.overview(c, paid, emptyList(), LocalDate.of(2026, 2, 2))
-        CardReminderPlanner.shouldDismiss(c, overview) shouldBe true
+        CardReminderPlanner.dueDatesToKeep(c, overview) shouldBe emptySet()
     }
 
     @Test
     fun `no reminder when reminders are off or the card is closed`() {
         reminder("2026-02-02", card = card(remindersEnabled = false)) shouldBe null
         reminder("2026-02-02", card = card(status = CardStatus.CLOSED)) shouldBe null
+    }
+
+    @Test
+    fun `an older unpaid bill still reminds after the next statement has closed`() {
+        // Jan 15 statement due Mar 1 (45 days); the Feb 15 statement (due Apr 1) is newer.
+        val longRule = card(dueRule = DueDateRule.DaysAfterStatement(45))
+        val reminders = CardReminderPlanner.remindersFor(
+            longRule,
+            CreditCardCalculator.overview(longRule, unpaid, emptyList(), LocalDate.of(2026, 2, 27)),
+            LocalDate.of(2026, 2, 27),
+        )
+        reminders.map { it.dueDate to it.kind } shouldBe listOf(
+            LocalDate.of(2026, 3, 1) to CardReminder.Kind.BEFORE_DUE
+        )
+    }
+
+    @Test
+    fun `unpaid bills keep their notification until reminders are turned off`() {
+        val today = LocalDate.of(2026, 2, 2)
+        val on = card()
+        CardReminderPlanner.dueDatesToKeep(on, CreditCardCalculator.overview(on, unpaid, emptyList(), today)) shouldBe
+            setOf(LocalDate.of(2026, 2, 4))
+        val off = card(remindersEnabled = false)
+        CardReminderPlanner.dueDatesToKeep(off, CreditCardCalculator.overview(off, unpaid, emptyList(), today)) shouldBe
+            emptySet()
     }
 
     @Test

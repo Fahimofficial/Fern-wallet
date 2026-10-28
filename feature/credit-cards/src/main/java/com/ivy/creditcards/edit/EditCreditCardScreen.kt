@@ -93,7 +93,7 @@ internal fun EditCreditCardUi(state: EditCardState, onEvent: (EditCardEvent) -> 
                     .fillMaxWidth()
                     .padding(16.dp),
                 text = stringResource(if (state.isEdit) R.string.cc_save_changes else R.string.cc_add_card),
-                enabled = !state.loading,
+                enabled = !state.loading && !state.saving,
                 onClick = { onEvent(EditCardEvent.Save) }
             )
         }

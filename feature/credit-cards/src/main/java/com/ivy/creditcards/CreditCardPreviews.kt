@@ -255,6 +255,7 @@ fun EditCreditCardUiTest(isDark: Boolean) {
                 hasTransactions = false,
                 today = CardSamples.today,
                 catalogueVerifiedOn = "2026-10-27",
+                saving = false,
             ),
             onEvent = {}
         )
@@ -296,6 +297,7 @@ fun EditCreditCardBankSearchUiTest(isDark: Boolean) {
                 hasTransactions = false,
                 today = CardSamples.today,
                 catalogueVerifiedOn = "2026-10-27",
+                saving = false,
             ),
             onEvent = {}
         )
@@ -328,6 +330,8 @@ fun PayCreditCardUiTest(isDark: Boolean) {
                 overpayment = null,
                 errors = emptySet(),
                 today = CardSamples.today,
+                saving = false,
+                converting = false,
             ),
             onEvent = {}
         )

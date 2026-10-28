@@ -116,7 +116,7 @@ class CardUiMapper @Inject constructor(
 
     fun tile(item: CreditCardWithOverview, today: LocalDate): CreditCardTileUi {
         val overview = item.overview
-        val statement = overview.latestStatement
+        val statement = overview.urgentStatement
         return CreditCardTileUi(
             accountId = item.account.id.value,
             visual = visual(item.account.name.value, item.card),

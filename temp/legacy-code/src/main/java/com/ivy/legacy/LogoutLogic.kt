@@ -22,6 +22,7 @@ import com.ivy.legacy.utils.ioThread
 import com.ivy.navigation.MainScreen
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.OnboardingScreen
+import com.ivy.wallet.domain.deprecated.logic.notification.CreditCardNotifications
 import javax.inject.Inject
 
 @Deprecated("Migrate to an UseCase in the domain layer.")
@@ -42,6 +43,7 @@ class LogoutLogic @Inject constructor(
     private val writeLoanRecordDao: WriteLoanRecordDao,
     private val exchangeRatesRepository: ExchangeRatesRepository,
     private val creditCardRepository: CreditCardRepository,
+    private val creditCardNotifications: CreditCardNotifications,
 ) {
     suspend fun logout() {
         ioThread {
@@ -59,6 +61,7 @@ class LogoutLogic @Inject constructor(
 
     private suspend fun deleteAllData() {
         accountRepository.deleteAll()
+        creditCardNotifications.cancelAll()
         creditCardRepository.deleteAll()
         transactionRepository.deleteAll()
         categoryRepository.deleteAll()

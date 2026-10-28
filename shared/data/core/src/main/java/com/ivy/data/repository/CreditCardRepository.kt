@@ -6,11 +6,13 @@ import com.ivy.data.DataWriteEvent
 import com.ivy.data.db.dao.read.CreditCardDao
 import com.ivy.data.db.dao.write.WriteCreditCardDao
 import com.ivy.data.model.AccountId
+import com.ivy.data.model.creditcard.CardStatus
 import com.ivy.data.model.creditcard.CreditCard
 import com.ivy.data.model.creditcard.StatementOverride
 import com.ivy.data.repository.mapper.CreditCardMapper
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,6 +32,15 @@ class CreditCardRepository @Inject constructor(
     suspend fun findAll(): List<CreditCard> = withContext(dispatchersProvider.io) {
         dao.findAll().map { with(mapper) { it.toDomain() } }
     }
+
+    /**
+     * Ids of closed cards. A closed card keeps its history (and stays visible wherever balances
+     * or reports are shown) but must not be offered in pickers for new money movements.
+     */
+    suspend fun findClosedCardIds(): Set<UUID> = findAll()
+        .filter { it.status == CardStatus.CLOSED }
+        .map { it.accountId.value }
+        .toSet()
 
     suspend fun findByAccountId(accountId: AccountId): CreditCard? =
         withContext(dispatchersProvider.io) {
@@ -59,6 +70,15 @@ class CreditCardRepository @Inject constructor(
             }
         }
         dataObserver.post(DataWriteEvent.CreditCardsChanged(listOf(value.accountId)))
+    }
+
+    /** Replaces all saved statement values of a card (e.g. after its statement day changed). */
+    suspend fun replaceStatementOverrides(accountId: AccountId, values: List<StatementOverride>) {
+        withContext(dispatchersProvider.io) {
+            writeDao.deleteStatementsByAccountId(accountId.value)
+            writeDao.saveStatements(values.map { with(mapper) { it.toEntity() } })
+        }
+        dataObserver.post(DataWriteEvent.CreditCardsChanged(listOf(accountId)))
     }
 
     suspend fun deleteStatementOverride(accountId: AccountId, nominalClosingDate: LocalDate) {

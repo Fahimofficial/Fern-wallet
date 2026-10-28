@@ -10,16 +10,14 @@ import com.ivy.base.model.TransactionType
 import com.ivy.base.time.TimeProvider
 import com.ivy.creditcards.ui.CardUiMapper
 import com.ivy.creditcards.ui.CardVisualData
-import com.ivy.data.db.dao.write.WritePlannedPaymentRuleDao
 import com.ivy.data.model.AccountId
 import com.ivy.data.model.creditcard.CardStatus
-import com.ivy.data.repository.AccountRepository
 import com.ivy.data.repository.CreditCardRepository
-import com.ivy.data.repository.TransactionRepository
 import com.ivy.domain.creditcard.CardOverview
 import com.ivy.domain.creditcard.CardStatement
 import com.ivy.domain.creditcard.CreditCardOverviewUseCase
 import com.ivy.domain.creditcard.CreditCardWithOverview
+import com.ivy.domain.creditcard.DeleteCreditCardUseCase
 import com.ivy.navigation.CreditCardDetailsScreen
 import com.ivy.navigation.CreditCardStatementScreen
 import com.ivy.navigation.EditCreditCardScreen
@@ -27,6 +25,8 @@ import com.ivy.navigation.EditTransactionScreen
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.PayCreditCardScreen
 import com.ivy.ui.ComposeViewModel
+import com.ivy.wallet.domain.deprecated.logic.notification.CreditCardNotifications
+import com.ivy.wallet.domain.deprecated.logic.notification.CreditCardReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -82,22 +82,25 @@ sealed interface CardDetailsEvent {
     @Suppress("DataClassTypedIDs") // navigation takes raw UUIDs
     data class OpenTransaction(val id: UUID) : CardDetailsEvent
     data class SetStatus(val status: CardStatus) : CardDetailsEvent
-    data object Delete : CardDetailsEvent
+
+    /** [paymentTitle] names preserved bill payments that had no title of their own. */
+    data class Delete(val paymentTitle: String) : CardDetailsEvent
 }
 
 @HiltViewModel
 class CreditCardDetailsViewModel @Inject constructor(
     private val overviewUseCase: CreditCardOverviewUseCase,
     private val creditCardRepository: CreditCardRepository,
-    private val accountRepository: AccountRepository,
-    private val transactionRepository: TransactionRepository,
+    private val creditCardNotifications: CreditCardNotifications,
+    private val reminderScheduler: CreditCardReminderScheduler,
     private val rowsBuilder: CardRowsBuilder,
-    private val plannedPaymentRuleWriter: WritePlannedPaymentRuleDao,
+    private val deleteCreditCardUseCase: DeleteCreditCardUseCase,
     private val mapper: CardUiMapper,
     private val timeProvider: TimeProvider,
     private val navigation: Navigation,
 ) : ComposeViewModel<CardDetailsState, CardDetailsEvent>() {
 
+    private var deleting = false
     private var accountId: AccountId? = null
     private var loading by mutableStateOf(true)
     private var data by mutableStateOf<CreditCardWithOverview?>(null)
@@ -177,7 +180,7 @@ class CreditCardDetailsViewModel @Inject constructor(
                 EditTransactionScreen(initialTransactionId = event.id, type = TransactionType.EXPENSE)
             )
             is CardDetailsEvent.SetStatus -> setStatus(event.status)
-            CardDetailsEvent.Delete -> delete(id)
+            is CardDetailsEvent.Delete -> delete(id, event.paymentTitle)
         }
     }
 
@@ -185,17 +188,23 @@ class CreditCardDetailsViewModel @Inject constructor(
         val card = data?.card ?: return
         viewModelScope.launch {
             creditCardRepository.save(card.copy(status = status))
+            // Closing removes the card's bill notifications at once; reopening re-checks them.
+            if (status == CardStatus.CLOSED) creditCardNotifications.cancelForCard(card.accountId.value)
+            reminderScheduler.refreshNow()
             reload()
         }
     }
 
-    /** Same cascade as deleting any account; only reachable after an explicit confirmation. */
-    private fun delete(id: AccountId) {
+    /**
+     * Only reachable after an explicit confirmation. Bill payments made from other accounts stay
+     * in those accounts (see [DeleteCreditCardUseCase]), as the confirmation text promises.
+     */
+    private fun delete(id: AccountId, paymentTitle: String) {
+        if (deleting) return
+        deleting = true
         viewModelScope.launch {
-            transactionRepository.deleteAllByAccountId(id)
-            plannedPaymentRuleWriter.deletedByAccountId(id.value)
-            creditCardRepository.deleteByAccountId(id)
-            accountRepository.deleteById(id)
+            creditCardNotifications.cancelForCard(id.value)
+            deleteCreditCardUseCase.delete(id, fallbackTitle = paymentTitle)
             navigation.back()
         }
     }
