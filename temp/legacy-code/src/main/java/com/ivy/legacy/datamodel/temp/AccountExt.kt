@@ -1,6 +1,7 @@
 package com.ivy.legacy.datamodel.temp
 
 import com.ivy.data.db.entity.AccountEntity
+import com.ivy.data.repository.mapper.accountTypeFromEntity
 import com.ivy.legacy.datamodel.Account
 
 fun AccountEntity.toLegacyDomain(): Account = Account(
@@ -10,6 +11,7 @@ fun AccountEntity.toLegacyDomain(): Account = Account(
     icon = icon,
     orderNum = orderNum,
     includeInBalance = includeInBalance,
+    type = accountTypeFromEntity(type),
     isSynced = isSynced,
     isDeleted = isDeleted,
     id = id

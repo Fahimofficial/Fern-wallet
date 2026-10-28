@@ -12,9 +12,13 @@ import androidx.lifecycle.viewModelScope
 import com.ivy.base.legacy.SharedPrefs
 import com.ivy.base.time.TimeConverter
 import com.ivy.base.time.TimeProvider
+import com.ivy.creditcards.ui.CardUiMapper
+import com.ivy.creditcards.ui.CreditCardTileUi
 import com.ivy.data.DataObserver
 import com.ivy.data.DataWriteEvent
+import com.ivy.data.model.creditcard.CardStatus
 import com.ivy.data.repository.AccountRepository
+import com.ivy.domain.creditcard.CreditCardOverviewUseCase
 import com.ivy.domain.features.Features
 import com.ivy.legacy.IvyWalletCtx
 import com.ivy.legacy.data.model.AccountData
@@ -26,6 +30,7 @@ import com.ivy.ui.R
 import com.ivy.wallet.domain.action.settings.BaseCurrencyAct
 import com.ivy.wallet.domain.action.viewmodel.account.AccountDataAct
 import com.ivy.wallet.domain.action.wallet.CalcWalletBalanceAct
+import com.ivy.wallet.domain.deprecated.logic.currency.ExchangeRatesLogic
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.collections.immutable.ImmutableList
@@ -51,6 +56,9 @@ class AccountsViewModel @Inject constructor(
     private val features: Features,
     private val timeProvider: TimeProvider,
     private val timeConverter: TimeConverter,
+    private val creditCardOverviewUseCase: CreditCardOverviewUseCase,
+    private val cardUiMapper: CardUiMapper,
+    private val exchangeRatesLogic: ExchangeRatesLogic,
 ) : ComposeViewModel<AccountsState, AccountsEvent>() {
     private var baseCurrency by mutableStateOf("")
     private var accountsData by mutableStateOf(listOf<AccountData>())
@@ -59,6 +67,8 @@ class AccountsViewModel @Inject constructor(
     private var totalBalanceWithoutExcluded by mutableStateOf("")
     private var totalBalanceWithoutExcludedText by mutableStateOf("")
     private var reorderVisible by mutableStateOf(false)
+    private var creditCards by mutableStateOf<List<CreditCardTileUi>>(emptyList())
+    private var cardsOutstandingTotal by mutableStateOf<Double?>(null)
 
     init {
         viewModelScope.launch {
@@ -91,7 +101,10 @@ class AccountsViewModel @Inject constructor(
             totalBalanceWithoutExcludedText = getTotalBalanceWithoutExcludedText(),
             reorderVisible = getReorderVisible(),
             compactAccountsModeEnabled = getCompactAccountsMode(),
-            hideTotalBalance = getHideTotalBalance()
+            hideTotalBalance = getHideTotalBalance(),
+            creditCards = creditCards.toImmutableList(),
+            cardsOutstandingTotal = cardsOutstandingTotal,
+            today = timeProvider.localDateNow(),
         )
     }
 
@@ -199,8 +212,23 @@ class AccountsViewModel @Inject constructor(
             )
         ).toDouble()
 
+        val today = timeProvider.localDateNow()
+        val cards = creditCardOverviewUseCase.loadAll()
+        val cardTiles = cards.map { cardUiMapper.tile(it, today) }
+            .sortedWith(compareBy<CreditCardTileUi> { it.status == CardStatus.CLOSED }.thenBy { it.orderNum })
+        val outstandingTotal = cards.takeIf { it.isNotEmpty() }?.sumOf { item ->
+            exchangeRatesLogic.convertAmount(
+                baseCurrency = baseCurrencyCode,
+                amount = item.overview.outstanding.toDouble(),
+                fromCurrency = item.account.asset.code,
+                toCurrency = baseCurrencyCode,
+            )
+        }
+
         baseCurrency = baseCurrencyCode
         accountsData = accountsDataList
+        creditCards = cardTiles
+        cardsOutstandingTotal = outstandingTotal
         totalBalanceWithExcluded = totalBalanceWithExcludedAccounts.toString()
         totalBalanceWithExcludedText = context.getString(
             R.string.total,

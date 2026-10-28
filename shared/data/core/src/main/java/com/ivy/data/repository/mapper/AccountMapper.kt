@@ -6,6 +6,7 @@ import arrow.core.raise.ensure
 import com.ivy.data.db.entity.AccountEntity
 import com.ivy.data.model.Account
 import com.ivy.data.model.AccountId
+import com.ivy.data.model.AccountType
 import com.ivy.data.model.primitive.AssetCode
 import com.ivy.data.model.primitive.ColorInt
 import com.ivy.data.model.primitive.IconAsset
@@ -28,6 +29,7 @@ class AccountMapper @Inject constructor(
             icon = icon?.let(IconAsset::from)?.getOrNull(),
             includeInBalance = includeInBalance,
             orderNum = orderNum,
+            type = accountTypeFromEntity(type),
         )
     }
 
@@ -40,7 +42,12 @@ class AccountMapper @Inject constructor(
             orderNum = orderNum,
             includeInBalance = includeInBalance,
             id = id.value,
+            type = type.name,
             isSynced = true, // TODO: Delete this
         )
     }
 }
+
+/** Unknown values (e.g. from a newer app version) fall back to an ordinary asset account. */
+fun accountTypeFromEntity(value: String?): AccountType =
+    AccountType.entries.firstOrNull { it.name == value } ?: AccountType.ASSET

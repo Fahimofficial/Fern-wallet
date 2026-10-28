@@ -14,6 +14,17 @@ First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 - Project links (GitHub, issues, releases, contributors, privacy, license) point to this repository.
   Ivy Wallet is credited under **Settings → Attributions**.
 
+### Credit cards
+- New **Cards** section in Accounts. A card is an account of type credit card: purchases are expenses on it,
+  refunds are income, and bill payments are transfers (not expenses). The card's balance is −outstanding.
+- Card details screen with outstanding, available credit and limit used, the current and past statements
+  (calculated from your transactions; you can enter the bank's own figures), a pay-bill flow, and the option
+  to close a card without losing its history.
+- Due-date reminders (a few days before and on the due date), which are cleared once the bill is paid.
+- Bank and card picker built from official RBI and issuer sources (`docs/Card-Catalogue.md`). Cards use a
+  generic Fern illustration; no bank or network logos are bundled.
+- Database 130 → 131 is an additive migration; backups include card data, and older backups still import.
+
 ### Fixes
 - Amount shortening: `999,999` showed `1000.00k` (now `1m`), small amounts showed `500.0`/scientific notation,
   the decimal separator ignored the locale.

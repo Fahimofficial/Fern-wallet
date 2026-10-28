@@ -39,6 +39,7 @@ import com.ivy.base.legacy.Transaction
 import com.ivy.base.legacy.TransactionHistoryItem
 import com.ivy.base.legacy.stringRes
 import com.ivy.base.model.TransactionType
+import com.ivy.data.model.AccountType
 import com.ivy.data.model.Category
 import com.ivy.design.api.LocalTimeConverter
 import com.ivy.design.api.LocalTimeFormatter
@@ -63,6 +64,7 @@ import com.ivy.legacy.utils.horizontalSwipeListener
 import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.legacy.utils.rememberSwipeListenerState
 import com.ivy.legacy.utils.setStatusBarDarkTextCompat
+import com.ivy.navigation.CreditCardDetailsScreen
 import com.ivy.navigation.EditTransactionScreen
 import com.ivy.navigation.IvyPreview
 import com.ivy.navigation.PieChartStatisticScreen
@@ -267,6 +269,7 @@ private fun BoxWithConstraintsScope.UI(
 
     var categoryModalData: CategoryModalData? by remember { mutableStateOf(null) }
     var accountModalData: AccountModalData? by remember { mutableStateOf(null) }
+    val nav = navigation()
 
     val swipeListenerState = rememberSwipeListenerState()
     Column(
@@ -320,10 +323,20 @@ private fun BoxWithConstraintsScope.UI(
                     treatTransfersAsIncomeExpense = treatTransfersAsIncomeExpense,
 
                     onDelete = {
-                        onDeleteModal1Visible(true)
+                        if (account?.type == AccountType.CREDIT_CARD) {
+                            // Card closure/deletion explains the effect on history first.
+                            nav.navigateTo(CreditCardDetailsScreen(account.id))
+                        } else {
+                            onDeleteModal1Visible(true)
+                        }
                     },
                     onEdit = {
                         when {
+                            account?.type == AccountType.CREDIT_CARD -> {
+                                // Cards are edited on their own screen (no balance adjustment).
+                                nav.navigateTo(CreditCardDetailsScreen(account.id))
+                            }
+
                             account != null -> {
                                 accountModalData = AccountModalData(
                                     account = account,
@@ -344,6 +357,11 @@ private fun BoxWithConstraintsScope.UI(
 
                     onBalanceClick = {
                         when {
+                            account?.type == AccountType.CREDIT_CARD -> {
+                                // Cards are edited on their own screen (no balance adjustment).
+                                nav.navigateTo(CreditCardDetailsScreen(account.id))
+                            }
+
                             account != null -> {
                                 accountModalData = AccountModalData(
                                     account = account,
@@ -362,13 +380,17 @@ private fun BoxWithConstraintsScope.UI(
                         )
                     },
                     showAccountModal = {
-                        accountModalData = AccountModalData(
-                            account = account,
-                            baseCurrency = currency,
-                            balance = balance,
-                            adjustBalanceMode = false,
-                            autoFocusKeyboard = false
-                        )
+                        if (account?.type == AccountType.CREDIT_CARD) {
+                            nav.navigateTo(CreditCardDetailsScreen(account.id))
+                        } else {
+                            accountModalData = AccountModalData(
+                                account = account,
+                                baseCurrency = currency,
+                                balance = balance,
+                                adjustBalanceMode = false,
+                                autoFocusKeyboard = false
+                            )
+                        }
                     }
                 )
             }

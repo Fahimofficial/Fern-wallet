@@ -14,6 +14,7 @@ import com.ivy.data.db.dao.write.WritePlannedPaymentRuleDao
 import com.ivy.data.db.dao.write.WriteSettingsDao
 import com.ivy.data.repository.AccountRepository
 import com.ivy.data.repository.CategoryRepository
+import com.ivy.data.repository.CreditCardRepository
 import com.ivy.data.repository.ExchangeRatesRepository
 import com.ivy.data.repository.TagRepository
 import com.ivy.data.repository.TransactionRepository
@@ -39,7 +40,8 @@ class LogoutLogic @Inject constructor(
     private val writeBudgetDao: WriteBudgetDao,
     private val writeLoanDao: WriteLoanDao,
     private val writeLoanRecordDao: WriteLoanRecordDao,
-    private val exchangeRatesRepository: ExchangeRatesRepository
+    private val exchangeRatesRepository: ExchangeRatesRepository,
+    private val creditCardRepository: CreditCardRepository,
 ) {
     suspend fun logout() {
         ioThread {
@@ -57,6 +59,7 @@ class LogoutLogic @Inject constructor(
 
     private suspend fun deleteAllData() {
         accountRepository.deleteAll()
+        creditCardRepository.deleteAll()
         transactionRepository.deleteAll()
         categoryRepository.deleteAll()
         tagRepository.deleteAll()

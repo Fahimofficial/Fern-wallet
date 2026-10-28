@@ -71,7 +71,7 @@ data class EditPlannedScreen(
 
     fun mandatoryFilled(): Boolean {
         return amount != null && amount > 0.0 &&
-                accountId != null
+            accountId != null
     }
 }
 
@@ -143,3 +143,19 @@ data object ContributorsScreen : Screen
 data object ReleasesScreen : Screen
 
 data object DisclaimerScreen : Screen
+
+/** Credit-card details: outstanding, statements, history, payment and settings. */
+@Suppress("DataClassTypedIDs") // screens take raw UUIDs like the existing ones
+data class CreditCardDetailsScreen(val accountId: UUID) : Screen
+
+/** Add (accountId == null) or edit a credit card. */
+@Suppress("DataClassTypedIDs") // screens take raw UUIDs like the existing ones
+data class EditCreditCardScreen(val accountId: UUID?) : Screen
+
+/** Record a bill payment (transfer from another account into the card). */
+@Suppress("DataClassTypedIDs") // screens take raw UUIDs like the existing ones
+data class PayCreditCardScreen(val accountId: UUID) : Screen
+
+/** One closed statement, identified by its nominal closing date (epoch day). */
+@Suppress("DataClassTypedIDs") // screens take raw UUIDs like the existing ones
+data class CreditCardStatementScreen(val accountId: UUID, val nominalClosingEpochDay: Long) : Screen
