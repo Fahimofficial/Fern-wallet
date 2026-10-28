@@ -3,6 +3,7 @@ package com.ivy.data.repository
 import com.ivy.base.threading.DispatchersProvider
 import com.ivy.data.DataObserver
 import com.ivy.data.DataWriteEvent
+import com.ivy.data.db.DbTransactionRunner
 import com.ivy.data.db.dao.read.CreditCardDao
 import com.ivy.data.db.dao.write.WriteCreditCardDao
 import com.ivy.data.model.AccountId
@@ -28,6 +29,7 @@ class CreditCardRepository @Inject constructor(
     private val mapper: CreditCardMapper,
     private val dataObserver: DataObserver,
     private val dispatchersProvider: DispatchersProvider,
+    private val transactionRunner: DbTransactionRunner,
 ) {
     suspend fun findAll(): List<CreditCard> = withContext(dispatchersProvider.io) {
         dao.findAll().map { with(mapper) { it.toDomain() } }
@@ -74,9 +76,12 @@ class CreditCardRepository @Inject constructor(
 
     /** Replaces all saved statement values of a card (e.g. after its statement day changed). */
     suspend fun replaceStatementOverrides(accountId: AccountId, values: List<StatementOverride>) {
-        withContext(dispatchersProvider.io) {
-            writeDao.deleteStatementsByAccountId(accountId.value)
-            writeDao.saveStatements(values.map { with(mapper) { it.toEntity() } })
+        // Delete + insert in one transaction, so an interruption can't lose the saved figures.
+        transactionRunner.run {
+            withContext(dispatchersProvider.io) {
+                writeDao.deleteStatementsByAccountId(accountId.value)
+                writeDao.saveStatements(values.map { with(mapper) { it.toEntity() } })
+            }
         }
         dataObserver.post(DataWriteEvent.CreditCardsChanged(listOf(accountId)))
     }

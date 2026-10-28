@@ -14,6 +14,7 @@ import com.ivy.creditcards.ui.accountColor
 import com.ivy.data.creditcard.CardCatalogue
 import com.ivy.data.creditcard.CatalogueBank
 import com.ivy.data.creditcard.CatalogueProduct
+import com.ivy.data.db.DbTransactionRunner
 import com.ivy.data.model.Account
 import com.ivy.data.model.AccountId
 import com.ivy.data.model.AccountType
@@ -83,6 +84,7 @@ class EditCreditCardViewModel @Inject constructor(
     private val timeProvider: TimeProvider,
     private val navigation: Navigation,
     private val reminderScheduler: CreditCardReminderScheduler,
+    private val transactionRunner: DbTransactionRunner,
 ) : ComposeViewModel<EditCardState, EditCardEvent>() {
 
     private var accountId: AccountId? = null
@@ -248,7 +250,7 @@ class EditCreditCardViewModel @Inject constructor(
         val bank = if (form.useCustomBank) null else catalogue.bank(form.bankId)
         val customFieldVisible = form.useCustomProduct || form.useCustomBank ||
             (bank != null && catalogue.productsOf(bank.id).isEmpty())
-        return catalogueProduct?.name ?: form.customProductName.takeIf { customFieldVisible }
+        return catalogueProduct?.name ?: typedProductName(form.customProductName, customFieldVisible)
     }
 
     private fun save() {
@@ -272,8 +274,7 @@ class EditCreditCardViewModel @Inject constructor(
         val result = CardFormValidator.validate(
             form = form.copy(
                 nickname = form.nickname.ifBlank {
-                    productName() ?: catalogue.bank(form.bankId)?.displayName?.let { "$it Card" }
-                        ?: form.customBankName.takeIf { it.isNotBlank() }?.let { "$it Card" }.orEmpty()
+                    defaultNickname(productName(), catalogue.bank(form.bankId)?.displayName ?: form.customBankName)
                 }
             ),
             accountId = id,
@@ -299,10 +300,13 @@ class EditCreditCardViewModel @Inject constructor(
                     orderNum = existing?.orderNum ?: (accountRepository.findMaxOrderNum() + 1),
                     type = AccountType.CREDIT_CARD,
                 )
-                moveSavedStatements(id, result.card.statementDay)
-                // Save the card details first so the account never appears without them.
-                creditCardRepository.save(result.card)
-                accountRepository.save(account)
+                // One transaction: the new schedule, its moved statement values and the account
+                // are written together, so they can never be left out of step.
+                transactionRunner.run {
+                    moveSavedStatements(id, result.card.statementDay)
+                    creditCardRepository.save(result.card)
+                    accountRepository.save(account)
+                }
                 // Idempotent (KEEP); covers cards added before the app was restarted after onboarding.
                 reminderScheduler.schedule()
                 reminderScheduler.refreshNow()
@@ -331,5 +335,13 @@ class EditCreditCardViewModel @Inject constructor(
 
     companion object {
         private const val MAX_RESULTS = 8
+
+        /** The typed product name, or null when it's hidden or blank (so the bank name is used). */
+        fun typedProductName(text: String, fieldVisible: Boolean): String? =
+            text.trim().takeIf { fieldVisible && it.isNotEmpty() }
+
+        /** Nickname used when the user leaves it blank: product name, else "<bank> Card". */
+        fun defaultNickname(productName: String?, bankName: String?): String =
+            productName ?: bankName?.trim()?.takeIf { it.isNotEmpty() }?.let { "$it Card" }.orEmpty()
     }
 }

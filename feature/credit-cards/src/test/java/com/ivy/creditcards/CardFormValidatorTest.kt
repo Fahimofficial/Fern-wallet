@@ -6,6 +6,7 @@ import com.ivy.creditcards.edit.CardFormField
 import com.ivy.creditcards.edit.CardFormResult
 import com.ivy.creditcards.edit.CardFormValidator
 import com.ivy.creditcards.edit.DueRuleKind
+import com.ivy.creditcards.edit.EditCreditCardViewModel
 import com.ivy.creditcards.pay.PayCreditCardViewModel
 import com.ivy.data.model.AccountId
 import com.ivy.data.model.creditcard.DueDateRule
@@ -103,5 +104,21 @@ class CardFormValidatorTest {
         // A card already in credit: the whole payment adds to the credit balance.
         PayCreditCardViewModel.overpayment(BigDecimal("300"), BigDecimal("-200"))
             ?.compareTo(BigDecimal("300")) shouldBe 0
+    }
+
+    @Test
+    fun `blank product name falls back to the bank name for the nickname`() {
+        val product = EditCreditCardViewModel.typedProductName("  ", fieldVisible = true)
+        product shouldBe null
+        val nickname = EditCreditCardViewModel.defaultNickname(product, "Sample Bank")
+        nickname shouldBe "Sample Bank Card"
+        validate(valid.copy(nickname = nickname)).shouldBeInstanceOf<CardFormResult.Valid>()
+    }
+
+    @Test
+    fun `typed product name is used only when its field is shown`() {
+        EditCreditCardViewModel.typedProductName(" Gold ", fieldVisible = true) shouldBe "Gold"
+        EditCreditCardViewModel.typedProductName("Gold", fieldVisible = false) shouldBe null
+        EditCreditCardViewModel.defaultNickname("Gold", "Sample Bank") shouldBe "Gold"
     }
 }

@@ -1,5 +1,6 @@
 package com.ivy.domain.creditcard
 
+import com.ivy.data.db.DbTransactionRunner
 import com.ivy.data.db.dao.write.WritePlannedPaymentRuleDao
 import com.ivy.data.model.AccountId
 import com.ivy.data.model.Expense
@@ -31,11 +32,18 @@ class DeleteCreditCardUseCase @Inject constructor(
     private val accountRepository: AccountRepository,
     private val creditCardRepository: CreditCardRepository,
     private val plannedPaymentRuleWriter: WritePlannedPaymentRuleDao,
+    private val transactionRunner: DbTransactionRunner,
 ) {
     /**
      * @param fallbackTitle title for a preserved payment that had none (e.g. "Payment to <card>").
      */
     suspend fun delete(cardId: AccountId, fallbackTitle: String?) {
+        // All-or-nothing: an interrupted deletion must never keep the card while its payments
+        // were already moved to the bank (the card would then owe money that was paid).
+        transactionRunner.run { deleteInTransaction(cardId, fallbackTitle) }
+    }
+
+    private suspend fun deleteInTransaction(cardId: AccountId, fallbackTitle: String?) {
         val incoming = transactionRepository.findAllTransfersToAccount(cardId)
             .filter { it.fromAccount != cardId }
         val outgoing = transactionRepository.findAllTransferByAccount(cardId)
