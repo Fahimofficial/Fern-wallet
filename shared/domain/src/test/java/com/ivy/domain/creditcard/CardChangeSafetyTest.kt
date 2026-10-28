@@ -173,7 +173,7 @@ class CardChangeSafetyTest {
     }
 
     @Test
-    fun `every saved statement keeps its period, figures and due date for all new days 1 to 31`() {
+    fun `every saved statement keeps its figures and dates for all new days 1 to 31`() {
         // A charge before the opening date, plus a second saved statement with its own bank date.
         val ledger = listOf(
             CardLedgerEntry(null, LocalDate.parse("2025-12-20"), BigDecimal("300"), CHARGE),
@@ -194,14 +194,15 @@ class CardChangeSafetyTest {
             CreditCardCalculator.overview(opened(day), ledger, overrides, today).statements
                 .filter { it.issuerStatementBalance != null }
                 .sortedBy { it.closingDate }
+                // periodStart can differ: the new schedule may close an earlier statement of its own.
                 .map {
                     listOf(
-                        it.periodStart,
                         it.closingDate,
                         it.dueDate,
                         it.issuerStatementBalance,
                         it.minimumDue,
-                        it.remainingDue
+                        it.statementBalance,
+                        it.remainingDue,
                     )
                 }
 
