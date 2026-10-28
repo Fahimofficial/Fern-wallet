@@ -128,8 +128,7 @@ class CardChangeSafetyTest {
 
         val moved = StatementOverrideRemapper.remap(
             listOf(janOverride),
-            newStatementDay = 18,
-            openingDate = LocalDate.of(2026, 1, 1)
+            newStatementDay = 18
         )
         moved.single().nominalClosingDate shouldBe LocalDate.of(2026, 1, 18)
         val after = CreditCardCalculator.overview(card(18), ledger, moved, today)
@@ -148,8 +147,7 @@ class CardChangeSafetyTest {
         val b = janOverride.copy(nominalClosingDate = LocalDate.of(2026, 2, 2), actualClosingDate = null)
         val moved = StatementOverrideRemapper.remap(
             listOf(b, a),
-            newStatementDay = 1,
-            openingDate = LocalDate.of(2026, 1, 1)
+            newStatementDay = 1
         )
         moved.map { it.nominalClosingDate }.distinct() shouldHaveSize 2
         moved.map { it.actualClosingDate } shouldBe listOf(LocalDate.of(2026, 1, 28), LocalDate.of(2026, 2, 2))
@@ -164,13 +162,53 @@ class CardChangeSafetyTest {
         val ledger = listOf(CardLedgerEntry(null, LocalDate.parse("2026-01-10"), BigDecimal("1000"), CHARGE))
         val today = LocalDate.of(2026, 3, 20)
         for (newDay in NewDay.entries) {
-            val moved = StatementOverrideRemapper.remap(listOf(janOverride), newDay.day, LocalDate.of(2026, 1, 5))
+            val moved = StatementOverrideRemapper.remap(listOf(janOverride), newDay.day)
             val statement = CreditCardCalculator.overview(openedJan5(newDay.day), ledger, moved, today)
                 .statements.singleOrNull { it.issuerStatementBalance != null }
 
             statement?.closingDate shouldBe LocalDate.of(2026, 1, 15)
             statement?.dueDate shouldBe LocalDate.of(2026, 2, 6)
             statement?.issuerStatementBalance?.compareTo(BigDecimal("1234")) shouldBe 0
+        }
+    }
+
+    @Test
+    fun `every saved statement keeps its period, figures and due date for all new days 1 to 31`() {
+        // A charge before the opening date, plus a second saved statement with its own bank date.
+        val ledger = listOf(
+            CardLedgerEntry(null, LocalDate.parse("2025-12-20"), BigDecimal("300"), CHARGE),
+            CardLedgerEntry(null, LocalDate.parse("2026-01-10"), BigDecimal("1000"), CHARGE),
+            CardLedgerEntry(null, LocalDate.parse("2026-02-10"), BigDecimal("500"), CHARGE),
+        )
+        val febOverride = janOverride.copy(
+            nominalClosingDate = LocalDate.of(2026, 2, 15),
+            actualClosingDate = LocalDate.of(2026, 2, 14),
+            actualDueDate = null,
+            issuerStatementBalance = BigDecimal("1800"),
+            minimumDue = null,
+        )
+        val saved = listOf(janOverride, febOverride)
+        val today = LocalDate.of(2026, 3, 20)
+        val opened = { day: Int -> card(day).copy(openingDate = LocalDate.of(2026, 1, 5)) }
+        fun savedStatements(day: Int, overrides: List<StatementOverride>) =
+            CreditCardCalculator.overview(opened(day), ledger, overrides, today).statements
+                .filter { it.issuerStatementBalance != null }
+                .sortedBy { it.closingDate }
+                .map {
+                    listOf(
+                        it.periodStart,
+                        it.closingDate,
+                        it.dueDate,
+                        it.issuerStatementBalance,
+                        it.minimumDue,
+                        it.remainingDue
+                    )
+                }
+
+        val before = savedStatements(15, saved)
+        before shouldHaveSize 2
+        for (day in 1..31) {
+            savedStatements(day, StatementOverrideRemapper.remap(saved, day)) shouldBe before
         }
     }
     // endregion

@@ -14,20 +14,14 @@ import kotlin.math.abs
  * - pinned to the closing date it really had (`actualClosingDate`, or the old nominal date), so
  *   its period, balance, minimum payment and due date stay exactly as they were, and
  * - re-keyed to the nearest closing date of the new schedule, keeping keys unique and in order.
- *   Keys before the card's first cycle are never used: they'd never be applied (e.g. day 15 ->
- *   day 1 for a card opened on the 5th would otherwise land on the 1st, before the card existed).
+ *   The calculator starts its cycles early enough to include every saved key, so a key before the
+ *   first transaction or opening date is still applied.
  *
  * Statements without saved values simply follow the new schedule.
  */
 object StatementOverrideRemapper {
-    fun remap(
-        overrides: List<StatementOverride>,
-        newStatementDay: Int,
-        openingDate: LocalDate,
-    ): List<StatementOverride> {
-        // The calculator's first cycle closes on or after the opening date, never earlier.
-        val firstKey = firstNominalOnOrAfter(openingDate, newStatementDay)
-        var previousKey: LocalDate? = firstKey.minusDays(1)
+    fun remap(overrides: List<StatementOverride>, newStatementDay: Int): List<StatementOverride> {
+        var previousKey: LocalDate? = null
         return overrides
             .sortedBy { it.effectiveClosingDate }
             .map { override ->

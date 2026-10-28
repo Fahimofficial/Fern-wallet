@@ -163,7 +163,10 @@ object CreditCardCalculator {
         card: CreditCard,
     ): List<Cycle> {
         val byNominal = overrides.associateBy { it.nominalClosingDate }
-        val earliest = (entries.map { it.date } + card.openingDate).min()
+        // Saved bank statements count too: cycles must start early enough to include every one of
+        // them, or a saved statement before the first transaction/opening date would be dropped.
+        val savedDates = overrides.flatMap { listOfNotNull(it.nominalClosingDate, it.actualClosingDate) }
+        val earliest = (entries.map { it.date } + card.openingDate + savedDates).min()
         var month = YearMonth.from(earliest)
         if (nominalClosingDate(month, statementDay).isBefore(earliest)) month = month.plusMonths(1)
 
