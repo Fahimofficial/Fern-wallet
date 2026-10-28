@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Fern Wallet brand primary -->
-    <color name="ic_launcher_background">#13876A</color>
+    <!-- Adaptive-icon backgrounds for each selectable app icon (see AppIcon). -->
+    <color name="ic_launcher_background">#F7F9F8</color>
+    <color name="ic_launcher_mono_background">#000000</color>
+    <color name="ic_launcher_graphite_background">#000000</color>
+    <color name="ic_launcher_midnight_background">#000000</color>
 </resources>

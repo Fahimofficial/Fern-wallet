@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Fern Wallet logo badge (original artwork for Fern Wallet). -->
+<!-- Fern Wallet logo (in-app). Generated from the brand artwork; do not edit by hand. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="96dp"
     android:height="96dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#FF13876A"
-        android:pathData="M30,6H78A24,24 0,0 1,102 30V78A24,24 0,0 1,78 102H30A24,24 0,0 1,6 78V30A24,24 0,0 1,30 6Z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M47.93,75.7Q42.44,67.78 32.96,69.52Q38.45,77.43 47.93,75.7ZM47.93,75.7Q57.46,74.23 60.05,64.95Q50.53,66.42 47.93,75.7ZM47.2,69.82Q43.17,62.04 34.43,62.62Q38.46,70.4 47.2,69.82ZM47.2,69.82Q55.92,69 58.66,60.67Q49.93,61.49 47.2,69.82ZM46.99,63.98Q44.32,56.55 36.44,56.17Q39.11,63.6 46.99,63.98ZM46.99,63.98Q54.88,63.74 57.67,56.36Q49.78,56.6 46.99,63.98ZM47.3,58.17Q45.85,51.3 38.92,50.17Q40.37,57.04 47.3,58.17ZM47.3,58.17Q54.32,58.42 57.08,51.97Q50.07,51.72 47.3,58.17ZM48.13,52.4Q47.71,46.26 41.78,44.62Q42.21,50.75 48.13,52.4ZM48.13,52.4Q54.25,53.04 56.9,47.49Q50.78,46.85 48.13,52.4ZM49.49,46.66Q49.87,41.4 44.96,39.47Q44.57,44.74 49.49,46.66ZM49.49,46.66Q54.69,47.6 57.12,42.91Q51.92,41.98 49.49,46.66ZM51.37,40.97Q52.33,36.65 48.38,34.67Q47.42,38.98 51.37,40.97ZM51.37,40.97Q55.64,42.08 57.76,38.2Q53.49,37.09 51.37,40.97ZM53.77,35.3Q55.07,31.99 52.02,30.16Q50.72,33.47 53.77,35.3ZM53.77,35.3Q57.12,36.49 58.84,33.38Q55.49,32.19 53.77,35.3ZM57.33,28.55Q62.88,27.64 60.98,22.34Q55.43,23.26 57.33,28.55Z" />
-    <path
-        android:strokeColor="#FFFFFFFF"
-        android:strokeWidth="2.9"
-        android:strokeLineCap="round"
-        android:pathData="M49.5,82.8Q41.4,53.1 59.4,25.2" />
+    <group android:scaleX="0.13" android:scaleY="0.13" android:translateX="-15.4" android:translateY="-9.8">
+        <path android:fillColor="#4AF2B2" android:pathData="M240,292L700,140C752,124 790,160 790,215L790,352L240,352Z" />
+        <path android:fillColor="#03291F" android:pathData="M268,292L790,292L790,352L268,352C251,352 238,339 238,322C238,305 251,292 268,292Z" />
+        <path android:fillColor="#077057" android:pathData="M244,352L780,352C819.8,352 852,384.2 852,424L852,770C852,809.8 819.8,842 780,842L244,842C204.2,842 172,809.8 172,770L172,424C172,384.2 204.2,352 244,352Z" />
+        <path android:fillColor="#6EF5AE" android:pathData="M295,835C290,640 390,490 545,452C612,436 655,415 683,380C675,470 625,545 500,566C392,586 330,645 303,760Z" />
+        <path android:fillColor="#3FDC94" android:pathData="M300,832C330,700 420,612 605,570C575,690 470,792 300,836Z" />
+        <path android:fillColor="#03291F" android:pathData="M748,495L847,495C873.5,495 895,516.5 895,543L895,640C895,666.5 873.5,688 847,688L748,688C721.5,688 700,666.5 700,640L700,543C700,516.5 721.5,495 748,495Z" />
+        <path android:fillColor="#73F2AE" android:pathData="M841,591C841,615.3 821.3,635 797,635C772.7,635 753,615.3 753,591C753,566.7 772.7,547 797,547C821.3,547 841,566.7 841,591Z" />
+    </group>
 </vector>

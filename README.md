@@ -1,8 +1,9 @@
 <p align="center">
-  <img src="docs/screenshots/icon.png" width="96" alt="Fern Wallet icon" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/branding/wordmark-dark.png" />
+    <img src="docs/branding/wordmark-light.png" width="420" alt="Fern Wallet" />
+  </picture>
 </p>
-
-<h1 align="center">Fern Wallet</h1>
 
 <p align="center">
   A free, open-source money manager for Android: accounts, transactions, budgets, planned payments, loans and reports.
@@ -15,11 +16,20 @@
   <a href="LICENSE"><img alt="License: GPL v3" src="https://img.shields.io/badge/License-GPLv3-blue.svg" /></a>
 </p>
 
-| Home (light) | Home (dark) | Accounts | Support |
-|:---:|:---:|:---:|:---:|
-| ![Home light](docs/screenshots/home-light.png) | ![Home dark](docs/screenshots/home-dark.png) | ![Accounts](docs/screenshots/accounts-light.png) | ![Support](docs/screenshots/support-light.png) |
+<p align="center">
+  <img src="docs/screenshots/home-light.png" width="23%" alt="Home screen with balance, income, expenses and recent transactions" />
+  <img src="docs/screenshots/accounts-light.png" width="23%" alt="Accounts with balances and monthly income and expenses" />
+  <img src="docs/screenshots/add-menu-light.png" width="23%" alt="Add menu: income, expense, transfer and planned payment" />
+  <img src="docs/screenshots/period-picker-light.png" width="23%" alt="Period picker: month, custom range, last N weeks or all time" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/more-menu-light.png" width="23%" alt="Quick access menu with search, savings goal and shortcuts" />
+  <img src="docs/screenshots/home-dark.png" width="23%" alt="Home screen in dark theme" />
+  <img src="docs/screenshots/support-light.png" width="23%" alt="Support the developer section in Settings" />
+</p>
 
-<sub>Screenshots are rendered from the app's Compose previews with sample data (Paparazzi), not from a device.</sub>
+<sub>Rendered from the app's Compose previews with made-up sample data (Paparazzi), not from a real device or account.
+Regenerate with `./gradlew recordPaparazziDebug && python3 scripts/readme_screenshots.py`.</sub>
 
 ## About
 
@@ -39,7 +49,7 @@ contributors, which is no longer maintained upstream. Fern Wallet continues deve
 - Backup/restore to a ZIP file, CSV import from several apps
 - Home-screen widgets, app shortcuts and a Quick Settings tile
 - App lock (biometric / device credential), hide balance/income
-- Light, dark and AMOLED-black themes
+- Light, dark and AMOLED-black themes, and four app icons (Fern, Mono, Graphite, Midnight)
 
 ## Download
 

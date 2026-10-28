@@ -292,6 +292,18 @@ private fun BoxWithConstraintsScope.UI(
 
             Spacer(Modifier.height(12.dp))
 
+            val iconRootScreen = rootScreen()
+            var appIcon by remember { mutableStateOf(iconRootScreen.currentAppIcon) }
+            AppIconPicker(
+                selected = appIcon,
+                onSelect = { icon ->
+                    iconRootScreen.setAppIcon(icon)
+                    appIcon = icon
+                }
+            )
+
+            Spacer(Modifier.height(12.dp))
+
             val nav = navigation()
 //            SettingsDefaultButton(
 //                icon = R.drawable.ic_custom_atom_m,

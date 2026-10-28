@@ -84,15 +84,22 @@ fun BoxWithConstraintsScope.HomeUi(
     uiState: HomeState,
     onEvent: (HomeEvent) -> Unit,
     modifier: Modifier = Modifier,
+    // Only used by previews / screenshot tests to render an overlay in its open state.
+    initialPeriodModalOpen: Boolean = false,
+    initialMoreMenuExpanded: Boolean? = null,
 ) {
     val ivyContext = ivyWalletCtx()
 
     var bufferModalData: BufferModalData? by remember { mutableStateOf(null) }
     var currencyModalVisible by remember { mutableStateOf(false) }
     var choosePeriodModal: ChoosePeriodModalData? by remember {
-        mutableStateOf(null)
+        mutableStateOf(
+            if (initialPeriodModalOpen) ChoosePeriodModalData(period = uiState.period) else null
+        )
     }
-    var moreMenuExpanded by remember { mutableStateOf(ivyContext.moreMenuExpanded) }
+    var moreMenuExpanded by remember {
+        mutableStateOf(initialMoreMenuExpanded ?: ivyContext.moreMenuExpanded)
+    }
     var skipAllModalVisible by remember { mutableStateOf(false) }
     val setMoreMenuExpanded = { expanded: Boolean ->
         moreMenuExpanded = expanded
@@ -395,30 +402,35 @@ fun HomeLazyColumn(
     }
 }
 
-@ExperimentalAnimationApi
-@ExperimentalFoundationApi
-@Preview
+/** Which overlay to show on top of the Home sample (screenshots / previews). */
+enum class HomeSampleOverlay { None, PeriodPicker, MoreMenu }
+
+/**
+ * Home screen with generic sample data (no real names, accounts or amounts).
+ * Used for previews and the README screenshots.
+ */
+@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Suppress("MagicNumber")
 @Composable
-private fun BoxWithConstraintsScope.PreviewHomeTab(isDark: Boolean = false) {
-    val wallet = com.ivy.legacy.datamodel.Account(
-        name = "Wallet",
-        color = 0xFFC04DFF.toInt(),
-        currency = "INR",
+fun BoxWithConstraintsScope.HomeSampleUi(overlay: HomeSampleOverlay = HomeSampleOverlay.None) {
+    val everyday = com.ivy.legacy.datamodel.Account(
+        name = "Everyday",
+        color = 0xFF3F51B5.toInt(),
+        currency = "USD",
         id = java.util.UUID(1L, 1L),
     )
-    val bank = com.ivy.legacy.datamodel.Account(
-        name = "Bank",
-        color = 0xFFE53935.toInt(),
-        currency = "INR",
+    val cash = com.ivy.legacy.datamodel.Account(
+        name = "Cash",
+        color = 0xFF00897B.toInt(),
+        currency = "USD",
         id = java.util.UUID(1L, 2L),
     )
-    val day1 = java.time.LocalDate.of(2023, 1, 26)
-    val day2 = java.time.LocalDate.of(2023, 1, 25)
+    val day1 = java.time.LocalDate.of(2025, 3, 14)
+    val day2 = java.time.LocalDate.of(2025, 3, 13)
     fun trn(
         account: com.ivy.legacy.datamodel.Account,
         type: com.ivy.base.model.TransactionType,
-        amount: Long,
+        amount: String,
         date: java.time.LocalDate,
         idx: Long,
         title: String? = null,
@@ -426,68 +438,77 @@ private fun BoxWithConstraintsScope.PreviewHomeTab(isDark: Boolean = false) {
         Transaction(
             accountId = account.id,
             type = type,
-            amount = BigDecimal.valueOf(amount),
+            amount = BigDecimal(amount),
             title = title,
             dateTime = date.atTime(12, 0).toInstant(java.time.ZoneOffset.UTC),
             id = java.util.UUID(2L, idx),
         )
-    IvyPreview(isDark) {
-        HomeUi(
-            uiState = HomeState(
-                theme = Theme.AUTO,
-                name = "Alex",
-                baseData = AppBaseData(
-                    baseCurrency = "INR",
-                    accounts = persistentListOf(wallet, bank),
-                    categories = persistentListOf()
-                ),
-                balance = BigDecimal("114434.33"),
-                buffer = BufferInfo(
-                    amount = BigDecimal.ZERO,
-                    bufferDiff = BigDecimal.ZERO,
-                ),
-                customerJourneyCards = persistentListOf(),
-                history = persistentListOf(
-                    TransactionHistoryDateDivider(day1, income = 0.0, expenses = 220.0),
-                    trn(bank, com.ivy.base.model.TransactionType.EXPENSE, 110, day1, 1, title = "Groceries"),
-                    trn(bank, com.ivy.base.model.TransactionType.EXPENSE, 110, day1, 2),
-                    TransactionHistoryDateDivider(day2, income = 780.0, expenses = 20.0),
-                    trn(wallet, com.ivy.base.model.TransactionType.INCOME, 780, day2, 3, title = "Salary"),
-                ),
-                stats = IncomeExpensePair(
-                    income = BigDecimal("6281.25"),
-                    expense = BigDecimal("3600.71"),
-                ),
-                upcoming = LegacyDueSection(
-                    trns = persistentListOf(),
-                    stats = IncomeExpensePair.zero(),
-                    expanded = false,
-                ),
-                overdue = LegacyDueSection(
-                    trns = persistentListOf(),
-                    stats = IncomeExpensePair.zero(),
-                    expanded = false,
-                ),
-                period = TimePeriod(month = Month.monthsList().first(), year = 2023),
-                hideBalance = false,
-                hideIncome = false,
-                expanded = true,
-                shouldShowAccountSpecificColorInTransactions = true
+    HomeUi(
+        uiState = HomeState(
+            theme = Theme.AUTO,
+            name = "Sam",
+            baseData = AppBaseData(
+                baseCurrency = "USD",
+                accounts = persistentListOf(everyday, cash),
+                categories = persistentListOf()
             ),
-            onEvent = {}
-        )
+            balance = BigDecimal("11918.65"),
+            buffer = BufferInfo(
+                amount = BigDecimal("2000"),
+                bufferDiff = BigDecimal("9918.65"),
+            ),
+            customerJourneyCards = persistentListOf(),
+            history = persistentListOf(
+                TransactionHistoryDateDivider(day1, income = 0.0, expenses = 91.2),
+                trn(everyday, com.ivy.base.model.TransactionType.EXPENSE, "86.40", day1, 1, title = "Groceries"),
+                trn(cash, com.ivy.base.model.TransactionType.EXPENSE, "4.80", day1, 2, title = "Coffee"),
+                TransactionHistoryDateDivider(day2, income = 4250.0, expenses = 0.0),
+                trn(everyday, com.ivy.base.model.TransactionType.INCOME, "4250.00", day2, 3, title = "Salary"),
+            ),
+            stats = IncomeExpensePair(
+                income = BigDecimal("4750.00"),
+                expense = BigDecimal("1868.32"),
+            ),
+            upcoming = LegacyDueSection(
+                trns = persistentListOf(),
+                stats = IncomeExpensePair.zero(),
+                expanded = false,
+            ),
+            overdue = LegacyDueSection(
+                trns = persistentListOf(),
+                stats = IncomeExpensePair.zero(),
+                expanded = false,
+            ),
+            period = TimePeriod(month = Month.monthsList()[2], year = 2025),
+            hideBalance = false,
+            hideIncome = false,
+            expanded = true,
+            shouldShowAccountSpecificColorInTransactions = true
+        ),
+        onEvent = {},
+        initialPeriodModalOpen = overlay == HomeSampleOverlay.PeriodPicker,
+        initialMoreMenuExpanded = if (overlay == HomeSampleOverlay.MoreMenu) true else null,
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
+@Preview
+@Composable
+private fun BoxWithConstraintsScope.PreviewHomeTab(isDark: Boolean = false) {
+    IvyPreview(isDark) {
+        HomeSampleUi()
     }
 }
 
 /** For screenshot testing */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun HomeUiTest(isDark: Boolean) {
+fun HomeUiTest(isDark: Boolean, overlay: HomeSampleOverlay = HomeSampleOverlay.None) {
     val theme = when (isDark) {
         true -> Theme.DARK
         false -> Theme.LIGHT
     }
     IvyWalletPreview(theme) {
-        PreviewHomeTab(isDark)
+        HomeSampleUi(overlay)
     }
 }
