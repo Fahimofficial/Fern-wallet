@@ -335,11 +335,17 @@ private fun AccountHeader(
 /** Generic sample data for previews and README screenshots (no real accounts or amounts). */
 @Suppress("MagicNumber")
 private fun sampleAccountsState(compact: Boolean): AccountsState {
-    fun account(name: String, color: Long, icon: String?, includeInBalance: Boolean = true) = Account(
+    fun account(
+        name: String,
+        color: Long,
+        icon: String?,
+        includeInBalance: Boolean = true,
+        currency: String = "USD",
+    ) = Account(
         id = AccountId(UUID.nameUUIDFromBytes(name.toByteArray())),
         name = NotBlankTrimmedString.unsafe(name),
         color = ColorInt(color.toInt()),
-        asset = AssetCode.unsafe("USD"),
+        asset = AssetCode.unsafe(currency),
         icon = icon?.let { IconAsset.unsafe(it) },
         includeInBalance = includeInBalance,
         orderNum = 0.0,
@@ -355,11 +361,12 @@ private fun sampleAccountsState(compact: Boolean): AccountsState {
                 monthlyIncome = 4250.0
             ),
             AccountData(
-                account = account("Savings", 0xFFF29F30, null),
-                balance = 8250.0,
-                balanceBaseCurrency = null,
+                // Foreign-currency account: covers the converted-balance row (BalanceRowMini).
+                account = account("Savings", 0xFFF29F30, null, currency = "EUR"),
+                balance = 7590.0,
+                balanceBaseCurrency = 8250.0,
                 monthlyExpenses = 0.0,
-                monthlyIncome = 500.0
+                monthlyIncome = 460.0
             ),
             AccountData(
                 account = account("Cash", 0xFF00897B, "cash"),
