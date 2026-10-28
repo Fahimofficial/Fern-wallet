@@ -40,7 +40,7 @@ class DbTransactionRunnerTest {
     }
 
     @Test
-    fun interruptedWrite_rollsBackEverything() = runBlocking {
+    fun interruptedWrite_rollsBackEverything(): Unit = runBlocking {
         runCatching {
             runner.run {
                 // Same shape as moving statement values: delete, then write (never reached).
@@ -53,7 +53,7 @@ class DbTransactionRunnerTest {
     }
 
     @Test
-    fun completedWrite_commits() = runBlocking {
+    fun completedWrite_commits(): Unit = runBlocking {
         val moved = saved.copy(nominalClosingEpochDay = 20_471)
         runner.run {
             db.writeCreditCardDao.deleteStatementsByAccountId(cardId)
