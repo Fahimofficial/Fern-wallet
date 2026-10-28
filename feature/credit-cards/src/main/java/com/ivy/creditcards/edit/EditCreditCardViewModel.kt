@@ -303,7 +303,7 @@ class EditCreditCardViewModel @Inject constructor(
                 // One transaction: the new schedule, its moved statement values and the account
                 // are written together, so they can never be left out of step.
                 transactionRunner.run {
-                    moveSavedStatements(id, result.card.statementDay)
+                    moveSavedStatements(id, result.card.statementDay, result.card.openingDate)
                     creditCardRepository.save(result.card)
                     accountRepository.save(account)
                 }
@@ -321,12 +321,15 @@ class EditCreditCardViewModel @Inject constructor(
      * Saved bank-statement values are keyed by the old schedule's closing dates; when the
      * statement day changes they're moved to the new schedule instead of silently detaching.
      */
-    private suspend fun moveSavedStatements(id: AccountId, newStatementDay: Int?) {
+    private suspend fun moveSavedStatements(id: AccountId, newStatementDay: Int?, openingDate: LocalDate) {
         val oldStatementDay = creditCardRepository.findByAccountId(id)?.statementDay
         if (newStatementDay == null || newStatementDay == oldStatementDay) return
         val saved = creditCardRepository.findStatementOverrides(id)
         if (saved.isEmpty()) return
-        creditCardRepository.replaceStatementOverrides(id, StatementOverrideRemapper.remap(saved, newStatementDay))
+        creditCardRepository.replaceStatementOverrides(
+            id,
+            StatementOverrideRemapper.remap(saved, newStatementDay, openingDate)
+        )
     }
 
     /** Readable fallback for a bank id no longer in the catalogue, e.g. "hdfc-bank" -> "Hdfc Bank". */
