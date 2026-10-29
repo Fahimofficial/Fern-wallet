@@ -1,14 +1,13 @@
 name: Prepare release
 
-# Manually triggered. Bumps version-name (date, YYYY.MM.DD) and version-code (+1) in
-# gradle/libs.versions.toml and opens a PR. After merging, push the tag `v<version-name>`
+# Manually triggered. Bumps version-name (today's UTC date, YYYY.MM.DD) and version-code (+1)
+# in gradle/libs.versions.toml and opens a PR. After merging, push the tag `v<version-name>`
 # to build the signed draft release (see .github/workflows/release.yml and docs/Releasing.md).
+#
+# No workflow inputs by design: the release version is derived only from the date, so the build
+# output can't be influenced by user-supplied parameters (CKV_GHA_7 / SLSA build integrity).
 on:
   workflow_dispatch:
-    inputs:
-      version_name:
-        description: 'Version name (default: today as YYYY.MM.DD)'
-        required: false
 
 permissions:
   contents: read
@@ -24,14 +23,9 @@ jobs:
 
       - name: Bump version in libs.versions.toml
         id: bump
-        env:
-          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name }}
         run: |
           FILE=gradle/libs.versions.toml
-          NAME="${INPUT_VERSION_NAME:-$(date -u +'%Y.%m.%d')}"
-          if ! echo "$NAME" | grep -Eq '^[0-9]{4}\.[0-9]{2}\.[0-9]{2}$'; then
-            echo "::error::version_name must look like YYYY.MM.DD"; exit 1
-          fi
+          NAME="$(date -u +'%Y.%m.%d')"
           CODE=$(grep -E '^version-code *=' $FILE | sed -E 's/.*"(.*)".*/\1/')
           NEW_CODE=$((CODE + 1))
           sed -i -E "s/^version-name = \".*\"/version-name = \"$NAME\"/" $FILE

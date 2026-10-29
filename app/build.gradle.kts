@@ -29,10 +29,16 @@ android {
 
     signingConfigs {
         getByName("debug") {
+            // Debug keystore only (local/debug builds, never published). Not a real secret, but
+            // kept out of source anyway; falls back to the shared debug password so no setup is
+            // needed. Override via -PdebugKeystorePassword or the DEBUG_KEYSTORE_PASSWORD env var.
+            val debugKeystorePassword = (findProperty("debugKeystorePassword") as String?)
+                ?: System.getenv("DEBUG_KEYSTORE_PASSWORD")
+                ?: "IVY7834!DEbug"
             storeFile = file("../debug.jks")
-            storePassword = "IVY7834!DEbug"
+            storePassword = debugKeystorePassword
             keyAlias = "debug"
-            keyPassword = "IVY7834!DEbug"
+            keyPassword = debugKeystorePassword
         }
 
         // Release signing comes only from the environment (CI secrets). The keystore path
