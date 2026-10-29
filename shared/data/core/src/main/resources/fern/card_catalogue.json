@@ -1,0 +1,5283 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-10-27",
+  "sources": [
+    {
+      "id": "rbi-banks",
+      "title": "RBI – Banks in India (list of scheduled commercial banks, SFBs, payments banks, foreign banks, RRBs, LABs)",
+      "url": "https://www.rbi.org.in/commonman/English/scripts/banksinindia.aspx",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "rbi-master-direction",
+      "title": "RBI (Commercial Banks – Credit Cards and Debit Cards: Issuance and Conduct) Directions, 2025 – RBI/DOR/2025-26/155 dated 28 Nov 2025, updated as on 1 Oct 2026",
+      "url": "https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=13155",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "rbi-card-stats",
+      "title": "RBI – Bank-wise ATM/POS/Card Statistics, September 2026 (provisional)",
+      "url": "https://www.rbi.org.in/Scripts/ATMView.aspx?atmid=187",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "hdfc-bank-cards",
+      "title": "Official credit-card listing – HDFC Bank",
+      "url": "https://www.hdfc.bank.in/credit-cards",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "icici-bank-cards",
+      "title": "Official credit-card listing – ICICI Bank",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "axis-bank-cards",
+      "title": "Official credit-card listing – Axis Bank",
+      "url": "https://www.axis.bank.in/cards/credit-card",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "kotak-mahindra-bank-cards",
+      "title": "Official credit-card listing – Kotak Mahindra Bank",
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "idfc-first-bank-cards",
+      "title": "Official credit-card listing – IDFC FIRST Bank",
+      "url": "https://www.idfcfirst.bank.in/credit-card",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "indusind-bank-cards",
+      "title": "Official credit-card listing – IndusInd Bank",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card.html",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "rbl-bank-cards",
+      "title": "Official credit-card listing – RBL Bank",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/category",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "au-small-finance-bank-cards",
+      "title": "Official credit-card listing – AU Small Finance Bank",
+      "url": "https://www.au.bank.in/personal-banking/credit-cards",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "standard-chartered-bank-cards",
+      "title": "Official credit-card listing – Standard Chartered",
+      "url": "https://www.sc.bank.in/credit-cards/",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "hsbc-india-cards",
+      "title": "Official credit-card listing – HSBC India",
+      "url": "https://www.hsbc.bank.in/credit-cards/",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "american-express-banking-corp-cards",
+      "title": "Official credit-card listing – American Express",
+      "url": "https://www.americanexpress.com/in/credit-cards/",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "yes-bank-cards",
+      "title": "Official credit-card listing – YES Bank",
+      "url": "https://www.yes.bank.in/personal-banking/yes-individual/cards/credit-cards",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "bobcard-cards",
+      "title": "Official credit-card listing – BOBCARD",
+      "url": "https://www.bobcard.co.in/credit-card-types",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "sbi-card-cards",
+      "title": "Official credit-card listing – SBI Card",
+      "url": "https://www.sbicard.com/en/personal/credit-cards.page",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "punjab-national-bank-cards",
+      "title": "Official credit-card listing – Punjab National Bank",
+      "url": "https://creditcard.pnb.bank.in/",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "canara-bank-cards",
+      "title": "Official credit-card listing – Canara Bank",
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "union-bank-of-india-cards",
+      "title": "Official credit-card listing – Union Bank of India",
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "indian-overseas-bank-cards",
+      "title": "Official credit-card listing – Indian Overseas Bank",
+      "url": "https://www.iob.bank.in/en/credit-card",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "utkarsh-small-finance-bank-cards",
+      "title": "Official credit-card listing – Utkarsh Small Finance Bank",
+      "url": "https://www.utkarsh.bank.in/personal/cards/credit-card",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "dbs-bank-india-cards",
+      "title": "Official credit-card listing – DBS Bank India",
+      "url": "https://www.dbs.bank.in/in/credit-cards/default.html",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "sbm-bank-india-cards",
+      "title": "Official credit-card listing – SBM Bank India",
+      "url": "https://www.sbm.bank.in/personal-banking/cards/secured-credit-card",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "slice-small-finance-bank-cards",
+      "title": "Official credit-card listing – slice Small Finance Bank",
+      "url": "https://slice.bank.in/credit-card",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "dcb-bank-cards",
+      "title": "Official credit-card listing – DCB Bank",
+      "url": "https://www.dcb.bank.in/",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "tamilnad-mercantile-bank-cards",
+      "title": "Official credit-card listing – Tamilnad Mercantile Bank",
+      "url": "https://www.tmb.bank.in/personal/retail-cards/tmb-wings-rupay-credit-card",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "city-union-bank-cards",
+      "title": "Official credit-card listing – City Union Bank",
+      "url": "https://www.cityunionbank.bank.in/Creditcard",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "karur-vysya-bank-cards",
+      "title": "Official credit-card listing – Karur Vysya Bank",
+      "url": "https://www.kvb.bank.in/personal/cards/kvb-credit-cards/",
+      "accessed": "2026-10-27"
+    },
+    {
+      "id": "idbi-bank-cards",
+      "title": "Official credit-card listing – IDBI Bank",
+      "url": "https://www.idbibank.in/winnings-credit-card.aspx",
+      "accessed": "2026-10-27"
+    }
+  ],
+  "banks": [
+    {
+      "id": "american-express-banking-corp",
+      "name": "American Express Banking Corporation",
+      "displayName": "American Express",
+      "aliases": [
+        "Amex",
+        "AEBC"
+      ],
+      "category": "FOREIGN",
+      "website": "https://www.americanexpress.com/in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "american-express-banking-corp-cards"
+      ]
+    },
+    {
+      "id": "au-small-finance-bank",
+      "name": "Au Small Finance Bank Limited",
+      "displayName": "AU Small Finance Bank",
+      "aliases": [
+        "AU Bank",
+        "AU SFB"
+      ],
+      "category": "SMALL_FINANCE",
+      "website": "https://www.au.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "au-small-finance-bank-cards"
+      ]
+    },
+    {
+      "id": "axis-bank",
+      "name": "Axis Bank Limited",
+      "displayName": "Axis Bank",
+      "aliases": [
+        "Axis"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.axis.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "axis-bank-cards"
+      ]
+    },
+    {
+      "id": "bandhan-bank",
+      "name": "Bandhan Bank Limited",
+      "displayName": "Bandhan Bank",
+      "aliases": [
+        "Bandhan"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.bandhan.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "bank-of-baroda",
+      "name": "Bank of Baroda",
+      "displayName": "Bank of Baroda",
+      "aliases": [
+        "BoB",
+        "BOB"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://bankofbaroda.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "bank-of-india",
+      "name": "Bank of India",
+      "displayName": "Bank of India",
+      "aliases": [
+        "BOI"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://bankofindia.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "bank-of-maharashtra",
+      "name": "Bank of Maharashtra",
+      "displayName": "Bank of Maharashtra",
+      "aliases": [
+        "BoM",
+        "Mahabank"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://bankofmaharashtra.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": false,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "bobcard",
+      "name": "BOBCARD Limited",
+      "displayName": "BOBCARD",
+      "aliases": [
+        "BOB Card",
+        "Bank of Baroda Credit Card",
+        "BOB Financial"
+      ],
+      "category": "NBFC",
+      "website": "https://www.bobcard.co.in/",
+      "rbiListed": false,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-master-direction",
+        "rbi-card-stats",
+        "bobcard-cards"
+      ]
+    },
+    {
+      "id": "canara-bank",
+      "name": "Canara Bank",
+      "displayName": "Canara Bank",
+      "aliases": [
+        "Canara"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://www.canarabank.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "canara-bank-cards"
+      ]
+    },
+    {
+      "id": "central-bank-of-india",
+      "name": "Central Bank of India",
+      "displayName": "Central Bank of India",
+      "aliases": [
+        "CBI",
+        "Cent Bank"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://centralbank.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": false,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "citibank-na",
+      "name": "Citibank N.A.",
+      "displayName": "Citibank",
+      "aliases": [
+        "Citi"
+      ],
+      "category": "FOREIGN",
+      "website": "https://www.citigroup.com/global",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "city-union-bank",
+      "name": "City Union Bank Limited",
+      "displayName": "City Union Bank",
+      "aliases": [
+        "CUB"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://cityunionbank.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "city-union-bank-cards"
+      ]
+    },
+    {
+      "id": "csb-bank",
+      "name": "CSB Bank Limited",
+      "displayName": "CSB Bank",
+      "aliases": [
+        "CSB",
+        "Catholic Syrian Bank"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.csb.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "dbs-bank-india",
+      "name": "DBS Bank India Limited",
+      "displayName": "DBS Bank India",
+      "aliases": [
+        "DBS",
+        "digibank"
+      ],
+      "category": "FOREIGN",
+      "website": "https://www.dbs.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "dbs-bank-india-cards"
+      ]
+    },
+    {
+      "id": "dcb-bank",
+      "name": "DCB Bank Limited",
+      "displayName": "DCB Bank",
+      "aliases": [
+        "DCB"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.dcb.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "dcb-bank-cards"
+      ]
+    },
+    {
+      "id": "dhanlaxmi-bank",
+      "name": "Dhanlaxmi Bank Limited",
+      "displayName": "Dhanlaxmi Bank",
+      "aliases": [
+        "Dhanlakshmi"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.dhan.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "equitas-small-finance-bank",
+      "name": "Equitas Small Finance Bank Limited",
+      "displayName": "Equitas Small Finance Bank",
+      "aliases": [
+        "Equitas",
+        "Equitas SFB"
+      ],
+      "category": "SMALL_FINANCE",
+      "website": "https://equitas.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "esaf-small-finance-bank",
+      "name": "ESAF Small Finance Bank Limited",
+      "displayName": "ESAF Small Finance Bank",
+      "aliases": [
+        "ESAF"
+      ],
+      "category": "SMALL_FINANCE",
+      "website": "https://www.esaf.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "federal-bank",
+      "name": "Federal Bank Limited",
+      "displayName": "Federal Bank",
+      "aliases": [
+        "Federal"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.federal.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "hdfc-bank",
+      "name": "HDFC Bank Limited",
+      "displayName": "HDFC Bank",
+      "aliases": [
+        "HDFC"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.hdfc.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "hdfc-bank-cards"
+      ]
+    },
+    {
+      "id": "hsbc-india",
+      "name": "Hong Kong and Shanghai Banking Corporation Limited",
+      "displayName": "HSBC India",
+      "aliases": [
+        "HSBC"
+      ],
+      "category": "FOREIGN",
+      "website": "https://www.hsbc.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "hsbc-india-cards"
+      ]
+    },
+    {
+      "id": "icici-bank",
+      "name": "ICICI Bank Limited",
+      "displayName": "ICICI Bank",
+      "aliases": [
+        "ICICI"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.icici.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "icici-bank-cards"
+      ]
+    },
+    {
+      "id": "idbi-bank",
+      "name": "IDBI Bank Limited",
+      "displayName": "IDBI Bank",
+      "aliases": [
+        "IDBI"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.idbi.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "idbi-bank-cards"
+      ]
+    },
+    {
+      "id": "idfc-first-bank",
+      "name": "IDFC FIRST Bank Limited",
+      "displayName": "IDFC FIRST Bank",
+      "aliases": [
+        "IDFC",
+        "IDFC First"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.idfcfirst.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "idfc-first-bank-cards"
+      ]
+    },
+    {
+      "id": "indian-bank",
+      "name": "Indian Bank",
+      "displayName": "Indian Bank",
+      "aliases": [],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://indianbank.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "indian-overseas-bank",
+      "name": "Indian Overseas Bank",
+      "displayName": "Indian Overseas Bank",
+      "aliases": [
+        "IOB"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://www.iob.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "indian-overseas-bank-cards"
+      ]
+    },
+    {
+      "id": "indusind-bank",
+      "name": "IndusInd Bank Limited",
+      "displayName": "IndusInd Bank",
+      "aliases": [
+        "IndusInd",
+        "Indus"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.indusind.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "indusind-bank-cards"
+      ]
+    },
+    {
+      "id": "jammu-and-kashmir-bank",
+      "name": "Jammu & Kashmir Bank Limited",
+      "displayName": "J&K Bank",
+      "aliases": [
+        "JKB",
+        "Jammu and Kashmir Bank"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://jkb.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "karnataka-bank",
+      "name": "Karnataka Bank Limited",
+      "displayName": "Karnataka Bank",
+      "aliases": [
+        "KBL"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.karnatakabank.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": false,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "karur-vysya-bank",
+      "name": "Karur Vysya Bank Limited",
+      "displayName": "Karur Vysya Bank",
+      "aliases": [
+        "KVB"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.kvb.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "karur-vysya-bank-cards"
+      ]
+    },
+    {
+      "id": "kotak-mahindra-bank",
+      "name": "Kotak Mahindra Bank Limited",
+      "displayName": "Kotak Mahindra Bank",
+      "aliases": [
+        "Kotak",
+        "Kotak 811"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.kotak.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "kotak-mahindra-bank-cards"
+      ]
+    },
+    {
+      "id": "nainital-bank",
+      "name": "Nainital Bank Limited",
+      "displayName": "Nainital Bank",
+      "aliases": [],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.nainitalbank.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": false,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "punjab-and-sind-bank",
+      "name": "Punjab & Sind Bank",
+      "displayName": "Punjab & Sind Bank",
+      "aliases": [
+        "PSB",
+        "Punjab and Sind Bank"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://punjabandsind.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": false,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "punjab-national-bank",
+      "name": "Punjab National Bank",
+      "displayName": "Punjab National Bank",
+      "aliases": [
+        "PNB"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://pnb.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "punjab-national-bank-cards"
+      ]
+    },
+    {
+      "id": "rbl-bank",
+      "name": "RBL Bank Limited",
+      "displayName": "RBL Bank",
+      "aliases": [
+        "RBL",
+        "Ratnakar Bank"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.rbl.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "rbl-bank-cards"
+      ]
+    },
+    {
+      "id": "sbi-card",
+      "name": "SBI Cards and Payment Services Limited",
+      "displayName": "SBI Card",
+      "aliases": [
+        "SBI Card",
+        "SBICPSL",
+        "SBI Credit Card"
+      ],
+      "category": "NBFC",
+      "website": "https://www.sbicard.com/",
+      "rbiListed": false,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-master-direction",
+        "rbi-card-stats",
+        "sbi-card-cards"
+      ]
+    },
+    {
+      "id": "sbm-bank-india",
+      "name": "SBM Bank (India) Limited",
+      "displayName": "SBM Bank India",
+      "aliases": [
+        "SBM"
+      ],
+      "category": "FOREIGN",
+      "website": "https://www.sbm.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "sbm-bank-india-cards"
+      ]
+    },
+    {
+      "id": "slice-small-finance-bank",
+      "name": "slice Small Finance Bank Limited",
+      "displayName": "slice Small Finance Bank",
+      "aliases": [
+        "slice",
+        "North East Small Finance Bank",
+        "NESFB"
+      ],
+      "category": "SMALL_FINANCE",
+      "website": "https://slice.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "slice-small-finance-bank-cards"
+      ]
+    },
+    {
+      "id": "south-indian-bank",
+      "name": "South Indian Bank Limited",
+      "displayName": "South Indian Bank",
+      "aliases": [
+        "SIB"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.southindianbank.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "standard-chartered-bank",
+      "name": "Standard Chartered Bank",
+      "displayName": "Standard Chartered",
+      "aliases": [
+        "SC",
+        "StanChart",
+        "SCB"
+      ],
+      "category": "FOREIGN",
+      "website": "https://www.sc.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "standard-chartered-bank-cards"
+      ]
+    },
+    {
+      "id": "state-bank-of-india",
+      "name": "State Bank of India",
+      "displayName": "State Bank of India",
+      "aliases": [
+        "SBI"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://sbi.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "suryoday-small-finance-bank",
+      "name": "Suryoday Small Finance Bank Limited",
+      "displayName": "Suryoday Small Finance Bank",
+      "aliases": [
+        "Suryoday"
+      ],
+      "category": "SMALL_FINANCE",
+      "website": "https://suryoday.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "tamilnad-mercantile-bank",
+      "name": "Tamilnad Mercantile Bank Limited",
+      "displayName": "Tamilnad Mercantile Bank",
+      "aliases": [
+        "TMB"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.tmb.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "tamilnad-mercantile-bank-cards"
+      ]
+    },
+    {
+      "id": "uco-bank",
+      "name": "UCO Bank",
+      "displayName": "UCO Bank",
+      "aliases": [
+        "UCO"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://www.uco.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": false,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "union-bank-of-india",
+      "name": "Union Bank of India",
+      "displayName": "Union Bank of India",
+      "aliases": [
+        "UBI",
+        "Union Bank"
+      ],
+      "category": "PUBLIC_SECTOR",
+      "website": "https://www.unionbankofindia.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "union-bank-of-india-cards"
+      ]
+    },
+    {
+      "id": "unity-small-finance-bank",
+      "name": "Unity Small Finance Bank Limited",
+      "displayName": "Unity Small Finance Bank",
+      "aliases": [
+        "Unity Bank"
+      ],
+      "category": "SMALL_FINANCE",
+      "website": "https://unity.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats"
+      ]
+    },
+    {
+      "id": "utkarsh-small-finance-bank",
+      "name": "Utkarsh Small Finance Bank Limited",
+      "displayName": "Utkarsh Small Finance Bank",
+      "aliases": [
+        "Utkarsh"
+      ],
+      "category": "SMALL_FINANCE",
+      "website": "https://www.utkarsh.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "utkarsh-small-finance-bank-cards"
+      ]
+    },
+    {
+      "id": "yes-bank",
+      "name": "YES Bank Limited",
+      "displayName": "YES Bank",
+      "aliases": [
+        "Yes Bank",
+        "YES"
+      ],
+      "category": "PRIVATE_SECTOR",
+      "website": "https://www.yes.bank.in/",
+      "rbiListed": true,
+      "creditCardIssuer": true,
+      "sourceIds": [
+        "rbi-banks",
+        "rbi-card-stats",
+        "yes-bank-cards"
+      ]
+    }
+  ],
+  "products": [
+    {
+      "id": "american-express-banking-corp-american-express-membership-rewards-credit-card",
+      "bankId": "american-express-banking-corp",
+      "name": "American Express Membership Rewards® Credit Card",
+      "networks": [
+        "AMEX"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.americanexpress.com/in/credit-cards/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "american-express-banking-corp-american-express-platinum-reserve-credit-card",
+      "bankId": "american-express-banking-corp",
+      "name": "American Express Platinum Reserve® Credit Card",
+      "networks": [
+        "AMEX"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.americanexpress.com/in/credit-cards/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "american-express-banking-corp-american-express-smartearn-credit-card",
+      "bankId": "american-express-banking-corp",
+      "name": "American Express SmartEarn® Credit Card",
+      "networks": [
+        "AMEX"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.americanexpress.com/in/credit-cards/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "american-express-banking-corp-american-express-platinum-travel-credit-card",
+      "bankId": "american-express-banking-corp",
+      "name": "American Express® Platinum Travel Credit Card",
+      "networks": [
+        "AMEX"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.americanexpress.com/in/credit-cards/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-altura-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Altura Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/altura-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-altura-plus-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Altura Plus Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/altura-plus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-ananta-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Ananta Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/ananta-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-au-ca-metal-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "AU CA Metal Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/ca-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-au-cs-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "AU CS Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/au-cs-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-au-zaggle-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "AU Zaggle Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Zaggle",
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/au-zaggle-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-business-cashback-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Business Cashback Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/commercial-credit-cards/business-cashback-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-cheq-au-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "CheQ AU Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "CheQ",
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/cheq-au-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-ixigo-au-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "ixigo AU Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "ixigo",
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/ixigo-au-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-kosmo-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Kosmo Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/kosmo-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-laksya-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Laksya Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/laksya-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-lit-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "LIT Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/lit-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-nomo-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "NOMO Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/nomo-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-paytm-au-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Paytm AU Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Paytm",
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/paytm-au-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-prathama-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Prathama Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/prathama-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-spont-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Spont Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/au-spont-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-tejas-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Tejas Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/tejas-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-traverse-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Traverse Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/premium-banking/credit-cards/traverse-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-vetta-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Vetta Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/vetta-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-xcite-ace-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Xcite Ace Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/swipeup-program/xcite-ace-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-xcite-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Xcite Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/swipeup-program/xcite-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-xcite-ultra-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Xcite Ultra Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/swipeup-program/xcite-ultra-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-zenith-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Zenith Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/personal-banking/credit-cards/zenith-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "au-small-finance-bank-zenith-plus-credit-card",
+      "bankId": "au-small-finance-bank",
+      "name": "Zenith+ Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.au.bank.in/premium-banking/credit-cards/zenith-plus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-airtel-axis-bank-credit-card",
+      "bankId": "axis-bank",
+      "name": "Airtel Axis Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Airtel",
+      "url": "https://www.axis.bank.in/cards/credit-card/airtel-axis-bank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-axis-bank-horizon-credit-card",
+      "bankId": "axis-bank",
+      "name": "Axis Bank Horizon Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.axis.bank.in/cards/credit-card/axis-horizon-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-axis-bank-magnus-credit-card",
+      "bankId": "axis-bank",
+      "name": "Axis Bank Magnus Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.axis.bank.in/cards/credit-card/axis-bank-magnus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-axis-bank-my-zone-credit-card",
+      "bankId": "axis-bank",
+      "name": "Axis Bank My Zone Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.axis.bank.in/cards/credit-card/axis-bank-my-zone-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-axis-bank-my-zone-easy-credit-card",
+      "bankId": "axis-bank",
+      "name": "Axis Bank MY Zone Easy Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.axis.bank.in/cards/credit-card/my-zone-easy-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-axis-bank-privilege-credit-card",
+      "bankId": "axis-bank",
+      "name": "Axis Bank Privilege Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.axis.bank.in/cards/credit-card/privilege-credit-card-with-unlimited-benefits",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-axis-bank-rewards-credit-card",
+      "bankId": "axis-bank",
+      "name": "Axis Bank Rewards Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.axis.bank.in/cards/credit-card/rewards-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-flipkart-axis-bank-credit-card",
+      "bankId": "axis-bank",
+      "name": "Flipkart Axis Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Flipkart",
+      "url": "https://www.axis.bank.in/cards/credit-card/flipkart-axisbank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-indianoil-axis-bank-credit-card",
+      "bankId": "axis-bank",
+      "name": "IndianOil Axis Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IndianOil",
+      "url": "https://www.axis.bank.in/cards/credit-card/indianoil-axis-bank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-indianoil-easy-axis-bank-credit-card",
+      "bankId": "axis-bank",
+      "name": "IndianOil Easy Axis Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IndianOil",
+      "url": "https://www.axis.bank.in/cards/credit-card/indianoil-axis-bank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-indigo-axis-bank-credit-card",
+      "bankId": "axis-bank",
+      "name": "IndiGo Axis Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IndiGo",
+      "url": "https://www.axis.bank.in/cards/credit-card/indigo-axis-bank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-neo-credit-card",
+      "bankId": "axis-bank",
+      "name": "Neo Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.axis.bank.in/cards/credit-card/axis-bank-neo-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-privilege-easy-credit-card",
+      "bankId": "axis-bank",
+      "name": "Privilege Easy Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.axis.bank.in/cards/credit-card/privilege-easy-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "axis-bank-select-credit-card",
+      "bankId": "axis-bank",
+      "name": "Select Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.axis.bank.in/cards/credit-card/axis-bank-select-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-assam-rifles-the-sentinel-bobcard",
+      "bankId": "bobcard",
+      "name": "Assam Rifles The SENTINEL BOBCARD",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Assam Rifles",
+      "url": "https://www.bobcard.co.in/credit-card-types/assam-rifles-the-sentinel",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-cashback-credit-card",
+      "bankId": "bobcard",
+      "name": "BOBCARD Cashback Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/bobcard-cashback",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-easy",
+      "bankId": "bobcard",
+      "name": "BOBCARD EASY",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/easy",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-empower",
+      "bankId": "bobcard",
+      "name": "BOBCARD EMPOWER",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/empower",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-eterna",
+      "bankId": "bobcard",
+      "name": "BOBCARD ETERNA",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/eterna",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-etihad-guest-credit-card",
+      "bankId": "bobcard",
+      "name": "BOBCARD Etihad Guest Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Etihad Guest",
+      "url": "https://www.bobcard.co.in/credit-card-types/bobcard-etihad-guest",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-etihad-guest-premium-credit-card",
+      "bankId": "bobcard",
+      "name": "BOBCARD Etihad Guest Premium Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Etihad Guest",
+      "url": "https://www.bobcard.co.in/credit-card-types/bobcard-etihad-guest-premium",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-hpcl-energie",
+      "bankId": "bobcard",
+      "name": "BOBCARD HPCL Energie",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "HPCL",
+      "url": "https://www.bobcard.co.in/credit-card-types/fuel-credit-card-hpcl-energie",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-micro-enterprise-credit-card",
+      "bankId": "bobcard",
+      "name": "BOBCARD Micro Enterprise Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/micro-enterprise-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-one-credit-card",
+      "bankId": "bobcard",
+      "name": "BOBCARD One Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/bobcard-one",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-pragati",
+      "bankId": "bobcard",
+      "name": "BOBCARD PRAGATI",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/upgb-ggb-brkgb-pragati",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-premier",
+      "bankId": "bobcard",
+      "name": "BOBCARD PREMIER",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/premier",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-prime",
+      "bankId": "bobcard",
+      "name": "BOBCARD PRIME",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/prime",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-scapia-credit-card",
+      "bankId": "bobcard",
+      "name": "BOBCARD Scapia Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Scapia",
+      "url": "https://www.bobcard.co.in/credit-card-types/bobcard-scapia-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-select",
+      "bankId": "bobcard",
+      "name": "BOBCARD SELECT",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/select",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-tiara",
+      "bankId": "bobcard",
+      "name": "BOBCARD TIARA",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/tiara",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-uni-goldx",
+      "bankId": "bobcard",
+      "name": "BOBCARD Uni GoldX",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Uni",
+      "url": "https://www.bobcard.co.in/credit-card-types/bobcard-uni-goldx",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-bobcard-vikram",
+      "bankId": "bobcard",
+      "name": "BOBCARD VIKRAM",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.bobcard.co.in/credit-card-types/vikram",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-cma-one-bobcard",
+      "bankId": "bobcard",
+      "name": "CMA One BOBCARD",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "ICMAI",
+      "url": "https://www.bobcard.co.in/credit-card-types/cma-one",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-icai-exclusive-bobcard",
+      "bankId": "bobcard",
+      "name": "ICAI Exclusive BOBCARD",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "ICAI",
+      "url": "https://www.bobcard.co.in/credit-card-types/icai-exclusive-bobcard",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-icsi-diamond-credit-card",
+      "bankId": "bobcard",
+      "name": "ICSI Diamond Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "ICSI",
+      "url": "https://www.bobcard.co.in/credit-card-types/icsi-diamond",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-indian-army-yoddha-bobcard",
+      "bankId": "bobcard",
+      "name": "Indian Army YODDHA BOBCARD",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Indian Army",
+      "url": "https://www.bobcard.co.in/credit-card-types/indian-army-yoddha",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-indian-coast-guard-rakshamah-bobcard",
+      "bankId": "bobcard",
+      "name": "Indian Coast Guard RAKSHAMAH BOBCARD",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Indian Coast Guard",
+      "url": "https://www.bobcard.co.in/credit-card-types/indian-coast-guard-rakshamah",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-indian-navy-varunah-bobcard",
+      "bankId": "bobcard",
+      "name": "Indian Navy VARUNAH BOBCARD",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Indian Navy",
+      "url": "https://www.bobcard.co.in/credit-card-types/indian-navy-varunah",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-irctc-bobcard",
+      "bankId": "bobcard",
+      "name": "IRCTC BOBCARD",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IRCTC",
+      "url": "https://www.bobcard.co.in/credit-card-types/irctc-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-nainital-bank-renaissance-bobcard",
+      "bankId": "bobcard",
+      "name": "Nainital Bank RENAISSANCE BOBCARD",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Nainital Bank",
+      "url": "https://www.bobcard.co.in/credit-card-types/nainital-bank-renaissance",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-pm-svanidhi-bobcard",
+      "bankId": "bobcard",
+      "name": "PM SVANidhi BOBCARD",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "PM SVANidhi",
+      "url": "https://www.bobcard.co.in/credit-card-types/pm-svanidhi",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-snapdeal-bobcard",
+      "bankId": "bobcard",
+      "name": "Snapdeal BOBCARD",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Snapdeal",
+      "url": "https://www.bobcard.co.in/credit-card-types/snapdeal-bobcard",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-ujjivan-sfb-elite",
+      "bankId": "bobcard",
+      "name": "UJJIVAN SFB Elite",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Ujjivan Small Finance Bank",
+      "url": "https://www.bobcard.co.in/credit-card-types/ujjivan-sfb-elite",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "bobcard-ujjivan-sfb-platinum",
+      "bankId": "bobcard",
+      "name": "UJJIVAN SFB Platinum",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Ujjivan Small Finance Bank",
+      "url": "https://www.bobcard.co.in/credit-card-types/ujjivan-sfb-platinum",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-mastercard-gold-credit-card",
+      "bankId": "canara-bank",
+      "name": "Mastercard Gold Credit Card",
+      "networks": [
+        "MASTERCARD"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-mastercard-gold-secured-credit-card",
+      "bankId": "canara-bank",
+      "name": "Mastercard Gold Secured Credit Card",
+      "networks": [
+        "MASTERCARD"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-mastercard-platinum-credit-card",
+      "bankId": "canara-bank",
+      "name": "Mastercard Platinum Credit Card",
+      "networks": [
+        "MASTERCARD"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-mastercard-standard-credit-card",
+      "bankId": "canara-bank",
+      "name": "MasterCard Standard Credit Card",
+      "networks": [
+        "MASTERCARD"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-mastercard-world-credit-card",
+      "bankId": "canara-bank",
+      "name": "MasterCard World Credit Card",
+      "networks": [
+        "MASTERCARD"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-rupay-classic-credit-card",
+      "bankId": "canara-bank",
+      "name": "Rupay Classic Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-rupay-platinum-credit-card",
+      "bankId": "canara-bank",
+      "name": "Rupay Platinum Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-rupay-platinum-secured-credit-card",
+      "bankId": "canara-bank",
+      "name": "Rupay Platinum Secured Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-rupay-select-credit-card",
+      "bankId": "canara-bank",
+      "name": "Rupay Select Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-rupay-select-secured-credit-card",
+      "bankId": "canara-bank",
+      "name": "Rupay Select Secured Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-visa-classic-credit-card",
+      "bankId": "canara-bank",
+      "name": "VISA Classic Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-visa-gold-credit-card",
+      "bankId": "canara-bank",
+      "name": "VISA Gold Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-visa-gold-secured-credit-card",
+      "bankId": "canara-bank",
+      "name": "VISA Gold Secured Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-visa-platinum-credit-card",
+      "bankId": "canara-bank",
+      "name": "Visa Platinum Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "canara-bank-visa-signature-credit-card",
+      "bankId": "canara-bank",
+      "name": "Visa Signature Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.canarabank.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "city-union-bank-dhi-cub-visa-signature-credit-card",
+      "bankId": "city-union-bank",
+      "name": "Dhi CUB Visa Signature Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.cityunionbank.bank.in/Creditcard",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "dbs-bank-india-bajaj-finserv-dbs-bank-supercard",
+      "bankId": "dbs-bank-india",
+      "name": "Bajaj Finserv DBS Bank SuperCard",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Bajaj Finserv",
+      "url": "https://www.dbs.bank.in/in/credit-cards/default.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "dbs-bank-india-dbs-spark-credit-card",
+      "bankId": "dbs-bank-india",
+      "name": "DBS Spark Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.dbs.bank.in/in/credit-cards/default.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "dbs-bank-india-dbs-vantage-card",
+      "bankId": "dbs-bank-india",
+      "name": "DBS Vantage Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.dbs.bank.in/in/credit-cards/default.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "dcb-bank-dcb-payless-credit-card",
+      "bankId": "dcb-bank",
+      "name": "DCB PayLess Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.dcb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-best-price-save-max-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Best Price Save Max Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Best Price",
+      "url": "https://www.hdfc.bank.in/business-credit-cards/best-price-save-max-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-best-price-save-smart-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Best Price Save Smart Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Best Price",
+      "url": "https://www.hdfc.bank.in/business-credit-cards/best-price-save-smart-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-bizblack-metal-edition-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "BizBlack Metal Edition Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/business-credit-cards/biz-black-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-bizfirst-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "BizFirst Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/business-credit-cards/biz-first-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-bizgrow-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "BizGrow Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/business-credit-cards/biz-grow-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-bizpower-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "BizPower Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/business-credit-cards/biz-power-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-business-regalia-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Business Regalia Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/business-credit-cards/business-regalia-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-csc-small-business-moneyback-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "CSC Small Business MoneyBack Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/business-credit-cards/csc-small-business-moneyback-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-diners-club-privilege-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Diners Club Privilege Credit Card",
+      "networks": [
+        "DINERS"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-flipkart-wholesale-hdfc-bank-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Flipkart Wholesale HDFC Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Flipkart Wholesale",
+      "url": "https://www.hdfc.bank.in/credit-cards/flipkart-wholesale-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-freedom-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Freedom Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/credit-cards/freedom-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-giga-business-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "GIGA Business Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/business-credit-cards/giga-business-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-hdfc-bank-upi-rupay-biz-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "HDFC Bank UPI Rupay Biz Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/business-credit-cards/hdfc-bank-upi-rupay-biz-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-hdfc-bank-upi-rupay-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "HDFC Bank UPI RuPay Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/credit-cards/hdfc-bank-upi-rupay-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-indianoil-hdfc-bank-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "IndianOil HDFC Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IndianOil",
+      "url": "https://www.hdfc.bank.in/credit-cards/indianoil-hdfc-bank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-irctc-hdfc-bank-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "IRCTC HDFC Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IRCTC",
+      "url": "https://www.hdfc.bank.in/credit-cards/irctc-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-marriott-bonvoy-hdfc-bank-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Marriott Bonvoy HDFC Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Marriott Bonvoy",
+      "url": "https://www.hdfc.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-millennia-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Millennia Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/credit-cards/millennia-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-moneyback-plus-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "MoneyBack+ Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/credit-cards/moneyback-plus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-paytm-hdfc-bank-business-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Paytm HDFC Bank Business Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Paytm",
+      "url": "https://www.hdfc.bank.in/business-credit-cards/paytm-hdfc-bank-business-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-paytm-hdfc-bank-select-business-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Paytm HDFC Bank Select Business Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Paytm",
+      "url": "https://www.hdfc.bank.in/business-credit-cards/paytm-select-business-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-phonepe-hdfc-bank-ultimo-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "PhonePe HDFC Bank Ultimo Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "PhonePe",
+      "url": "https://www.hdfc.bank.in/credit-cards/phonepe-hdfc-bank-ultimo-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-phonepe-hdfc-bank-uno-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "PhonePe HDFC Bank Uno Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "PhonePe",
+      "url": "https://www.hdfc.bank.in/credit-cards/phonepe-hdfc-bank-uno-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-pine-labs-hdfc-bank-pro-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Pine Labs HDFC Bank Pro Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Pine Labs",
+      "url": "https://www.hdfc.bank.in/credit-cards/pine-labs-pro-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-pixel-go-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "PIXEL Go Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/credit-cards/pixel-go-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-pixel-play-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "PIXEL Play Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/credit-cards/pixel-play-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-regalia-gold-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Regalia Gold Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hdfc.bank.in/credit-cards/regalia-gold-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-shoppers-stop-hdfc-bank-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Shoppers Stop HDFC Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Shoppers Stop",
+      "url": "https://www.hdfc.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-swiggy-blck-hdfc-bank-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Swiggy BLCK HDFC Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Swiggy",
+      "url": "https://www.hdfc.bank.in/credit-cards/swiggy-blck-hdfc-bank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-swiggy-hdfc-bank-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Swiggy HDFC Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Swiggy",
+      "url": "https://www.hdfc.bank.in/credit-cards/swiggy-hdfc-bank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-swiggy-ornge-hdfc-bank-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Swiggy Ornge HDFC Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Swiggy",
+      "url": "https://www.hdfc.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hdfc-bank-tata-neu-plus-hdfc-bank-credit-card",
+      "bankId": "hdfc-bank",
+      "name": "Tata Neu Plus HDFC Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Tata Neu",
+      "url": "https://www.hdfc.bank.in/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hsbc-india-hsbc-live-plus-credit-card",
+      "bankId": "hsbc-india",
+      "name": "HSBC Live+ Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hsbc.bank.in/credit-cards/products/live-plus/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hsbc-india-hsbc-premier-credit-card",
+      "bankId": "hsbc-india",
+      "name": "HSBC Premier Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hsbc.bank.in/credit-cards/products/premier/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hsbc-india-hsbc-rupay-cashback-credit-card",
+      "bankId": "hsbc-india",
+      "name": "HSBC RuPay Cashback Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hsbc.bank.in/credit-cards/products/rupay-cashback-credit-card/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hsbc-india-hsbc-rupay-platinum-credit-card",
+      "bankId": "hsbc-india",
+      "name": "HSBC RuPay Platinum Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hsbc.bank.in/credit-cards/products/rupay-platinum-credit-card/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hsbc-india-hsbc-taj-credit-card",
+      "bankId": "hsbc-india",
+      "name": "HSBC Taj Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Taj",
+      "url": "https://www.hsbc.bank.in/credit-cards/products/taj/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hsbc-india-hsbc-travelone-credit-card",
+      "bankId": "hsbc-india",
+      "name": "HSBC TravelOne Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hsbc.bank.in/credit-cards/products/travelone/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "hsbc-india-hsbc-visa-platinum-credit-card",
+      "bankId": "hsbc-india",
+      "name": "HSBC Visa Platinum Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.hsbc.bank.in/credit-cards/products/visa-platinum/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-1838-reserve-credit-card",
+      "bankId": "icici-bank",
+      "name": "1838 Reserve Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/1838-reserve-icici-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-adani-one-platinum-credit-card",
+      "bankId": "icici-bank",
+      "name": "Adani One Platinum Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Adani One",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-adani-one-signature-credit-card",
+      "bankId": "icici-bank",
+      "name": "Adani One Signature Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Adani One",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/adani-icici-credit-card/signature-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-alumni-credit-card",
+      "bankId": "icici-bank",
+      "name": "Alumni Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/alumni-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-amazon-pay-credit-card",
+      "bankId": "icici-bank",
+      "name": "Amazon Pay Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Amazon Pay",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/amazon-pay-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-chennai-super-kings-credit-card",
+      "bankId": "icici-bank",
+      "name": "Chennai Super Kings Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Chennai Super Kings",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/csk-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-coral-credit-card",
+      "bankId": "icici-bank",
+      "name": "Coral Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/coral-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-emeralde-credit-card",
+      "bankId": "icici-bank",
+      "name": "Emeralde Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/emeralde-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-emeralde-private-metal-credit-card",
+      "bankId": "icici-bank",
+      "name": "Emeralde Private Metal Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/emeralde-private-metal-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-emirates-emeralde-credit-card",
+      "bankId": "icici-bank",
+      "name": "Emirates Emeralde Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Emirates",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-emirates-sapphiro-credit-card",
+      "bankId": "icici-bank",
+      "name": "Emirates Sapphiro Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Emirates",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-emirates-skywards-rubyx-credit-card",
+      "bankId": "icici-bank",
+      "name": "Emirates Skywards Rubyx Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Emirates Skywards",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-expression-credit-card",
+      "bankId": "icici-bank",
+      "name": "Expression Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/expressions-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-hpcl-coral-credit-card",
+      "bankId": "icici-bank",
+      "name": "HPCL Coral Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "HPCL",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/hpcl-coral-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-hpcl-super-saver-credit-card",
+      "bankId": "icici-bank",
+      "name": "HPCL Super Saver Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "HPCL",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/hpcl-super-saver",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-makemytrip-platinum-credit-card",
+      "bankId": "icici-bank",
+      "name": "MakeMyTrip Platinum Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "MakeMyTrip",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/makemytrip/platinum-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-makemytrip-signature-credit-card",
+      "bankId": "icici-bank",
+      "name": "MakeMyTrip Signature Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "MakeMyTrip",
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/makemytrip/signature-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-nri-coral-credit-card",
+      "bankId": "icici-bank",
+      "name": "NRI Coral Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-nri-sapphiro-credit-card",
+      "bankId": "icici-bank",
+      "name": "NRI Sapphiro Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-nri-secured-coral-credit-card",
+      "bankId": "icici-bank",
+      "name": "NRI Secured Coral Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-parakram-credit-card",
+      "bankId": "icici-bank",
+      "name": "Parakram Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/parakram-cards/parakram",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-parakram-select-credit-card",
+      "bankId": "icici-bank",
+      "name": "Parakram Select Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-platinum-chip-credit-card",
+      "bankId": "icici-bank",
+      "name": "Platinum Chip Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/platinum-chip-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-rubyx-credit-card",
+      "bankId": "icici-bank",
+      "name": "Rubyx Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/rubyx-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-sapphiro-credit-card",
+      "bankId": "icici-bank",
+      "name": "Sapphiro Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "icici-bank-times-black-credit-card",
+      "bankId": "icici-bank",
+      "name": "Times Black Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.icici.bank.in/personal-banking/cards/credit-card/times-black-icici-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idbi-bank-euphoria-world-credit-card",
+      "bankId": "idbi-bank",
+      "name": "Euphoria World Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idbibank.in/Euphoria-credit-card.aspx",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idbi-bank-idbi-bank-aspire-platinum-card",
+      "bankId": "idbi-bank",
+      "name": "IDBI Bank Aspire Platinum Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idbibank.in/aspire-credit-card.aspx",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idbi-bank-winnings-credit-card",
+      "bankId": "idbi-bank",
+      "name": "Winnings Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idbibank.in/winnings-credit-card.aspx",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-ashva-credit-card",
+      "bankId": "idfc-first-bank",
+      "name": "Ashva Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/metal-credit-card/ashva",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-business-max-credit-card",
+      "bankId": "idfc-first-bank",
+      "name": "Business Max Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/business-max-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-business-multiplier-credit-card",
+      "bankId": "idfc-first-bank",
+      "name": "Business Multiplier Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/business-multiplier-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-diamond-reserve",
+      "bankId": "idfc-first-bank",
+      "name": "Diamond Reserve",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/diamond-reserve-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-business",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST Business",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/business-credit-card-sme",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-classic",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST Classic",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/classic",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-digital",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST Digital",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/rupay-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-earn",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST EARN",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/secured-rupay-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-millennia",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST Millennia",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/millennia",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-power",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST Power",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/hpcl-power-fuel-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-power-plus",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST Power+",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/hpcl-power-fuel-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-private",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST Private",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/FIRSTPrivateCreditCard",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-select",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST Select",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/select",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-swyp",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST SWYP",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/swyp-emi-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-wealth",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST Wealth",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/wealth",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-wow",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST WOW!",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/wow",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-first-wow-black",
+      "bankId": "idfc-first-bank",
+      "name": "FIRST WOW! Black",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/wow-black-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-gaj",
+      "bankId": "idfc-first-bank",
+      "name": "Gaj",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/metal-credit-card/gaj",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-hello-cashback",
+      "bankId": "idfc-first-bank",
+      "name": "Hello Cashback",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/hello-cashback-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-indigo-idfc-first-dual-card",
+      "bankId": "idfc-first-bank",
+      "name": "IndiGo IDFC FIRST Dual Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IndiGo",
+      "url": "https://www.idfcfirst.bank.in/credit-card/indigo-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-lic-classic-credit-card",
+      "bankId": "idfc-first-bank",
+      "name": "LIC Classic Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "LIC",
+      "url": "https://www.idfcfirst.bank.in/credit-card/lic-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-lic-select-credit-card",
+      "bankId": "idfc-first-bank",
+      "name": "LIC Select Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "LIC",
+      "url": "https://www.idfcfirst.bank.in/credit-card/lic-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-mayura-credit-card",
+      "bankId": "idfc-first-bank",
+      "name": "Mayura Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/metal-credit-card/mayura",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-micro-enterprise-credit-card",
+      "bankId": "idfc-first-bank",
+      "name": "Micro Enterprise Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/micro-enterprise-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "idfc-first-bank-quantum-plus-credit-card",
+      "bankId": "idfc-first-bank",
+      "name": "Quantum+ Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.idfcfirst.bank.in/credit-card/quantum-plus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indian-overseas-bank-iob-classic-credit-card",
+      "bankId": "indian-overseas-bank",
+      "name": "IOB Classic Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.iob.bank.in/en/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indian-overseas-bank-iob-gold-credit-card",
+      "bankId": "indian-overseas-bank",
+      "name": "IOB Gold Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.iob.bank.in/en/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indian-overseas-bank-iob-novio-credit-card",
+      "bankId": "indian-overseas-bank",
+      "name": "IOB novio Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.iob.bank.in/en/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indian-overseas-bank-iob-salaryse-rise-up-credit-card",
+      "bankId": "indian-overseas-bank",
+      "name": "IOB SalarySe Rise UP Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "SalarySe",
+      "url": "https://www.iob.bank.in/en/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indian-overseas-bank-rupay-ekaa-super-premium-credit-card",
+      "bankId": "indian-overseas-bank",
+      "name": "RuPay EKAA Super Premium Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.iob.bank.in/en/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-avios-visa-infinite-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Avios Visa Infinite Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": "Avios",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/avios-visa-infinite-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-celesta-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Celesta Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/celesta-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-club-vistara-explorer-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Club Vistara Explorer Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Club Vistara",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/club-vistara-indusInd-bank-explorer-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-cred-indusind-bank-rupay-credit-card",
+      "bankId": "indusind-bank",
+      "name": "CRED IndusInd Bank RuPay Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": "CRED",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/CRED-IndusInd-Bank-ruPay-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-crest-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Crest Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/crest-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-duo-card",
+      "bankId": "indusind-bank",
+      "name": "Duo Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/duo-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-eazydiner-credit-card",
+      "bankId": "indusind-bank",
+      "name": "EazyDiner Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "EazyDiner",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/eazydiner-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-eazydiner-platinum-credit-card",
+      "bankId": "indusind-bank",
+      "name": "EazyDiner Platinum Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "EazyDiner",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/eazydiner-platinum-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-epay-amex-credit-card",
+      "bankId": "indusind-bank",
+      "name": "ePay Amex Credit Card",
+      "networks": [
+        "AMEX"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/epay-amex-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-iconia-amex-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Iconia Amex Credit Card",
+      "networks": [
+        "AMEX"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/iconia-amex-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-iconia-visa-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Iconia Visa Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/iconia-visa-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-indulge-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Indulge Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/indulge-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-indus-solitaire-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Indus Solitaire Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/solitaire-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-indusind-bank-jio-bp-mobility-plus-credit-card",
+      "bankId": "indusind-bank",
+      "name": "IndusInd Bank Jio-bp Mobility+ Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Jio-bp",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/jio-bp-mobility-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-intermiles-odyssey-amex-credit-card",
+      "bankId": "indusind-bank",
+      "name": "InterMiles Odyssey Amex Credit Card",
+      "networks": [
+        "AMEX"
+      ],
+      "variant": null,
+      "coBrandPartner": "InterMiles",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/intermiles-odyssey-amex-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-intermiles-odyssey-visa-credit-card",
+      "bankId": "indusind-bank",
+      "name": "InterMiles Odyssey Visa Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": "InterMiles",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/intermiles-odyssey-visa-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-intermiles-voyage-amex-credit-card",
+      "bankId": "indusind-bank",
+      "name": "InterMiles Voyage Amex Credit Card",
+      "networks": [
+        "AMEX"
+      ],
+      "variant": null,
+      "coBrandPartner": "InterMiles",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/intermiles-voyage-amex-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-intermiles-voyage-visa-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Intermiles Voyage Visa Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": "InterMiles",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/intermiles-voyage-visa-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-legend-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Legend Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/legend-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-nexxt-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Nexxt Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/nexxt-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-pinnacle-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Pinnacle Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/pinnacle-world-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-pioneer-heritage-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Pioneer Heritage Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/pioneer-heritage-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-pioneer-legacy-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Pioneer Legacy Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/pioneer-legacy-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-pioneer-private-credit-card",
+      "bankId": "indusind-bank",
+      "name": "PIONEER Private Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/pioneer-private.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-platinum-aura-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Platinum Aura Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/platinum-aura-visa-and-mastercard-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-platinum-aura-edge-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Platinum Aura Edge Credit Card",
+      "networks": [
+        "VISA",
+        "MASTERCARD"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/platinum-aura-edge-visa-and-mastercard-credit-card-easy-credit.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-platinum-master-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Platinum Master Credit Card",
+      "networks": [
+        "MASTERCARD"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/platinum-master-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-platinum-rupay-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Platinum RuPay Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/platinum-rupay-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-platinum-select-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Platinum Select Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/platinum-select-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-platinum-visa-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Platinum Visa Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/platinum-visa-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-poonawalla-fincorp-indusind-bank-elite-rupay-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Poonawalla Fincorp IndusInd Bank eLITE RuPay Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": "Poonawalla Fincorp",
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/poonawalla-platinum-rupay-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-samman-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Samman Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/samman-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "indusind-bank-signature-visa-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Signature Visa Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/signature-visa-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": false
+    },
+    {
+      "id": "indusind-bank-tiger-credit-card",
+      "bankId": "indusind-bank",
+      "name": "Tiger Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.indusind.bank.in/in/en/personal/cards/credit-card/tiger-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "karur-vysya-bank-kvb-credit-card",
+      "bankId": "karur-vysya-bank",
+      "name": "KVB Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kvb.bank.in/personal/cards/kvb-credit-cards/kvb-credit-card/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-811-dream-different-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "811 Dream Different Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-indigo-kotak-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Indigo Kotak Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IndiGo",
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-indigo-kotak-premium-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Indigo Kotak Premium Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IndiGo",
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards/indigo-xl-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-kotak-air-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Kotak Air Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-kotak-air-plus-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Kotak Air+ Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards/kotak-air-plus-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-kotak-air-plus-prime-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Kotak Air+ Prime Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-kotak-biz-edge-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Kotak Biz Edge Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-kotak-cashback-plus-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Kotak Cashback+ Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards/kotak-cashback-plus-credit-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-kotak-cashback-plus-prime-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Kotak Cashback+ Prime Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-kotak-infinite-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Kotak Infinite Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-kotak-upi-rupay-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Kotak UPI RuPay Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-league-platinum-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "League Platinum Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards/league-platinum-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-mojo-platinum-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Mojo Platinum Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-nri-royale-signature-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "NRI Royale Signature Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-privy-league-signature-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Privy League Signature Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-pvr-inox-kotak-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "PVR INOX Kotak Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "PVR INOX",
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-pvr-kotak-gold-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "PVR Kotak Gold Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "PVR",
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-pvr-kotak-platinum-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "PVR Kotak Platinum Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "PVR",
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-royale-signature-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Royale Signature Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-solitaire-business-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Solitaire Business Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-urbane-gold-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Urbane Gold Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-white-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "White Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-white-reserve-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "White Reserve Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "kotak-mahindra-bank-zen-credit-card",
+      "bankId": "kotak-mahindra-bank",
+      "name": "Zen Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.kotak.bank.in/en/personal-banking/cards/credit-cards.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-bliss-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB BLISS Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-kiwi-co-branded-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB KIWI Co-Branded Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Kiwi",
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-patanjali-rupay-platinum-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Patanjali RuPay Platinum Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": "Patanjali",
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-patanjali-rupay-select-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Patanjali RuPay Select Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": "Patanjali",
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-prakram-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Prakram Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-rakshak-rupay-platinum-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Rakshak RuPay Platinum Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-rakshak-rupay-select-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Rakshak RuPay Select Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-rupay-millennial-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Rupay Millennial Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-rupay-platinum-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB RuPay Platinum Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-rupay-select-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB RuPay Select Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-salary-rupay-platinum-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB SALARY RuPay Platinum Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-salary-rupay-select-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB SALARY RuPay Select Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-visa-classic-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Visa Classic Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-visa-gold-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Visa Gold Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-visa-platinum-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Visa Platinum Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-visa-signature-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Visa Signature Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-wave-and-pay-credit-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Wave & Pay Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "punjab-national-bank-pnb-zaggle-co-branded-card",
+      "bankId": "punjab-national-bank",
+      "name": "PNB Zaggle Co-Branded Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Zaggle",
+      "url": "https://creditcard.pnb.bank.in/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-apex-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Apex Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/apex-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-aspire-banking-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Aspire Banking Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/aspire-banking-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-binge-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Binge Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/binge-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-cookies-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Cookies Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/cookies-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-easysaver-credit-card",
+      "bankId": "rbl-bank",
+      "name": "EasySaver Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/easysaver-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-icon-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Icon Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/icon-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-indianoil-rbl-bank-credit-card",
+      "bankId": "rbl-bank",
+      "name": "IndianOil RBL Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IndianOil",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/indianoil-rbl-bank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-indianoil-rbl-bank-xtra-credit-card",
+      "bankId": "rbl-bank",
+      "name": "IndianOil RBL Bank XTRA Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IndianOil",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/indianoil-rbl-bank-xtra-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-insignia-preferred-banking-card",
+      "bankId": "rbl-bank",
+      "name": "Insignia Preferred Banking Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/insignia-preferred-banking-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-irctc-rbl-bank-credit-card",
+      "bankId": "rbl-bank",
+      "name": "IRCTC RBL Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IRCTC",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/irctc-rbl-bank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-jalsa-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Jalsa Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/jalsa-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-lumiere-credit-card",
+      "bankId": "rbl-bank",
+      "name": "LUMIÈRE Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/lumiere-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-mocash-credit-card",
+      "bankId": "rbl-bank",
+      "name": "MoCash Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/mocash-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-monthly-treats-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Monthly Treats Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/monthly-treats-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-myfirst-credit-card",
+      "bankId": "rbl-bank",
+      "name": "MyFirst Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/myfirst-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-nova-credit-card",
+      "bankId": "rbl-bank",
+      "name": "NOVA Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/nova-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-advantage-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Advantage Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-advantage-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-bonus-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Bonus Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-bonus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-choice-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Choice Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-choice-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-classic-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Classic Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-classic-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-delight-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Delight Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-delight-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-edge-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Edge Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-edge-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-lifeeasy-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum LifeEasy Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-lifeeasy-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-max-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Max Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-max-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-maxima-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Maxima Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-maxima-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-maxima-plus-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Maxima Plus Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-maxima-plus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-plus-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Plus Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-plus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-prime-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Prime Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-prime-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-shopdaily-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum ShopDaily Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-shopdaily-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-shopgain-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum Shopgain Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-shopgain-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-shopsmart-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum ShopSmart Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-shopsmart-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-traveleasy-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum TravelEasy Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-traveleasy-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-platinum-valueplus-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Platinum ValuePlus Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/platinum-valueplus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-bankbazaar-savemax-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Bankbazaar SaveMax Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "BankBazaar",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-bankbazaar-savemax-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-bankbazaar-savemax-pro-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Bankbazaar SaveMax Pro Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "BankBazaar",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-bankbazaar-savemax-pro-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-blockbuster-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Blockbuster Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-blockbuster-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-dmi-finance-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank DMI Finance Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "DMI Finance",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/dmi-finance-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-fun-plus-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Fun+ Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-fun-plus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-iglobe-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank iGlobe Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/iglobe-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-moneytap-black-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank MoneyTap Black Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "MoneyTap",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/moneytap-black-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-moneytap-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank MoneyTap Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "MoneyTap",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/moneytap-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-movies-and-more-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Movies and More Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-movies-and-more-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-paisabazaar-duet-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Paisabazaar Duet Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Paisabazaar",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-paisabazaar-duet-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-paisabazaar-duet-plus-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Paisabazaar Duet Plus Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Paisabazaar",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-paisabazaar-duet-plus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-patanjali-swarn-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Patanjali Swarn Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Patanjali",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-patanjali-swarn-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-patanjali-vishisht-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Patanjali Vishisht Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Patanjali",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-patanjali-vishisht-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-play-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Play Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-play-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-popcorn-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Popcorn Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-popcorn-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-quickpay-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank QuickPay Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-quick-pay-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-salaryse-up-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank SalarySe UP Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "SalarySe",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/salaryse-up-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-shoppers-stop-black-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Shoppers Stop Black Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Shoppers Stop",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-shoppers-stop-black-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-shoppers-stop-gold-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Shoppers Stop Gold Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Shoppers Stop",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-shoppers-stop-gold-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-rbl-bank-shoppers-stop-platinum-credit-card",
+      "bankId": "rbl-bank",
+      "name": "RBL Bank Shoppers Stop Platinum Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Shoppers Stop",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/rbl-bank-shoppers-stop-platinum-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-shoprite-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Shoprite Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/shoprite-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-signature-banking-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Signature Banking Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/signature-banking-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-titanium-delight-credit-card",
+      "bankId": "rbl-bank",
+      "name": "Titanium Delight Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/titanium-delight-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-tvs-credit-rbl-bank-credit-card",
+      "bankId": "rbl-bank",
+      "name": "TVS Credit RBL Bank Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "TVS Credit",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/tvs-credit-rbl-bank-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-tvs-credit-rbl-bank-gold-credit-card",
+      "bankId": "rbl-bank",
+      "name": "TVS Credit RBL Bank Gold Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "TVS Credit",
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/tvs-credit-rbl-bank-gold-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-world-max-credit-card",
+      "bankId": "rbl-bank",
+      "name": "World Max Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/world-max-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-world-plus-credit-card",
+      "bankId": "rbl-bank",
+      "name": "World Plus Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/world-plus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-world-prime-credit-card",
+      "bankId": "rbl-bank",
+      "name": "World Prime Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/world-prime-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-world-safari-credit-card",
+      "bankId": "rbl-bank",
+      "name": "World Safari Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/world-safari-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-world-safari-lite-credit-card",
+      "bankId": "rbl-bank",
+      "name": "World Safari Lite Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/world-safari-lite-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "rbl-bank-world-safari-plus-credit-card",
+      "bankId": "rbl-bank",
+      "name": "World Safari Plus Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.rbl.bank.in/personal-banking/cards/credit-cards/world-safari-plus-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbi-card-bom-sbi-card-prime",
+      "bankId": "sbi-card",
+      "name": "BOM SBI Card PRIME",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Bank of Maharashtra",
+      "url": "https://www.sbicard.com/en/personal/credit-cards/bom-sbi-card-prime.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbi-card-city-union-bank-simplysave-sbi-card",
+      "bankId": "sbi-card",
+      "name": "City Union Bank SimplySAVE SBI Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "City Union Bank",
+      "url": "https://www.sbicard.com/en/personal/credit-cards/city-union-bank-simplysave-sbi-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbi-card-irctc-sbi-card-premier",
+      "bankId": "sbi-card",
+      "name": "IRCTC SBI Card Premier",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "IRCTC",
+      "url": "https://www.sbicard.com/en/personal/credit-cards/irctc-premier-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbi-card-psb-simplysave-sbi-card",
+      "bankId": "sbi-card",
+      "name": "PSB SimplySAVE SBI Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Punjab & Sind Bank",
+      "url": "https://www.sbicard.com/en/personal/credit-cards/psb-simplysave-sbi-card.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbi-card-sbi-card-miles",
+      "bankId": "sbi-card",
+      "name": "SBI Card MILES",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sbicard.com/en/personal/credit-cards/sbi-card-miles.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbi-card-sbi-card-miles-prime",
+      "bankId": "sbi-card",
+      "name": "SBI Card Miles PRIME",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sbicard.com/en/personal/credit-cards/sbi-card-miles-prime.html",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbm-bank-india-sbm-kredit-pe-credit-card",
+      "bankId": "sbm-bank-india",
+      "name": "SBM Kredit.Pe Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Kredit.Pe",
+      "url": "https://www.sbm.bank.in/personal-banking/cards/secured-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbm-bank-india-sbm-magnet-credit-card",
+      "bankId": "sbm-bank-india",
+      "name": "SBM Magnet Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sbm.bank.in/personal-banking/cards/secured-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbm-bank-india-sbm-mobikwik-first-credit-card",
+      "bankId": "sbm-bank-india",
+      "name": "SBM MobiKwik First Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "MobiKwik",
+      "url": "https://www.sbm.bank.in/personal-banking/cards/secured-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbm-bank-india-sbm-novio-credit-card",
+      "bankId": "sbm-bank-india",
+      "name": "SBM novio Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sbm.bank.in/personal-banking/cards/secured-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbm-bank-india-sbm-onecard-credit-card",
+      "bankId": "sbm-bank-india",
+      "name": "SBM OneCard Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "OneCard",
+      "url": "https://www.sbm.bank.in/personal-banking/cards/secured-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbm-bank-india-sbm-paisabazaar-step-up-credit-card",
+      "bankId": "sbm-bank-india",
+      "name": "SBM Paisabazaar Step-Up Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "Paisabazaar",
+      "url": "https://www.sbm.bank.in/personal-banking/cards/secured-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "sbm-bank-india-sbm-zet-credit-card",
+      "bankId": "sbm-bank-india",
+      "name": "SBM ZET Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "ZET",
+      "url": "https://www.sbm.bank.in/personal-banking/cards/secured-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "slice-small-finance-bank-slice-upi-credit-card",
+      "bankId": "slice-small-finance-bank",
+      "name": "slice UPI Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://slice.bank.in/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "standard-chartered-bank-digismart-card",
+      "bankId": "standard-chartered-bank",
+      "name": "DigiSmart Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sc.bank.in/credit-cards/digismart-card/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "standard-chartered-bank-easemytrip-credit-card",
+      "bankId": "standard-chartered-bank",
+      "name": "EaseMyTrip Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": "EaseMyTrip",
+      "url": "https://www.sc.bank.in/credit-cards/easemytrip-credit-card/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "standard-chartered-bank-manhattan-credit-card",
+      "bankId": "standard-chartered-bank",
+      "name": "Manhattan Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sc.bank.in/credit-cards/manhattan-platinum/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "standard-chartered-bank-platinum-rewards-card",
+      "bankId": "standard-chartered-bank",
+      "name": "Platinum Rewards Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sc.bank.in/credit-cards/platinum-rewards/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "standard-chartered-bank-priority-visa-infinite-credit-card",
+      "bankId": "standard-chartered-bank",
+      "name": "Priority Visa Infinite Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sc.bank.in/credit-cards/priority-banking-visa-infinite/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "standard-chartered-bank-rewards-credit-card",
+      "bankId": "standard-chartered-bank",
+      "name": "Rewards Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sc.bank.in/credit-cards/rewards-credit-card/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "standard-chartered-bank-smart-credit-card",
+      "bankId": "standard-chartered-bank",
+      "name": "Smart Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sc.bank.in/credit-cards/smart-credit-card/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "standard-chartered-bank-super-value-titanium-credit-card",
+      "bankId": "standard-chartered-bank",
+      "name": "Super Value Titanium Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sc.bank.in/credit-cards/super-value-titanium/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "standard-chartered-bank-ultimate-credit-card",
+      "bankId": "standard-chartered-bank",
+      "name": "Ultimate Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.sc.bank.in/credit-cards/ultimate-card/",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "tamilnad-mercantile-bank-tmb-wings-rupay-credit-card",
+      "bankId": "tamilnad-mercantile-bank",
+      "name": "TMB Wings (RuPay) Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.tmb.bank.in/personal/retail-cards/tmb-wings-rupay-credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-divaa-icon-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "DIVAA ICON Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-nexteria-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "NEXTERIA Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-rupay-platinum-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "RuPay Platinum Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-rupay-select-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "RuPay Select Credit Card",
+      "networks": [
+        "RUPAY"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-union-jcb-health-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "Union JCB Health Credit Card",
+      "networks": [
+        "JCB"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-union-jcb-wellness-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "Union JCB Wellness Credit Card",
+      "networks": [
+        "JCB"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-union-sparsh-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "Union Sparsh Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-union-uni-carbon-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "Union UNI-CARBON Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-visa-gold-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "VISA Gold Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-visa-platinum-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "VISA Platinum Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "union-bank-of-india-visa-signature-credit-card",
+      "bankId": "union-bank-of-india",
+      "name": "VISA Signature Credit Card",
+      "networks": [
+        "VISA"
+      ],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.unionbankofindia.bank.in/en/listing/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "utkarsh-small-finance-bank-rhodium-credit-card",
+      "bankId": "utkarsh-small-finance-bank",
+      "name": "Rhodium Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.utkarsh.bank.in/personal/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "utkarsh-small-finance-bank-supercard-credit-card",
+      "bankId": "utkarsh-small-finance-bank",
+      "name": "SuperCard Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.utkarsh.bank.in/personal/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "utkarsh-small-finance-bank-utkarsh-eternal-credit-card",
+      "bankId": "utkarsh-small-finance-bank",
+      "name": "Utkarsh Eternal Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.utkarsh.bank.in/personal/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "utkarsh-small-finance-bank-utkarsh-small-finance-bank-smartgen-credit-card",
+      "bankId": "utkarsh-small-finance-bank",
+      "name": "Utkarsh Small Finance Bank SmartGen Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.utkarsh.bank.in/personal/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "utkarsh-small-finance-bank-utkarsh-small-finance-bank-wish-credit-card",
+      "bankId": "utkarsh-small-finance-bank",
+      "name": "Utkarsh Small Finance Bank Wish Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.utkarsh.bank.in/personal/cards/credit-card",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "yes-bank-ace-credit-card",
+      "bankId": "yes-bank",
+      "name": "ACE Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.yes.bank.in/personal-banking/yes-individual/cards/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "yes-bank-byoc-credit-card",
+      "bankId": "yes-bank",
+      "name": "BYOC Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.yes.bank.in/personal-banking/yes-individual/cards/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "yes-bank-marquee-credit-card",
+      "bankId": "yes-bank",
+      "name": "MARQUÉE Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.yes.bank.in/personal-banking/yes-individual/cards/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "yes-bank-reserv-credit-card",
+      "bankId": "yes-bank",
+      "name": "RESERV Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.yes.bank.in/personal-banking/yes-individual/cards/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "yes-bank-select-credit-card",
+      "bankId": "yes-bank",
+      "name": "SELECT Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.yes.bank.in/personal-banking/yes-individual/cards/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    },
+    {
+      "id": "yes-bank-wellness-plus-credit-card",
+      "bankId": "yes-bank",
+      "name": "Wellness Plus Credit Card",
+      "networks": [],
+      "variant": null,
+      "coBrandPartner": null,
+      "url": "https://www.yes.bank.in/personal-banking/yes-individual/cards/credit-cards",
+      "verifiedOn": "2026-10-27",
+      "available": true
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 package com.ivy.data.db.entity
 
 import androidx.annotation.Keep
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.ivy.base.kotlinxserilzation.KSerializerUUID
@@ -25,6 +26,13 @@ data class AccountEntity(
     val orderNum: Double = 0.0,
     @SerialName("includeInBalance")
     val includeInBalance: Boolean = true,
+    /**
+     * "ASSET" or "CREDIT_CARD" (see AccountType). Defaults keep older databases and
+     * backups (which don't have this field) as ordinary asset accounts.
+     */
+    @SerialName("type")
+    @ColumnInfo(defaultValue = AccountTypeAsset)
+    val type: String = AccountTypeAsset,
 
     @Deprecated("Obsolete field used for cloud sync. Can't be deleted because of backwards compatibility")
     @SerialName("isSynced")
@@ -38,3 +46,6 @@ data class AccountEntity(
     @Serializable(with = KSerializerUUID::class)
     val id: UUID = UUID.randomUUID()
 )
+
+const val AccountTypeAsset = "ASSET"
+const val AccountTypeCreditCard = "CREDIT_CARD"

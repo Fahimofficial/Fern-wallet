@@ -26,6 +26,7 @@ import com.ivy.data.model.TransactionId
 import com.ivy.data.model.primitive.AssociationId
 import com.ivy.data.model.primitive.NotBlankTrimmedString
 import com.ivy.data.repository.CategoryRepository
+import com.ivy.data.repository.CreditCardRepository
 import com.ivy.data.repository.TagRepository
 import com.ivy.data.repository.TransactionRepository
 import com.ivy.data.repository.mapper.TagMapper
@@ -47,6 +48,7 @@ import com.ivy.ui.R
 import com.ivy.ui.time.impl.DateTimePicker
 import com.ivy.wallet.domain.action.account.AccountByIdAct
 import com.ivy.wallet.domain.action.account.AccountsAct
+import com.ivy.wallet.domain.action.account.selectable
 import com.ivy.wallet.domain.action.transaction.TrnByIdAct
 import com.ivy.wallet.domain.data.CustomExchangeRateState
 import com.ivy.wallet.domain.deprecated.logic.CategoryCreator
@@ -107,6 +109,7 @@ class EditTransactionViewModel @Inject constructor(
     private val timeConverter: TimeConverter,
     private val timeProvider: TimeProvider,
     private val dateTimePicker: DateTimePicker,
+    private val creditCardRepository: CreditCardRepository,
 ) : ComposeViewModel<EditTransactionViewState, EditTransactionViewEvent>() {
 
     private var transactionType by mutableStateOf(TransactionType.EXPENSE)
@@ -117,6 +120,12 @@ class EditTransactionViewModel @Inject constructor(
     private var dateTime by mutableStateOf<Instant?>(null)
     private var dueDate by mutableStateOf<Instant?>(null)
     private var accounts by mutableStateOf<ImmutableList<Account>>(persistentListOf())
+
+    /** Closed credit cards: not offered in the account pickers... */
+    private var closedCardIds: Set<UUID> = emptySet()
+
+    /** ...unless this transaction already uses them. */
+    private var usedAccountIds: Set<UUID> = emptySet()
     private var categories by mutableStateOf<ImmutableList<Category>>(persistentListOf())
     private var tags by mutableStateOf<ImmutableList<Tag>>(persistentListOf())
     private var transactionAssociatedTags by mutableStateOf<ImmutableList<TagId>>(persistentListOf())
@@ -154,23 +163,27 @@ class EditTransactionViewModel @Inject constructor(
 
             val tagList = async { getAllTags() }
 
-            val getAccounts = accountsAct(Unit)
-            if (getAccounts.isEmpty()) {
+            val existingTransaction = screen.initialTransactionId?.let { trnByIdAct(it) }
+            // Closed credit cards keep their history but aren't offered for new transactions
+            // (unless this transaction already uses them).
+            closedCardIds = creditCardRepository.findClosedCardIds()
+            usedAccountIds = setOfNotNull(existingTransaction?.accountId, existingTransaction?.toAccountId)
+            val eligibleAccounts = eligible(accountsAct(Unit))
+            // No usable account (none at all, or only closed cards): never fall back to closed cards.
+            if (eligibleAccounts.isEmpty()) {
                 closeScreen()
                 return@launch
             }
-            accounts = getAccounts
-
             categories = sortCategories()
 
             reset()
 
-            loadedTransaction = screen.initialTransactionId?.let {
-                trnByIdAct(it)
-            } ?: Transaction(
+            accounts = eligibleAccounts
+
+            loadedTransaction = existingTransaction ?: Transaction(
                 accountId = defaultAccountId(
                     screen = screen,
-                    accounts = getAccounts
+                    accounts = accounts
                 ),
                 categoryId = screen.categoryId,
                 type = screen.type,
@@ -351,12 +364,16 @@ class EditTransactionViewModel @Inject constructor(
         }
     }
 
+    private fun eligible(all: List<Account>): ImmutableList<Account> =
+        all.selectable(closedCardIds, usedAccountIds)
+
     private suspend fun defaultAccountId(
         screen: EditTransactionScreen,
         accounts: List<Account>,
     ): UUID {
-        if (screen.accountId != null) {
-            return screen.accountId!!
+        val requested = screen.accountId
+        if (requested != null && accounts.any { it.id == requested }) {
+            return requested
         }
 
         val lastSelectedId = sharedPrefs.getString(
@@ -622,7 +639,7 @@ class EditTransactionViewModel @Inject constructor(
         viewModelScope.launch {
             ioThread {
                 val id = UUID.randomUUID()
-                 loadedTransaction()
+                loadedTransaction()
                     .copy(
                         id = id,
                         dateTime = timeProvider.utcNow(),
@@ -688,7 +705,7 @@ class EditTransactionViewModel @Inject constructor(
     private fun createAccount(data: CreateAccountData) {
         viewModelScope.launch {
             accountCreator.createAccount(data) {
-                accounts = accountsAct(Unit)
+                accounts = eligible(accountsAct(Unit))
             }
         }
     }
@@ -721,7 +738,7 @@ class EditTransactionViewModel @Inject constructor(
                     paidFor = paidHistory,
                     dateTime = when {
                         loadedTransaction().dateTime == null &&
-                                dueDate == null -> {
+                            dueDate == null -> {
                             timeProvider.utcNow()
                         }
 
@@ -899,8 +916,8 @@ class EditTransactionViewModel @Inject constructor(
         fromAccCurrencyCode: String
     ): Boolean {
         return customExchangeRateState.showCard &&
-                toAccCurrencyCode == customExchangeRateState.toCurrencyCode &&
-                fromAccCurrencyCode == customExchangeRateState.fromCurrencyCode
+            toAccCurrencyCode == customExchangeRateState.toCurrencyCode &&
+            fromAccCurrencyCode == customExchangeRateState.fromCurrencyCode
     }
 
     private fun saveIfEditMode(closeScreen: Boolean = false) {

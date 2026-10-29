@@ -17,6 +17,7 @@ import com.ivy.data.model.Category
 import com.ivy.data.model.CategoryId
 import com.ivy.data.model.IntervalType
 import com.ivy.data.repository.CategoryRepository
+import com.ivy.data.repository.CreditCardRepository
 import com.ivy.data.repository.TransactionRepository
 import com.ivy.legacy.datamodel.Account
 import com.ivy.legacy.datamodel.PlannedPaymentRule
@@ -27,6 +28,7 @@ import com.ivy.navigation.EditPlannedScreen
 import com.ivy.navigation.Navigation
 import com.ivy.ui.ComposeViewModel
 import com.ivy.wallet.domain.action.account.AccountsAct
+import com.ivy.wallet.domain.action.account.selectable
 import com.ivy.wallet.domain.deprecated.logic.CategoryCreator
 import com.ivy.wallet.domain.deprecated.logic.PlannedPaymentsGenerator
 import com.ivy.wallet.domain.deprecated.logic.model.CreateAccountData
@@ -40,6 +42,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import java.util.UUID
 import javax.inject.Inject
 
 @Stable
@@ -54,6 +57,7 @@ class EditPlannedViewModel @Inject constructor(
     private val categoryCreator: CategoryCreator,
     private val accountCreator: AccountCreator,
     private val accountsAct: AccountsAct,
+    private val creditCardRepository: CreditCardRepository,
     private val plannedPaymentRuleWriter: WritePlannedPaymentRuleDao,
     private val transactionRepository: TransactionRepository,
     private val timeConverter: TimeConverter,
@@ -84,6 +88,8 @@ class EditPlannedViewModel @Inject constructor(
     private var loadedRule: PlannedPaymentRule? = null
     private var editMode = false
     private var title: String? = null
+    private var closedCardIds: Set<UUID> = emptySet()
+    private var usedAccountIds: Set<UUID> = emptySet()
 
     @Composable
     override fun uiState(): EditPlannedScreenState {
@@ -268,7 +274,13 @@ class EditPlannedViewModel @Inject constructor(
             transactionType = screen.type
             editMode = screen.plannedPaymentRuleId != null
 
-            val accounts = accountsAct(Unit)
+            val existingRule = screen.plannedPaymentRuleId?.let {
+                ioThread { plannedPaymentRuleDao.findById(it)!!.toLegacyDomain() }
+            }
+            // Closed credit cards aren't offered for new planned payments (an edited rule keeps its card).
+            closedCardIds = creditCardRepository.findClosedCardIds()
+            usedAccountIds = setOfNotNull(existingRule?.accountId)
+            val accounts = accountsAct(Unit).selectable(closedCardIds, usedAccountIds)
             if (accounts.isEmpty()) {
                 nav.back()
                 return@launch
@@ -278,16 +290,14 @@ class EditPlannedViewModel @Inject constructor(
 
             reset()
 
-            loadedRule = screen.plannedPaymentRuleId?.let {
-                ioThread { plannedPaymentRuleDao.findById(it)!!.toLegacyDomain() }
-            } ?: PlannedPaymentRule(
+            loadedRule = existingRule ?: PlannedPaymentRule(
                 startDate = null,
                 intervalN = null,
                 intervalType = null,
                 oneTime = false,
                 type = screen.type,
                 amount = screen.amount ?: 0.0,
-                accountId = screen.accountId ?: accounts.first().id,
+                accountId = screen.accountId?.takeIf { id -> accounts.any { it.id == id } } ?: accounts.first().id,
                 categoryId = screen.categoryId,
                 title = screen.title,
                 description = screen.description
@@ -461,9 +471,9 @@ class EditPlannedViewModel @Inject constructor(
 
     private fun validateRecurring(): Boolean {
         return startDate != null &&
-                intervalN != null &&
-                intervalN!! > 0 &&
-                intervalType != null
+            intervalN != null &&
+            intervalN!! > 0 &&
+            intervalType != null
     }
 
     private fun delete() {
@@ -502,7 +512,7 @@ class EditPlannedViewModel @Inject constructor(
     private fun createAccount(data: CreateAccountData) {
         viewModelScope.launch {
             accountCreator.createAccount(data) {
-                accounts = accountsAct(Unit)
+                accounts = accountsAct(Unit).selectable(closedCardIds, usedAccountIds)
             }
         }
     }

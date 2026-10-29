@@ -43,6 +43,8 @@ contributors, which is no longer maintained upstream. Fern Wallet continues deve
 - Multiple accounts with their own currency, color and icon; total balance with optional excluded accounts
 - Income, expense and account-transfer transactions with categories, tags and descriptions
 - Monthly overview with a custom month start day, custom date ranges, "last N days/weeks/months" and all-time
+- Credit cards: limit and available credit, calculated statements and due dates, bill payments as transfers,
+  due-date reminders, and a catalogue of Indian banks and cards ([docs](docs/Credit-Cards.md))
 - Planned (one-time and recurring) payments, budgets, loans, savings goal ("left to spend")
 - Reports, pie-chart statistics, search
 - Exchange rates (fetched over HTTPS from a public currency API) and manual overrides

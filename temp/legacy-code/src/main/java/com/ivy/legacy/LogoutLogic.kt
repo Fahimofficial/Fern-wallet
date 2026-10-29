@@ -14,6 +14,7 @@ import com.ivy.data.db.dao.write.WritePlannedPaymentRuleDao
 import com.ivy.data.db.dao.write.WriteSettingsDao
 import com.ivy.data.repository.AccountRepository
 import com.ivy.data.repository.CategoryRepository
+import com.ivy.data.repository.CreditCardRepository
 import com.ivy.data.repository.ExchangeRatesRepository
 import com.ivy.data.repository.TagRepository
 import com.ivy.data.repository.TransactionRepository
@@ -21,6 +22,7 @@ import com.ivy.legacy.utils.ioThread
 import com.ivy.navigation.MainScreen
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.OnboardingScreen
+import com.ivy.wallet.domain.deprecated.logic.notification.CreditCardNotifications
 import javax.inject.Inject
 
 @Deprecated("Migrate to an UseCase in the domain layer.")
@@ -39,7 +41,9 @@ class LogoutLogic @Inject constructor(
     private val writeBudgetDao: WriteBudgetDao,
     private val writeLoanDao: WriteLoanDao,
     private val writeLoanRecordDao: WriteLoanRecordDao,
-    private val exchangeRatesRepository: ExchangeRatesRepository
+    private val exchangeRatesRepository: ExchangeRatesRepository,
+    private val creditCardRepository: CreditCardRepository,
+    private val creditCardNotifications: CreditCardNotifications,
 ) {
     suspend fun logout() {
         ioThread {
@@ -57,6 +61,8 @@ class LogoutLogic @Inject constructor(
 
     private suspend fun deleteAllData() {
         accountRepository.deleteAll()
+        creditCardNotifications.cancelAll()
+        creditCardRepository.deleteAll()
         transactionRepository.deleteAll()
         categoryRepository.deleteAll()
         tagRepository.deleteAll()

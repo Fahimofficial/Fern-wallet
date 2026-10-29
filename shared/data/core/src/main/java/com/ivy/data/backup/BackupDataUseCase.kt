@@ -12,6 +12,7 @@ import com.ivy.data.DataWriteEvent
 import com.ivy.data.db.dao.read.AccountDao
 import com.ivy.data.db.dao.read.BudgetDao
 import com.ivy.data.db.dao.read.CategoryDao
+import com.ivy.data.db.dao.read.CreditCardDao
 import com.ivy.data.db.dao.read.LoanDao
 import com.ivy.data.db.dao.read.LoanRecordDao
 import com.ivy.data.db.dao.read.PlannedPaymentRuleDao
@@ -21,6 +22,7 @@ import com.ivy.data.db.dao.read.TagDao
 import com.ivy.data.db.dao.read.TransactionDao
 import com.ivy.data.db.dao.write.WriteBudgetDao
 import com.ivy.data.db.dao.write.WriteCategoryDao
+import com.ivy.data.db.dao.write.WriteCreditCardDao
 import com.ivy.data.db.dao.write.WriteLoanDao
 import com.ivy.data.db.dao.write.WriteLoanRecordDao
 import com.ivy.data.db.dao.write.WritePlannedPaymentRuleDao
@@ -72,7 +74,9 @@ class BackupDataUseCase @Inject constructor(
     private val tagsReader: TagDao,
     private val tagAssociationReader: TagAssociationDao,
     private val tagsWriter: WriteTagDao,
-    private val tagAssociationWriter: WriteTagAssociationDao
+    private val tagAssociationWriter: WriteTagAssociationDao,
+    private val creditCardDao: CreditCardDao,
+    private val creditCardWriter: WriteCreditCardDao,
 ) {
     suspend fun exportToFile(
         zipFileUri: Uri
@@ -108,6 +112,8 @@ class BackupDataUseCase @Inject constructor(
             val sharedPrefs = async { getSharedPrefsData() }
             val tags = async { tagsReader.findAll() }
             val tagAssociations = async { tagAssociationReader.findAll() }
+            val creditCards = async { creditCardDao.findAll() }
+            val creditCardStatements = async { creditCardDao.findAllStatements() }
 
             val completeData = IvyWalletCompleteData(
                 accounts = accounts.await(),
@@ -120,7 +126,9 @@ class BackupDataUseCase @Inject constructor(
                 transactions = transactions.await(),
                 sharedPrefs = sharedPrefs.await(),
                 tags = tags.await(),
-                tagAssociations = tagAssociations.await()
+                tagAssociations = tagAssociations.await(),
+                creditCards = creditCards.await(),
+                creditCardStatements = creditCardStatements.await(),
             )
 
             json.encodeToString(completeData)
@@ -264,6 +272,15 @@ class BackupDataUseCase @Inject constructor(
             budgets.await()
             categories.await()
 
+            // Card details must only attach to accounts that exist after the import.
+            val importedAccountIds = completeData.accounts.map { it.id }.toSet()
+            creditCardWriter.saveMany(
+                completeData.creditCards.filter { it.accountId in importedAccountIds }
+            )
+            creditCardWriter.saveStatements(
+                completeData.creditCardStatements.filter { it.accountId in importedAccountIds }
+            )
+
             onProgress(0.7)
 
             val loans = async { loanWriter.saveMany(completeData.loans) }
@@ -308,9 +325,9 @@ class BackupDataUseCase @Inject constructor(
             sharedPrefs.putBoolean(
                 SharedPrefs.TRANSFERS_AS_INCOME_EXPENSE,
                 (
-                        completeData.sharedPrefs[SharedPrefs.TRANSFERS_AS_INCOME_EXPENSE]
-                            ?: "false"
-                        ).toBoolean()
+                    completeData.sharedPrefs[SharedPrefs.TRANSFERS_AS_INCOME_EXPENSE]
+                        ?: "false"
+                    ).toBoolean()
             )
 
             plannedPayments.await()

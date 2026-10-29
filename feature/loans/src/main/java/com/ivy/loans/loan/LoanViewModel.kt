@@ -15,6 +15,7 @@ import com.ivy.data.db.dao.read.LoanRecordDao
 import com.ivy.data.db.dao.read.SettingsDao
 import com.ivy.data.db.dao.write.WriteLoanDao
 import com.ivy.data.model.LoanType
+import com.ivy.data.repository.CreditCardRepository
 import com.ivy.frp.test.TestIdlingResource
 import com.ivy.legacy.datamodel.Account
 import com.ivy.legacy.datamodel.Loan
@@ -26,6 +27,7 @@ import com.ivy.loans.loan.data.DisplayLoan
 import com.ivy.ui.ComposeViewModel
 import com.ivy.ui.time.impl.DateTimePicker
 import com.ivy.wallet.domain.action.account.AccountsAct
+import com.ivy.wallet.domain.action.account.selectable
 import com.ivy.wallet.domain.action.loan.LoansAct
 import com.ivy.wallet.domain.deprecated.logic.LoanCreator
 import com.ivy.wallet.domain.deprecated.logic.loantrasactions.LoanTransactionsLogic
@@ -54,6 +56,7 @@ class LoanViewModel @Inject constructor(
     private val loanTransactionsLogic: LoanTransactionsLogic,
     private val loansAct: LoansAct,
     private val accountsAct: AccountsAct,
+    private val creditCardRepository: CreditCardRepository,
     private val loanWriter: WriteLoanDao,
     private val timeConverter: TimeConverter,
     private val timeProvider: TimeProvider,
@@ -64,6 +67,7 @@ class LoanViewModel @Inject constructor(
     private var completedLoans by mutableStateOf<ImmutableList<DisplayLoan>>(persistentListOf())
     private var pendingLoans by mutableStateOf<ImmutableList<DisplayLoan>>(persistentListOf())
     private var accounts by mutableStateOf<ImmutableList<Account>>(persistentListOf())
+    private var closedCardIds by mutableStateOf<Set<UUID>>(emptySet())
     private var selectedAccount by mutableStateOf<Account?>(null)
     private var loanModalData by mutableStateOf<LoanModalData?>(null)
     private var reorderModalVisible by mutableStateOf(false)
@@ -135,7 +139,8 @@ class LoanViewModel @Inject constructor(
     private fun getSelectedAccount() = selectedAccount
 
     @Composable
-    private fun getAccounts() = accounts
+    // Closed credit cards aren't offered for new loans; [accounts] stays complete for currency lookups.
+    private fun getAccounts(): ImmutableList<Account> = accounts.selectable(closedCardIds)
 
     @Composable
     private fun getPaidOffLoanVisibility(): Boolean = paidOffLoanVisibility
@@ -265,8 +270,9 @@ class LoanViewModel @Inject constructor(
 
     private suspend fun initialiseAccounts() {
         val accountsList = accountsAct(Unit)
+        closedCardIds = creditCardRepository.findClosedCardIds()
         accounts = accountsList
-        selectedAccount = defaultAccountId(accountsList)
+        selectedAccount = defaultAccountId(accountsList.selectable(closedCardIds))
         selectedAccount?.let {
             baseCurrencyCode = it.currency ?: defaultCurrencyCode
         }

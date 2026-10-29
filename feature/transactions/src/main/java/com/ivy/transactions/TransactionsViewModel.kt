@@ -24,10 +24,12 @@ import com.ivy.data.model.primitive.IconAsset
 import com.ivy.data.model.primitive.NotBlankTrimmedString
 import com.ivy.data.repository.AccountRepository
 import com.ivy.data.repository.CategoryRepository
+import com.ivy.data.repository.CreditCardRepository
 import com.ivy.data.repository.TagRepository
 import com.ivy.data.repository.TransactionRepository
 import com.ivy.data.repository.mapper.TransactionMapper
 import com.ivy.design.l0_system.RedLight
+import com.ivy.domain.creditcard.DeleteCreditCardUseCase
 import com.ivy.domain.features.Features
 import com.ivy.frp.then
 import com.ivy.legacy.IvyWalletCtx
@@ -57,6 +59,7 @@ import com.ivy.wallet.domain.deprecated.logic.CategoryCreator
 import com.ivy.wallet.domain.deprecated.logic.PlannedPaymentsLogic
 import com.ivy.wallet.domain.deprecated.logic.WalletAccountLogic
 import com.ivy.wallet.domain.deprecated.logic.WalletCategoryLogic
+import com.ivy.wallet.domain.deprecated.logic.notification.CreditCardNotifications
 import com.ivy.wallet.domain.pure.exchange.ExchangeData
 import com.ivy.wallet.ui.theme.modal.ChoosePeriodModalData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -96,7 +99,10 @@ class TransactionsViewModel @Inject constructor(
     private val tagRepository: TagRepository,
     private val timeProvider: TimeProvider,
     private val timeConverter: TimeConverter,
-    private val features: Features
+    private val features: Features,
+    private val creditCardRepository: CreditCardRepository,
+    private val creditCardNotifications: CreditCardNotifications,
+    private val deleteCreditCardUseCase: DeleteCreditCardUseCase,
 ) : ComposeViewModel<TransactionsState, TransactionsEvent>() {
 
     private val period = mutableStateOf(ivyContext.selectedPeriod)
@@ -380,21 +386,21 @@ class TransactionsViewModel @Inject constructor(
         expenses.doubleValue = incomeExpensePair.expense.toDouble()
 
         history.value = (
-                accTrnsAct then {
-                    trnsWithDateDivsAct(
-                        LegacyTrnsWithDateDivsAct.Input(
-                            baseCurrency = baseCurrency.value,
-                            transactions = with(transactionMapper) {
-                                it.map {
-                                    val tags =
-                                        tagRepository.findByIds(it.tags).toImmutableLegacyTags()
-                                    it.toEntity().toLegacyDomain(tags = tags)
-                                }
+            accTrnsAct then {
+                trnsWithDateDivsAct(
+                    LegacyTrnsWithDateDivsAct.Input(
+                        baseCurrency = baseCurrency.value,
+                        transactions = with(transactionMapper) {
+                            it.map {
+                                val tags =
+                                    tagRepository.findByIds(it.tags).toImmutableLegacyTags()
+                                it.toEntity().toLegacyDomain(tags = tags)
                             }
-                        )
+                        }
                     )
-                }
-                )(
+                )
+            }
+            )(
             AccTrnsAct.Input(
                 accountId = initialAccount.id,
                 range = range.toCloseTimeRange()
@@ -643,10 +649,10 @@ class TransactionsViewModel @Inject constructor(
         val accountFilterIdSet = accountFilterList.toHashSet()
         val trans = transactions.filter {
             it.categoryId == null && (
-                    accountFilterIdSet.contains(it.accountId) || accountFilterIdSet.contains(
-                        it.toAccountId
-                    )
-                    ) && it.type == TransactionType.TRANSFER
+                accountFilterIdSet.contains(it.accountId) || accountFilterIdSet.contains(
+                    it.toAccountId
+                )
+                ) && it.type == TransactionType.TRANSFER
         }
 
         val historyIncomeExpense = calcTrnsIncomeExpenseAct(
@@ -736,9 +742,16 @@ class TransactionsViewModel @Inject constructor(
 
     private suspend fun deleteAccount(accountId: UUID) {
         ioThread {
-            transactionRepository.deleteAllByAccountId(accountId = AccountId(accountId))
-            plannedPaymentRuleWriter.deletedByAccountId(accountId = accountId)
-            accountRepository.deleteById(AccountId(accountId))
+            val id = AccountId(accountId)
+            if (creditCardRepository.findByAccountId(id) != null) {
+                // Keeps bill payments in the paying accounts instead of orphaning them.
+                creditCardNotifications.cancelForCard(accountId)
+                deleteCreditCardUseCase.delete(id, fallbackTitle = null)
+            } else {
+                transactionRepository.deleteAllByAccountId(accountId = id)
+                plannedPaymentRuleWriter.deletedByAccountId(accountId = accountId)
+                accountRepository.deleteById(id)
+            }
 
             nav.back()
         }
@@ -826,7 +839,7 @@ class TransactionsViewModel @Inject constructor(
     private fun updateAccountDeletionState(confirmationText: String) {
         accountNameConfirmation.value = selectEndTextFieldValue(confirmationText)
         enableDeletionButton.value = account.value?.name == confirmationText ||
-                category.value?.name?.value == confirmationText
+            category.value?.name?.value == confirmationText
     }
 
     fun start(
@@ -862,7 +875,7 @@ class TransactionsViewModel @Inject constructor(
                 // unspecifiedCategory==false is explicitly checked to accommodate for a temp
                 // AccountTransfers Category during Reports Screen
                 screen.categoryId != null && screen.transactions.isNotEmpty() &&
-                        screen.unspecifiedCategory == false -> {
+                    screen.unspecifiedCategory == false -> {
                     initForCategoryWithTransactions(
                         screen.categoryId!!,
                         screen.accountIdFilterList,

@@ -29,6 +29,9 @@ sealed interface DataWriteEvent {
     data class SaveAccounts(val accounts: List<Account>) : AccountChange
     data class DeleteAccounts(val operation: DeleteOperation<AccountId>) : AccountChange
 
+    /** Card details or statement overrides changed (affects how card accounts are shown). */
+    data class CreditCardsChanged(val accountIds: List<AccountId>) : AccountChange
+
     sealed interface CategoryChange : DataWriteEvent
     data class SaveCategories(val categories: List<Category>) : CategoryChange
     data class DeleteCategories(val operation: DeleteOperation<CategoryId>) : CategoryChange

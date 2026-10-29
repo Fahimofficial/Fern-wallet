@@ -9,6 +9,7 @@ import com.ivy.data.db.migration.Migration123to124_LoanIncludeDateTime
 import com.ivy.data.db.migration.Migration124to125_LoanEditDateTime
 import com.ivy.data.db.migration.Migration126to127_LoanRecordType
 import com.ivy.data.db.migration.Migration129to130_LoanIncludeNote
+import com.ivy.data.db.migration.Migration130to131_CreditCards
 import com.ivy.data.model.LoanType
 import io.kotest.matchers.shouldBe
 import org.junit.Rule
@@ -26,6 +27,52 @@ class IvyRoomDatabaseMigrationTest {
         listOf(IvyRoomDatabase.DeleteSEMigration()),
         FrameworkSQLiteOpenHelperFactory()
     )
+
+    @Test
+    fun migrate130to131_CreditCards_keepsAccountsAndTransactions() {
+        val accountId = UUID.randomUUID().toString()
+        val transactionId = UUID.randomUUID().toString()
+        helper.createDatabase(TestDb, 130).apply {
+            execSQL(
+                "INSERT INTO accounts (name, currency, color, icon, orderNum, includeInBalance, " +
+                    "isSynced, isDeleted, id) VALUES ('Bank', 'INR', 7, NULL, 1.0, 1, 0, 0, '$accountId')"
+            )
+            execSQL(
+                "INSERT INTO transactions (accountId, type, amount, toAccountId, toAmount, title, " +
+                    "description, dateTime, categoryId, dueDate, recurringRuleId, attachmentUrl, " +
+                    "loanId, loanRecordId, isSynced, isDeleted, id, paidForDateTime) VALUES " +
+                    "('$accountId', 'EXPENSE', 110.5, NULL, NULL, 'Groceries', NULL, 1700000000000, " +
+                    "NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, '$transactionId', NULL)"
+            )
+            close()
+        }
+
+        val newDb = helper.runMigrationsAndValidate(
+            TestDb,
+            131,
+            true,
+            Migration130to131_CreditCards()
+        )
+
+        newDb.query("SELECT name, type FROM accounts WHERE id = '$accountId'").apply {
+            moveToFirst() shouldBe true
+            getString(0) shouldBe "Bank"
+            getString(1) shouldBe "ASSET"
+            close()
+        }
+        newDb.query("SELECT amount, title FROM transactions WHERE id = '$transactionId'").apply {
+            moveToFirst() shouldBe true
+            getDouble(0) shouldBe 110.5
+            getString(1) shouldBe "Groceries"
+            close()
+        }
+        newDb.query("SELECT COUNT(*) FROM credit_cards").apply {
+            moveToFirst() shouldBe true
+            getInt(0) shouldBe 0
+            close()
+        }
+        newDb.close()
+    }
 
     @Test
     fun migrate129to130_LoanIncludeNote() {

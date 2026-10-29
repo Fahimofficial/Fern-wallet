@@ -9,6 +9,10 @@ import com.ivy.balance.BalanceScreen
 import com.ivy.budgets.BudgetScreen
 import com.ivy.categories.CategoriesScreen
 import com.ivy.contributors.ContributorsScreenImpl
+import com.ivy.creditcards.details.CreditCardDetailsScreenImpl
+import com.ivy.creditcards.edit.EditCreditCardScreenImpl
+import com.ivy.creditcards.pay.PayCreditCardScreenImpl
+import com.ivy.creditcards.statement.CreditCardStatementScreenImpl
 import com.ivy.disclaimer.DisclaimerScreenImpl
 import com.ivy.exchangerates.ExchangeRatesScreen
 import com.ivy.features.FeaturesScreenImpl
@@ -23,7 +27,10 @@ import com.ivy.navigation.BudgetScreen
 import com.ivy.navigation.CSVScreen
 import com.ivy.navigation.CategoriesScreen
 import com.ivy.navigation.ContributorsScreen
+import com.ivy.navigation.CreditCardDetailsScreen
+import com.ivy.navigation.CreditCardStatementScreen
 import com.ivy.navigation.DisclaimerScreen
+import com.ivy.navigation.EditCreditCardScreen
 import com.ivy.navigation.EditPlannedScreen
 import com.ivy.navigation.EditTransactionScreen
 import com.ivy.navigation.ExchangeRatesScreen
@@ -33,6 +40,7 @@ import com.ivy.navigation.LoanDetailsScreen
 import com.ivy.navigation.LoansScreen
 import com.ivy.navigation.MainScreen
 import com.ivy.navigation.OnboardingScreen
+import com.ivy.navigation.PayCreditCardScreen
 import com.ivy.navigation.PieChartStatisticScreen
 import com.ivy.navigation.PlannedPaymentsScreen
 import com.ivy.navigation.ReleasesScreen
@@ -85,5 +93,9 @@ fun BoxWithConstraintsScope.IvyNavGraph(screen: Screen?) {
         ContributorsScreen -> ContributorsScreenImpl()
         ReleasesScreen -> ReleasesScreenImpl()
         DisclaimerScreen -> DisclaimerScreenImpl()
+        is CreditCardDetailsScreen -> CreditCardDetailsScreenImpl(screen = screen)
+        is EditCreditCardScreen -> EditCreditCardScreenImpl(screen = screen)
+        is PayCreditCardScreen -> PayCreditCardScreenImpl(screen = screen)
+        is CreditCardStatementScreen -> CreditCardStatementScreenImpl(screen = screen)
     }
 }

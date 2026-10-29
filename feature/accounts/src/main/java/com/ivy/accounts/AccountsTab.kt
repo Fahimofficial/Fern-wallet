@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
@@ -25,13 +26,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ivy.base.legacy.Theme
+import com.ivy.creditcards.ui.CreditCardTile
 import com.ivy.data.model.Account
 import com.ivy.data.model.AccountId
+import com.ivy.data.model.AccountType
 import com.ivy.data.model.primitive.AssetCode
 import com.ivy.data.model.primitive.ColorInt
 import com.ivy.data.model.primitive.IconAsset
@@ -41,14 +47,18 @@ import com.ivy.design.l0_system.style
 import com.ivy.legacy.IvyWalletPreview
 import com.ivy.legacy.data.model.AccountData
 import com.ivy.legacy.utils.clickableNoIndication
+import com.ivy.legacy.utils.format
 import com.ivy.legacy.utils.horizontalSwipeListener
 import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.legacy.utils.rememberSwipeListenerState
+import com.ivy.navigation.CreditCardDetailsScreen
+import com.ivy.navigation.EditCreditCardScreen
 import com.ivy.navigation.TransactionsScreen
 import com.ivy.navigation.navigation
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.ui.rememberScrollPositionListState
+import com.ivy.wallet.ui.theme.Ivy
 import com.ivy.wallet.ui.theme.components.BalanceRow
 import com.ivy.wallet.ui.theme.components.BalanceRowMini
 import com.ivy.wallet.ui.theme.components.ItemIconSDefaultIcon
@@ -146,7 +156,10 @@ private fun BoxWithConstraintsScope.UI(
                 Spacer(Modifier.height(16.dp))
             }
         }
-        items(state.accountsData) {
+        items(
+            items = state.accountsData.filter { it.account.type != AccountType.CREDIT_CARD },
+            key = { it.account.id.value }
+        ) {
             Spacer(Modifier.height(16.dp))
             AccountCard(
                 baseCurrency = state.baseCurrency,
@@ -169,6 +182,12 @@ private fun BoxWithConstraintsScope.UI(
                 )
             }
         }
+
+        creditCardsSection(
+            state = state,
+            onAddCard = { nav.navigateTo(EditCreditCardScreen(accountId = null)) },
+            onCardClick = { nav.navigateTo(CreditCardDetailsScreen(it)) },
+        )
 
         item {
             Spacer(Modifier.height(150.dp)) // scroll hack
@@ -195,6 +214,61 @@ private fun BoxWithConstraintsScope.UI(
                 color = item.account.color.value.toComposeColor(),
                 fontWeight = FontWeight.Bold
             )
+        )
+    }
+}
+
+private fun LazyListScope.creditCardsSection(
+    state: AccountsState,
+    onAddCard: () -> Unit,
+    onCardClick: (UUID) -> Unit,
+) {
+    item(key = "credit_cards_header") {
+        Spacer(Modifier.height(24.dp))
+        Row(
+            modifier = Modifier.padding(start = 24.dp, end = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    modifier = Modifier.semantics { heading() },
+                    text = stringResource(R.string.cc_section_title),
+                    style = UI.typo.b1.style(color = UI.colors.pureInverse, fontWeight = FontWeight.ExtraBold)
+                )
+                val total = state.cardsOutstandingTotal
+                if (total != null && !state.hideTotalBalance) {
+                    Text(
+                        text = "${stringResource(R.string.cc_total_outstanding)}: " +
+                            "${total.format(state.baseCurrency)} ${state.baseCurrency}",
+                        style = UI.typo.nC.style(color = UI.colors.gray)
+                    )
+                }
+            }
+            Text(
+                modifier = Modifier
+                    .clip(UI.shapes.rFull)
+                    .clickable(role = Role.Button, onClick = onAddCard)
+                    .padding(horizontal = 12.dp, vertical = 12.dp)
+                    .testTag("add_credit_card"),
+                text = "+ " + stringResource(R.string.cc_add_card_short),
+                style = UI.typo.b2.style(color = Ivy, fontWeight = FontWeight.Bold)
+            )
+        }
+        if (state.creditCards.isEmpty()) {
+            Text(
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                text = stringResource(R.string.cc_no_cards_hint),
+                style = UI.typo.nC.style(color = UI.colors.gray)
+            )
+        }
+    }
+    items(state.creditCards, key = { "card-${it.accountId}" }) { tile ->
+        Spacer(Modifier.height(12.dp))
+        CreditCardTile(
+            tile = tile,
+            today = state.today,
+            hideAmounts = false,
+            onClick = { onCardClick(tile.accountId) }
         )
     }
 }

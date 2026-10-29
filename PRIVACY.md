@@ -5,7 +5,7 @@ of the current source code in this repository.
 
 ## Data stored on your device
 
-Accounts, transactions, categories, budgets, planned payments, loans, tags and settings are stored locally
+Accounts (including credit-card details: only the last four digits, never the full card number, CVV or expiry), transactions, categories, budgets, planned payments, loans, tags and settings are stored locally
 in an app-private SQLite database and preferences. Android backup is disabled (`allowBackup="false"`), so
 this data is not copied to Google Drive by the system. Backups are only created when you choose
 **Settings → Backup data**, and saved wherever you pick.
