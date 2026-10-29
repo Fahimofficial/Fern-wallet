@@ -11,12 +11,6 @@ kotlin {
     jvmToolchain(catalog.version("jvm-target").toInt())
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    compilerOptions {
-        freeCompilerArgs.add("-XXLanguage:+ContextReceivers")
-    }
-}
-
 dependencies {
     implementation(libs.bundles.arrow)
     implementation(libs.bundles.kotlin)

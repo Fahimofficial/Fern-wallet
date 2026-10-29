@@ -16,8 +16,8 @@ data class GitHubIssueArgs(
 fun parseArgs(argsList: List<String>): Either<String, GitHubIssueArgs> = either {
     val args = argsList.parseAsMap()
 
-    val gitHubPAT = args.ensureArgument(Constants.ARG_GITHUB_PAT)
-    val issueId = args.ensureArgument(Constants.ARG_ISSUE_NUMBER)
+    val gitHubPAT = ensureArgument(args, Constants.ARG_GITHUB_PAT)
+    val issueId = ensureArgument(args, Constants.ARG_ISSUE_NUMBER)
 
     GitHubIssueArgs(
         pat = GitHubPAT.from(gitHubPAT).bind(),

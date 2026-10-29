@@ -103,10 +103,6 @@ android {
     }
 
     val javaVersion = libs.versions.jvm.target.get()
-    kotlinOptions {
-        jvmTarget = javaVersion
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.valueOf("VERSION_$javaVersion")
         targetCompatibility = JavaVersion.valueOf("VERSION_$javaVersion")
@@ -127,6 +123,22 @@ android {
         xmlReport = true
         xmlOutput = file("${project.rootDir}/build/reports/lint/lint.xml")
         baseline = file("lint-baseline.xml")
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(libs.versions.jvm.target.get()))
+    }
+}
+
+// Keep Hilt's Kotlin metadata reader in sync with our Kotlin compiler (see ivy.hilt.gradle.kts).
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
+            useVersion(libs.versions.kotlin.asProvider().get())
+            because("Must be able to read metadata produced by our Kotlin compiler")
+        }
     }
 }
 

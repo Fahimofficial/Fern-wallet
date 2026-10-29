@@ -9,8 +9,8 @@ import ivy.automate.base.github.GitHubService
 import ivy.automate.base.github.model.GitHubUser
 import ivy.automate.base.github.model.NotBlankTrimmedString
 
-context(GitHubService)
 suspend fun Action.AlreadyTaken.execute(
+    gitHub: GitHubService,
     args: GitHubIssueArgs
 ): Either<String, String> = either {
     val commentText = buildString {
@@ -20,12 +20,12 @@ suspend fun Action.AlreadyTaken.execute(
         append("\nPlease, [pick another one](${Constants.ISSUES_URL}).")
         readContributingMd()
     }
-    comment(args, commentText)
+    comment(gitHub, args, commentText)
     commentText
 }
 
-context(GitHubService)
 suspend fun Action.NotApproved.execute(
+    gitHub: GitHubService,
     args: GitHubIssueArgs
 ): Either<String, String> = either {
     val commentText = buildString {
@@ -34,15 +34,15 @@ suspend fun Action.NotApproved.execute(
         append("\n@${Constants.IVY_ADMIN} must approve it first.")
         readContributingMd()
     }
-    comment(args, commentText)
+    comment(gitHub, args, commentText)
     commentText
 }
 
-context(GitHubService)
 suspend fun Action.AssignIssue.execute(
+    gitHub: GitHubService,
     args: GitHubIssueArgs
 ): Either<String, String> = either {
-    assignIssue(
+    gitHub.assignIssue(
         pat = args.pat,
         issueNumber = issueNumber,
         assignee = user.username
@@ -57,16 +57,16 @@ suspend fun Action.AssignIssue.execute(
         append(" so other contributors can take it._")
         readContributingMd()
     }
-    comment(args, commentText)
+    comment(gitHub, args, commentText)
     commentText
 }
 
-context(Raise<String>, GitHubService)
-private suspend fun comment(
+private suspend fun Raise<String>.comment(
+    gitHub: GitHubService,
     args: GitHubIssueArgs,
     text: String
 ) {
-    commentIssue(
+    gitHub.commentIssue(
         pat = args.pat,
         issueNumber = args.issueNumber,
         text = NotBlankTrimmedString(text)

@@ -34,10 +34,10 @@ class DetermineActionTest {
     val gitHubService = mockk<GitHubService>()
 
     fun testScope(
-        block: suspend context(GitHubService) () -> Unit
+        block: suspend () -> Unit
     ) {
         runTest {
-            block(gitHubService)
+            block()
         }
     }
 
@@ -66,7 +66,7 @@ class DetermineActionTest {
         } returns listOf(newLabel("approved")).right()
 
         // when
-        val action = determineAction(args)
+        val action = determineAction(gitHubService, args)
 
         // then
         action.shouldBeLeft()
@@ -88,7 +88,7 @@ class DetermineActionTest {
         } returns listOf(newLabel("approved")).right()
 
         // when
-        val action = determineAction(args)
+        val action = determineAction(gitHubService, args)
 
         // then
         action.shouldBeLeft()
@@ -110,7 +110,7 @@ class DetermineActionTest {
         } returns Exception("API error").left()
 
         // when
-        val action = determineAction(args)
+        val action = determineAction(gitHubService, args)
 
         // then
         action.shouldBeLeft()
@@ -132,7 +132,7 @@ class DetermineActionTest {
         } returns listOf(newLabel("approved")).right()
 
         // when
-        val action = determineAction(args)
+        val action = determineAction(gitHubService, args)
 
         // then
         action.shouldBeRight() shouldBe Action.AssignIssue(issueNumber, user1)
@@ -156,7 +156,7 @@ class DetermineActionTest {
         } returns listOf(newLabel("approved")).right()
 
         // when
-        val action = determineAction(args)
+        val action = determineAction(gitHubService, args)
 
         // then
         action.shouldBeRight() shouldBe Action.AssignIssue(issueNumber, user2)
@@ -178,7 +178,7 @@ class DetermineActionTest {
         } returns listOf(newLabel("approved")).right()
 
         // when
-        val action = determineAction(args)
+        val action = determineAction(gitHubService, args)
 
         // then
         action.shouldBeRight() shouldBe Action.AlreadyTaken(user2, issueNumber, user1)
@@ -200,7 +200,7 @@ class DetermineActionTest {
         } returns listOf(newLabel("feature")).right()
 
         // when
-        val action = determineAction(args)
+        val action = determineAction(gitHubService, args)
 
         // then
         action.shouldBeRight() shouldBe Action.NotApproved(user1, issueNumber)
@@ -220,7 +220,7 @@ class DetermineActionTest {
         } returns listOf(newLabel("approved")).right()
 
         // when
-        val action = determineAction(args)
+        val action = determineAction(gitHubService, args)
 
         // then
         action.shouldBeRight() shouldBe Action.DoNothing(issueNumber)
@@ -244,7 +244,7 @@ class DetermineActionTest {
         } returns listOf(newLabel("approved")).right()
 
         // when
-        val action = determineAction(args)
+        val action = determineAction(gitHubService, args)
 
         // then
         action.shouldBeRight() shouldBe Action.DoNothing(issueNumber)
@@ -266,7 +266,7 @@ class DetermineActionTest {
         } returns listOf(newLabel("approved")).right()
 
         // when
-        val action = determineAction(args)
+        val action = determineAction(gitHubService, args)
 
         // then
         action.shouldBeRight() shouldBe Action.DoNothing(issueNumber)

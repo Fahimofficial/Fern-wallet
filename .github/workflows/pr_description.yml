@@ -8,6 +8,8 @@ permissions:
 
 jobs:
   pr-description-check:
+    # Dependabot writes its own PR bodies and can't add a "Closes #..." line.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout GIT

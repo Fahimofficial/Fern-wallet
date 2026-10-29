@@ -25,24 +25,21 @@ fun main(args: Array<String>): Unit = runBlocking {
                 ktorClient = ktorClient,
             ),
         )
-        with(context) {
-            val result = execute(args).fold(
-                ifLeft = { throw IvyError("TASK FAILED: $it") },
-                ifRight = { "TASK SUCCESSFUL: $it" }
-            )
-            println("[ISSUE-ASSIGN] $result")
-        }
+        val result = execute(context, args).fold(
+            ifLeft = { throw IvyError("TASK FAILED: $it") },
+            ifRight = { "TASK SUCCESSFUL: $it" }
+        )
+        println("[ISSUE-ASSIGN] $result")
     }
 }
 
-context(GitHubService)
-private suspend fun execute(argsArr: Array<String>): Either<String, String> = either {
+private suspend fun execute(gitHub: GitHubService, argsArr: Array<String>): Either<String, String> = either {
     val args = parseArgs(argsArr.toList()).bind()
 
-    val issue = fetchIssue(args.issueNumber).mapLeft {
+    val issue = gitHub.fetchIssue(args.issueNumber).mapLeft {
         "Failed to fetch Issue #${args.issueNumber.value}"
     }.bind()
-    comment(args, commentText(issue))
+    comment(gitHub, args, commentText(issue))
 }
 
 fun commentText(
@@ -56,12 +53,12 @@ fun commentText(
     append("_Tagging @${Constants.IVY_ADMIN} for review & approval \uD83D\uDC40_")
 }
 
-context(Raise<String>, GitHubService)
-private suspend fun comment(
+private suspend fun Raise<String>.comment(
+    gitHub: GitHubService,
     args: GitHubIssueArgs,
     text: String
 ): String {
-    return commentIssue(
+    return gitHub.commentIssue(
         pat = args.pat,
         issueNumber = args.issueNumber,
         text = NotBlankTrimmedString(text)
