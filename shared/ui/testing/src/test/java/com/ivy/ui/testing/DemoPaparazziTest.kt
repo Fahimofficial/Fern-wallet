@@ -13,7 +13,7 @@ import org.junit.runner.RunWith
 
 @RunWith(TestParameterInjector::class)
 class DemoPaparazziTest(
-    @TestParameter
+    @param:TestParameter
     private val theme: PaparazziTheme,
 ) : PaparazziScreenshotTest() {
     @Test

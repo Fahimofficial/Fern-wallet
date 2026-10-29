@@ -20,23 +20,20 @@ fun main(args: Array<String>): Unit = runBlocking {
                 ktorClient = ktorClient,
             ),
         )
-        with(context) {
-            val result = execute(args).fold(
-                ifLeft = { throw IvyError("TASK FAILED: $it") },
-                ifRight = { "TASK SUCCESSFUL: $it" }
-            )
-            println("[ISSUE-ASSIGN] $result")
-        }
+        val result = execute(context, args).fold(
+            ifLeft = { throw IvyError("TASK FAILED: $it") },
+            ifRight = { "TASK SUCCESSFUL: $it" }
+        )
+        println("[ISSUE-ASSIGN] $result")
     }
 }
 
-context(GitHubService)
-private suspend fun execute(argsArr: Array<String>): Either<String, String> = either {
+private suspend fun execute(gitHub: GitHubService, argsArr: Array<String>): Either<String, String> = either {
     val args = parseArgs(argsArr.toList()).bind()
-    when (val action = determineAction(args).bind()) {
-        is Action.AlreadyTaken -> action.execute(args).bind()
-        is Action.AssignIssue -> action.execute(args).bind()
-        is Action.NotApproved -> action.execute(args).bind()
+    when (val action = determineAction(gitHub, args).bind()) {
+        is Action.AlreadyTaken -> action.execute(gitHub, args).bind()
+        is Action.AssignIssue -> action.execute(gitHub, args).bind()
+        is Action.NotApproved -> action.execute(gitHub, args).bind()
         is Action.DoNothing -> "Do nothing."
     }
 }

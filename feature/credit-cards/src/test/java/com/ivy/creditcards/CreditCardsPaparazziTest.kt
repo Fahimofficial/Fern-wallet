@@ -9,7 +9,7 @@ import org.junit.runner.RunWith
 
 @RunWith(TestParameterInjector::class)
 class CreditCardsPaparazziTest(
-    @TestParameter
+    @param:TestParameter
     private val theme: PaparazziTheme,
 ) : PaparazziScreenshotTest() {
     private val dark get() = theme == PaparazziTheme.Dark
