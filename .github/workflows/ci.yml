@@ -16,7 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  JAVA_VERSION: '17' # matches `jvm-target` in gradle/libs.versions.toml
+  # JDK that runs Gradle. Paparazzi 2 needs 21+; the app's bytecode level is `jvm-target` in gradle/libs.versions.toml.
+  JAVA_VERSION: '21'
 
 jobs:
   wrapper-validation:

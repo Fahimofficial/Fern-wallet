@@ -61,7 +61,7 @@ class CalcWalletBalanceAct @Inject constructor(
                 )
             )
         } thenSum {
-            it.orNull() ?: BigDecimal.ZERO
+            it.getOrNull() ?: BigDecimal.ZERO
         }
 
     @Suppress("DataClassDefaultValues")

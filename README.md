@@ -69,7 +69,7 @@ sha256sum -c SHA256SUMS.txt --ignore-missing
 
 ## Build from source
 
-Requirements: JDK 17, Android SDK (compile SDK 34). The Gradle wrapper downloads Gradle 8.8.
+Requirements: JDK 21, Android SDK (compile SDK 37). The Gradle wrapper downloads Gradle 9.8.2.
 
 ```sh
 git clone https://github.com/Fahimofficial/Fern-wallet.git
@@ -104,7 +104,7 @@ export SIGNING_STORE_PASSWORD=... SIGNING_KEY_ALIAS=... SIGNING_KEY_PASSWORD=...
 ### Troubleshooting
 
 - **`SDK location not found`** – create `local.properties` with `sdk.dir=/path/to/Android/sdk`, or set `ANDROID_HOME`.
-- **Unsupported class file / JVM errors** – use JDK 17 (`java -version`).
+- **Unsupported class file / JVM errors** – use JDK 21 (`java -version`).
 - **Paparazzi failures** – check `**/build/paparazzi/failures`. If the UI change was intended, run `recordPaparazziDebug` and commit the images.
 - **`./gradlew assembleRelease` fails in `:feature:*:verifyReleaseResources`** – a known upstream issue with library-only resource verification; build the app module instead: `./gradlew :app:assembleRelease`.
 

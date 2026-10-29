@@ -1,7 +1,5 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-    id("org.jetbrains.kotlin.android")
     org.jetbrains.kotlin.plugin.compose
     id("dagger.hilt.android.plugin")
     id("org.jetbrains.kotlin.plugin.serialization")
@@ -18,7 +16,7 @@ android {
     defaultConfig {
         applicationId = "com.fernwallet.app"
         minSdk = libs.versions.min.sdk.get().toInt()
-        targetSdk = libs.versions.compile.sdk.get().toInt()
+        targetSdk = libs.versions.target.sdk.get().toInt()
         versionName = libs.versions.version.name.get()
         versionCode = libs.versions.version.code.get().toInt()
     }
@@ -111,6 +109,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true
     }
 
     lint {
