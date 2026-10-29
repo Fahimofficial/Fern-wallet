@@ -31,7 +31,7 @@ build needs approval.
 
 ## Cutting a release
 
-1. Run **Actions → Prepare release → Run workflow** (optionally enter a version name). It opens a PR bumping
+1. Run **Actions → Prepare release → Run workflow**. It uses today's UTC date as the version name and opens a PR bumping
    `version-name`/`version-code`.
 2. Review and merge the PR once CI is green.
 3. Tag the merge commit and push the tag:

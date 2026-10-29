@@ -126,7 +126,7 @@ timber = { module = "com.jakewharton.timber:timber", version = "5.0.1" }
 # Legacy
 keval = { module = "com.notkamui.libs:keval", version = "1.1.1" }
 opencsv-csv = { module = "com.opencsv:opencsv", version = "5.9" }
-opencsv-apache-commons = { module = "org.apache.commons:commons-lang3", version = "3.16.0" }
+opencsv-apache-commons = { module = "org.apache.commons:commons-lang3", version = "3.18.0" }
 
 # Linters
 detekt-gradle-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
