@@ -28,6 +28,17 @@ updates:
         patterns:
           - "*"
 
+  # Ruby gems used for release tooling (fastlane), declared in the root Gemfile.
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      bundler:
+        patterns:
+          - "*"
+
 registries:
   google:
     type: maven-repository
