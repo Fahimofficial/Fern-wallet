@@ -68,9 +68,9 @@ private fun unstableComposables(
         it.name.endsWith("composables.csv")
     } ?: raise("Couldn't find '*composables.csv' in '${reportFolder.absoluteFile}'")
 
-    val abstractComposables = abstractComposables(composablesTxt)
+    val abstractComposableNames = findAbstractComposableNames(composablesTxt)
     parseUnstableComposables(composablesCsv).bind()
-        .filter { it.fullyQualifiedName !in abstractComposables }
+        .filter { it.fullyQualifiedName !in abstractComposableNames }
         .map {
             it.copy(
                 unstableArguments = it.findUnstableArguments(composablesTxt).toSet()
@@ -78,15 +78,12 @@ private fun unstableComposables(
         }
 }
 
-private val AbstractComposableRegex = Regex("""^\s*abstract fun ([\w.$]+)\(""", RegexOption.MULTILINE)
+private val abstractComposableRegex = Regex("""^\s*abstract fun ([\w.$]+)\(""", RegexOption.MULTILINE)
 
-/**
- * Newer Compose compilers also report abstract `@Composable` declarations (e.g. interface members).
- * They have no body, so they're never restartable/skippable; their implementations are what matter
- * and those are reported (and checked) separately.
- */
-private fun abstractComposables(composablesTxt: String): Set<FullyQualifiedName> =
-    AbstractComposableRegex.findAll(composablesTxt)
+// Abstract composables (e.g. interface members) have no body, so they can never be
+// restartable/skippable. Their implementations are reported and checked on their own.
+private fun findAbstractComposableNames(composablesTxt: String): Set<FullyQualifiedName> =
+    abstractComposableRegex.findAll(composablesTxt)
         .map { it.groupValues[1] }
         .toSet()
 
