@@ -47,7 +47,7 @@ class ActionExecutorTest {
         } returns Exception("API error").left()
 
         // when
-        val res = with(gitHubService) { action.execute(args) }
+        val res = action.execute(gitHubService, args)
 
         // then
         res.shouldBeLeft()
@@ -66,7 +66,7 @@ class ActionExecutorTest {
         } returns Exception("API error").left()
 
         // when
-        val res = with(gitHubService) { action.execute(args) }
+        val res = action.execute(gitHubService, args)
 
         // then
         res.shouldBeLeft()
@@ -88,7 +88,7 @@ class ActionExecutorTest {
         } returns Exception("API error").left()
 
         // when
-        val res = with(gitHubService) { action.execute(args) }
+        val res = action.execute(gitHubService, args)
 
         // then
         res.shouldBeLeft()
@@ -110,7 +110,7 @@ class ActionExecutorTest {
         } returns Unit.right()
 
         // when
-        val res = with(gitHubService) { action.execute(args) }
+        val res = action.execute(gitHubService, args)
 
         // then
         res.shouldBeLeft()
@@ -130,7 +130,7 @@ class ActionExecutorTest {
         } returns Unit.right()
 
         // when
-        val res = with(gitHubService) { action.execute(args) }
+        val res = action.execute(gitHubService, args)
 
         // then
         val commentText = """
@@ -163,7 +163,7 @@ class ActionExecutorTest {
         } returns Unit.right()
 
         // when
-        val res = with(gitHubService) { action.execute(args) }
+        val res = action.execute(gitHubService, args)
 
         // then
         val commentText = """
@@ -198,7 +198,7 @@ class ActionExecutorTest {
         } returns Unit.right()
 
         // when
-        val res = with(gitHubService) { action.execute(args) }
+        val res = action.execute(gitHubService, args)
 
         // then
         coVerify(exactly = 1) {

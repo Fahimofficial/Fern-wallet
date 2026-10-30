@@ -18,7 +18,7 @@ git checkout -b fix-issue-<number>
 ./gradlew :app:assembleDebug
 ```
 
-Requirements: JDK 17 and the Android SDK (see the [README](README.md#build-from-source)).
+Requirements: JDK 21 and the Android SDK (see the [README](README.md#build-from-source)).
 Read the [Developer Guidelines](docs/Guidelines.md) before you start.
 
 ## 3. Before opening a pull request

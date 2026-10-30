@@ -4,9 +4,16 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-kotlin {
-    sourceSets.all {
-        kotlin.srcDir("build/generated/ksp/$name/kotlin")
+// Dagger/Hilt read Kotlin class metadata with kotlin-metadata-jvm. The version they ship with
+// can lag behind our Kotlin compiler and then fails with "Provided Metadata instance has version X".
+// Keep it aligned with the Kotlin version we compile with.
+val kotlinVersion = catalog.version("kotlin")
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
+            useVersion(kotlinVersion)
+            because("Must be able to read metadata produced by our Kotlin compiler")
+        }
     }
 }
 

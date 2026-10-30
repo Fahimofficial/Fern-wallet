@@ -11,10 +11,8 @@ fun List<String>.parseAsMap(): Map<String, String> {
     }.toMap()
 }
 
-context(Raise<String>)
-@IvyDsl
-fun Map<String, String>.ensureArgument(key: String): String {
-    val value = this[key]
+fun Raise<String>.ensureArgument(args: Map<String, String>, key: String): String {
+    val value = args[key]
     ensureNotNull(value) {
         "Argument '$key' is missing."
     }

@@ -68,12 +68,24 @@ private fun unstableComposables(
         it.name.endsWith("composables.csv")
     } ?: raise("Couldn't find '*composables.csv' in '${reportFolder.absoluteFile}'")
 
-    parseUnstableComposables(composablesCsv).bind().map {
-        it.copy(
-            unstableArguments = it.findUnstableArguments(composablesTxt).toSet()
-        )
-    }
+    val abstractComposableNames = findAbstractComposableNames(composablesTxt)
+    parseUnstableComposables(composablesCsv).bind()
+        .filter { it.fullyQualifiedName !in abstractComposableNames }
+        .map {
+            it.copy(
+                unstableArguments = it.findUnstableArguments(composablesTxt).toSet()
+            )
+        }
 }
+
+private val abstractComposableRegex = Regex("""^\s*abstract fun ([\w.$]+)\(""", RegexOption.MULTILINE)
+
+// Abstract composables (e.g. interface members) have no body, so they can never be
+// restartable/skippable. Their implementations are reported and checked on their own.
+private fun findAbstractComposableNames(composablesTxt: String): Set<FullyQualifiedName> =
+    abstractComposableRegex.findAll(composablesTxt)
+        .map { it.groupValues[1] }
+        .toSet()
 
 @Suppress("MagicNumber")
 private fun parseUnstableComposables(

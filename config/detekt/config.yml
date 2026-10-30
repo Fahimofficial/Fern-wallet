@@ -785,11 +785,12 @@ style:
       - 'java.util.*'
 
 compiler:
-  CompilerInfo:
-    active: false
-    ignoreDiagnostic: []
-  CompilerWarning:
+  # kotlin-compiler-wrapper 0.1 merged CompilerInfo/CompilerWarning into CompilerDiagnostics.
+  # Same behaviour as before: report warnings (not infos), minus the opt-in noise.
+  CompilerDiagnostics:
     active: true
+    reportSeverities:
+      - 'warning'
     ignoreDiagnostic:
       - 'OPT_IN_IS_NOT_ENABLED'
 
@@ -1069,7 +1070,7 @@ Compose:
     active: true
   DefaultsVisibility:
     active: true
-  ModifierComposable:
+  ModifierComposed: # was ModifierComposable before compose-rules 0.5
     active: true
   ModifierMissing:
     active: true
