@@ -30,12 +30,12 @@ class ZipUtilsTest {
 
     @Test
     fun `extracts regular entries, including nested folders`() {
-        val zip = zipOf(BACKUP_JSON to EMPTY_JSON, "nested/dir/file.txt" to "hello")
+        val zip = zipOf(BACKUP_JSON to EMPTY_JSON, NESTED_FILE to NOTE_TEXT)
 
         unzip(FileInputStream(zip), destination)
 
         File(destination, BACKUP_JSON).readText() shouldBe EMPTY_JSON
-        File(destination, "nested/dir/file.txt").readText() shouldBe "hello"
+        File(destination, NESTED_FILE).readText() shouldBe NOTE_TEXT
     }
 
     @Test
@@ -77,14 +77,14 @@ class ZipUtilsTest {
         val source = File(workDir, "source").apply { mkdirs() }
         val json = File(source, BACKUP_JSON).apply { writeText(EMPTY_JSON) }
         val folder = File(source, "attachments").apply { mkdirs() }
-        File(folder, "note.txt").writeText("hello")
+        File(folder, "note.txt").writeText(NOTE_TEXT)
         val zip = File(workDir, "roundtrip.zip")
 
         ZipOutputStream(zip.outputStream()).use { zip(it, listOf(json, folder)) }
         unzip(FileInputStream(zip), destination)
 
         File(destination, BACKUP_JSON).readText() shouldBe EMPTY_JSON
-        File(destination, "attachments/note.txt").readText() shouldBe "hello"
+        File(destination, "attachments/note.txt").readText() shouldBe NOTE_TEXT
     }
 
     @Test
@@ -113,5 +113,7 @@ class ZipUtilsTest {
     private companion object {
         const val BACKUP_JSON = "data.json"
         const val EMPTY_JSON = "{}"
+        const val NESTED_FILE = "nested/dir/file.txt"
+        const val NOTE_TEXT = "hello"
     }
 }

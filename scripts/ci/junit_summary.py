@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Summarise JUnit XML results and fail if tests failed or too few tests ran.
+"""Summarise JUnit XML results and fail if tests failed or too few tests ran.
 
 Writes totals and every failed test (class, name, first line of the failure) to the job summary,
 so the reason is visible without downloading the report artifact.

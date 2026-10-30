@@ -1,5 +1,6 @@
 import json
 import os
+import stat
 import unittest
 
 import check_apk_policy
@@ -63,14 +64,15 @@ EXPECTED = {"application ID": "com.fernwallet.app", "application label": "Fern W
             "versionCode": "206", "versionName": "2025.07.17"}
 
 
+def evaluate(xmltree=None, policy=None, expected=None, badging=BADGING):
+    return check_apk_policy.evaluate(xmltree or manifest(), badging, policy or POLICY,
+                                     EXPECTED if expected is None else expected)
+
+
 class EvaluateTest(unittest.TestCase):
-    def evaluate(self, xmltree=None, policy=None, expected=None, badging=BADGING):
-        report, permissions, exported = check_apk_policy.evaluate(
-            xmltree or manifest(), badging, policy or POLICY, EXPECTED if expected is None else expected)
-        return report, permissions, exported
 
     def test_compliant_apk_passes(self):
-        report, permissions, exported = self.evaluate()
+        report, permissions, exported = evaluate()
         self.assertEqual(report.errors, [])
         self.assertEqual(report.warnings, [])
         self.assertEqual(permissions, ["android.permission.INTERNET"])
@@ -78,7 +80,7 @@ class EvaluateTest(unittest.TestCase):
         self.assertIn("minSdk=28 targetSdk=34", report.notes[0])
 
     def test_identity_and_version_mismatch(self):
-        report, _, _ = self.evaluate(expected={**EXPECTED, "application ID": "com.fernwallet.app.debug",
+        report, _, _ = evaluate(expected={**EXPECTED, "application ID": "com.fernwallet.app.debug",
                                                "versionCode": "207"})
         self.assertEqual(len(report.errors), 2)
         self.assertTrue(any("application ID" in e for e in report.errors))
@@ -92,36 +94,36 @@ class EvaluateTest(unittest.TestCase):
         }
         for flag, flags in cases.items():
             with self.subTest(flag=flag):
-                report, _, _ = self.evaluate(manifest(app_flags=flags))
+                report, _, _ = evaluate(manifest(app_flags=flags))
                 self.assertEqual(len(report.errors), 1, report.errors)
                 self.assertIn(flag, report.errors[0])
 
     def test_new_permission_fails_and_removed_permission_warns(self):
-        report, _, _ = self.evaluate(manifest(permissions=("android.permission.CAMERA",)))
+        report, _, _ = evaluate(manifest(permissions=("android.permission.CAMERA",)))
         self.assertTrue(any("android.permission.CAMERA is not in the allowlist" in e for e in report.errors))
         self.assertTrue(any("android.permission.INTERNET is no longer requested" in w for w in report.warnings))
 
     def test_unlisted_exported_component_fails(self):
         extra = element(5, "provider", attr("name", "com.example.Files"),
                         attr("exported", "true", "0x01010010", raw=False))
-        report, _, exported = self.evaluate(manifest(components=default_components() + [extra]))
+        report, _, exported = evaluate(manifest(components=default_components() + [extra]))
         self.assertEqual(exported, 3)
         self.assertTrue(any("exported provider com.example.Files" in e for e in report.errors))
 
     def test_component_with_wrong_guarding_permission_fails(self):
         policy = json.loads(json.dumps(POLICY))
         policy["exported_components"]["com.example.Tile"]["permission"] = "android.permission.SOMETHING_ELSE"
-        report, _, _ = self.evaluate(policy=policy)
+        report, _, _ = evaluate(policy=policy)
         self.assertTrue(any("guarded by" in e for e in report.errors))
 
     def test_component_without_exported_attribute_but_with_intent_filter_counts_as_exported(self):
         legacy = element(5, "receiver", attr("name", "com.example.Legacy")) + element(7, "intent-filter")
-        report, _, _ = self.evaluate(manifest(components=default_components() + [legacy]))
+        report, _, _ = evaluate(manifest(components=default_components() + [legacy]))
         self.assertTrue(any("com.example.Legacy" in e for e in report.errors))
 
     def test_missing_application_is_a_tool_error(self):
         with self.assertRaises(check_apk_policy.ToolError):
-            self.evaluate(xmltree="N: android=x\n  E: manifest (line=2)\n")
+            evaluate(xmltree="N: android=x\n  E: manifest (line=2)\n")
 
 
 class MainTest(ScriptTestCase):
@@ -132,7 +134,7 @@ class MainTest(ScriptTestCase):
         path = self.write("bin/aapt2", "#!/bin/sh\n"
                           f'if [ "$2" = "xmltree" ]; then cat "{self.tmp}/xmltree.txt"; '
                           f'else cat "{self.tmp}/badging.txt"; fi\n')
-        os.chmod(path, 0o700)
+        os.chmod(path, stat.S_IRWXU)
         return path
 
     def args(self, aapt2: str) -> list[str]:
@@ -153,7 +155,7 @@ class MainTest(ScriptTestCase):
 
     def test_refuses_a_binary_that_is_not_aapt2(self):
         not_aapt2 = self.write("bin/sh-wrapper", "#!/bin/sh\necho hi\n")
-        os.chmod(not_aapt2, 0o700)
+        os.chmod(not_aapt2, stat.S_IRWXU)
         code, _ = self.run_main(check_apk_policy.main, self.args(not_aapt2))
         self.assertEqual(code, 2)
 

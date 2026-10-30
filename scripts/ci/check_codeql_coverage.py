@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Fail if a CodeQL java-kotlin database doesn't contain the app's Kotlin sources.
+"""Fail if a CodeQL java-kotlin database doesn't contain the app's Kotlin sources.
 
 CodeQL's Kotlin extractor supports Kotlin versions with a delay. With an unsupported compiler it
 can skip files without failing the build, which would leave Kotlin code unanalysed behind a green

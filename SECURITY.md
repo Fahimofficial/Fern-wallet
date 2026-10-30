@@ -16,8 +16,8 @@ financial data, backups or credentials.
 
 ## Verifying releases
 
-Every release has a `SHA256SUMS.txt`, a Software Bill of Materials (SBOM, CycloneDX format) listing every bundled
-dependency, and a build-provenance attestation:
+Every release has a `SHA256SUMS.txt`, a Software Bill of Materials (SBOM) in CycloneDX format listing every
+bundled dependency, and a build-provenance attestation:
 
 ```sh
 sha256sum -c SHA256SUMS.txt --ignore-missing
