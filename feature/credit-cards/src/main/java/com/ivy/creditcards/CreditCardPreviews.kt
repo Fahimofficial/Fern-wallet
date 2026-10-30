@@ -313,6 +313,7 @@ fun PayCreditCardUiTest(isDark: Boolean) {
         PayCreditCardUi(
             state = PayState(
                 loading = false,
+                notFound = false,
                 cardName = CardSamples.visual.nickname,
                 currency = "INR",
                 outstanding = CardSamples.overview.outstanding,

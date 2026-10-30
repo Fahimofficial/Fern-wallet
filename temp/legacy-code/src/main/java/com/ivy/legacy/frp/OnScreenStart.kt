@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
+import com.ivy.navigation.LocalHostScreen
 import com.ivy.navigation.navigation
 
 @Deprecated("Legacy code. Don't use it, please.")
@@ -16,7 +17,7 @@ fun onScreenStart(
 ) {
     val latestStart by rememberUpdatedState(start)
     val latestCleanup by rememberUpdatedState(cleanUp)
-    DisposableEffect(navigation().currentScreen) {
+    DisposableEffect(LocalHostScreen.current ?: navigation().currentScreen) {
         latestStart()
         onDispose { latestCleanup() }
     }

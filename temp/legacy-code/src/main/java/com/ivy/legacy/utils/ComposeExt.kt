@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.Insets
 import androidx.core.view.WindowInsetsCompat
+import com.ivy.navigation.LocalHostScreen
 import com.ivy.navigation.navigation
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
@@ -72,7 +73,7 @@ fun onScreenStart(
 ) {
     val latestStart by rememberUpdatedState(start)
     val latestCleanup by rememberUpdatedState(cleanUp)
-    DisposableEffect(navigation().currentScreen) {
+    DisposableEffect(LocalHostScreen.current ?: navigation().currentScreen) {
         latestStart()
         onDispose { latestCleanup() }
     }

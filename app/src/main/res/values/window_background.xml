@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Shown before the first Compose frame and behind it. Matches the app's light background
+      (old design White) so a light-themed start never begins on a dark window.
+    -->
+    <color name="window_background">#FAFAFA</color>
+</resources>

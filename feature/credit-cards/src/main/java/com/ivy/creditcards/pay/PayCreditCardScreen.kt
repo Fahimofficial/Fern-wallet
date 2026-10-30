@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ivy.creditcards.edit.DateRow
 import com.ivy.creditcards.ui.AmountLine
+import com.ivy.creditcards.ui.CardLoading
 import com.ivy.creditcards.ui.CardScreen
 import com.ivy.creditcards.ui.ChoiceChip
 import com.ivy.creditcards.ui.Disclaimer
@@ -57,12 +58,19 @@ internal fun PayCreditCardUi(state: PayState, onEvent: (PayEvent) -> Unit) {
                     .fillMaxWidth()
                     .padding(16.dp),
                 text = stringResource(R.string.cc_record_payment),
-                enabled = !state.loading && !state.saving && !state.converting && state.sources.isNotEmpty(),
+                enabled = state.canSubmit(),
                 onClick = { onEvent(PayEvent.Save(defaultTitle)) }
             )
         }
     ) {
-        if (state.loading) return@CardScreen
+        if (state.loading) {
+            CardLoading()
+            return@CardScreen
+        }
+        if (state.notFound) {
+            Disclaimer(stringResource(R.string.cc_not_found))
+            return@CardScreen
+        }
         Column(Modifier.verticalScroll(rememberScrollState())) {
             InfoCard(Modifier.padding(top = 8.dp)) {
                 Text(
@@ -192,3 +200,7 @@ private fun QuickAmounts(state: PayState, onEvent: (PayEvent) -> Unit) {
         }
     }
 }
+
+/** The payment can be recorded: the card is loaded, nothing is in flight and there's a source. */
+private fun PayState.canSubmit(): Boolean =
+    !loading && !notFound && !saving && !converting && sources.isNotEmpty()

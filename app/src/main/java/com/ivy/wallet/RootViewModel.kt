@@ -58,10 +58,22 @@ class RootViewModel @Inject constructor(
     private val _appLocked = MutableStateFlow<Boolean?>(null)
     val appLocked = _appLocked.readOnly()
 
+    /** This ViewModel outlives Activity recreation: the initial navigation must happen only once. */
+    private var started = false
+
+    /**
+     * Called on first composition and again whenever the system dark mode changes (the Activity
+     * is recreated for configuration changes and this ViewModel survives it).
+     */
     fun start(systemDarkMode: Boolean, intent: Intent) {
+        val firstStart = !started
+        started = true
+
         viewModelScope.launch {
             TestIdlingResource.increment()
 
+            // The theme is loaded before the first screen is shown, so the app doesn't render in
+            // the default (light) theme first and then flash into the user's theme.
             ioThread {
                 val theme = settingsDao.findAll().firstOrNull()?.theme
                     ?: if (systemDarkMode) Theme.DARK else Theme.LIGHT
@@ -70,32 +82,33 @@ class RootViewModel @Inject constructor(
                 ivyContext.initStartDayOfMonthInMemory(sharedPrefs = sharedPrefs)
             }
 
-            TestIdlingResource.decrement()
-        }
+            if (firstStart) {
+                ioThread {
+                    appLockEnabled = sharedPrefs.getBoolean(SharedPrefs.APP_LOCK_ENABLED, false)
+                    // initial app locked state
+                    _appLocked.value = appLockEnabled
 
-        viewModelScope.launch {
-            TestIdlingResource.increment()
-
-            ioThread {
-                appLockEnabled = sharedPrefs.getBoolean(SharedPrefs.APP_LOCK_ENABLED, false)
-                // initial app locked state
-                _appLocked.value = appLockEnabled
-
-                if (isOnboardingCompleted()) {
-                    navigateOnboardedUser(intent)
-                } else {
-                    nav.navigateTo(OnboardingScreen)
-                }
-                if (!legalRepo.isDisclaimerAccepted()) {
-                    nav.navigateTo(DisclaimerScreen)
+                    // A new Activity starts a fresh back stack. Navigation is an app singleton, so
+                    // screens of a previous (finished) Activity could otherwise still be on it.
+                    nav.resetBackStack()
+                    if (isOnboardingCompleted()) {
+                        navigateOnboardedUser(intent)
+                    } else {
+                        nav.navigateTo(OnboardingScreen)
+                    }
+                    if (!legalRepo.isDisclaimerAccepted()) {
+                        nav.navigateTo(DisclaimerScreen)
+                    }
                 }
             }
 
             TestIdlingResource.decrement()
         }
 
-        viewModelScope.launch {
-            migrationsManager.executeMigrations()
+        if (firstStart) {
+            viewModelScope.launch {
+                migrationsManager.executeMigrations()
+            }
         }
     }
 

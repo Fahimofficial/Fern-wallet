@@ -24,13 +24,18 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fernwallet.app.BuildConfig
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -105,7 +110,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
         super.onCreate(savedInstanceState)
         setupApp()
         setContent {
-            val viewModel: RootViewModel = viewModel()
+            // `viewModel` is the Activity's instance, the one onResume/onPause/back use too.
             val isSystemInDarkTheme = isSystemInDarkTheme()
 
             LaunchedEffect(isSystemInDarkTheme) {
@@ -137,15 +142,19 @@ class RootActivity : AppCompatActivity(), RootScreen {
                 }
 
                 false -> {
-                    NavigationRoot(navigation = navigation) { screen ->
-                        IvyUI(
-                            design = appDesign(ivyContext),
-                            includeSurface = screen?.isLegacy ?: true,
-                            timeConverter = timeConverter,
-                            timeProvider = timeProvider,
-                            timeFormatter = timeFormatter,
-                        ) {
-                            IvyNavGraph(screen)
+                    // Theme-coloured backdrop behind screen transitions: while one screen fades
+                    // out and the next fades in, the dark window background must never show.
+                    ThemedBackdrop(appDesign(ivyContext).colors(ivyContext.theme, isSystemInDarkTheme).pure) {
+                        NavigationRoot(navigation = navigation) { screen ->
+                            IvyUI(
+                                design = appDesign(ivyContext),
+                                includeSurface = screen?.isLegacy ?: true,
+                                timeConverter = timeConverter,
+                                timeProvider = timeProvider,
+                                timeFormatter = timeFormatter,
+                            ) {
+                                IvyNavGraph(screen)
+                            }
                         }
                     }
                 }
@@ -547,5 +556,17 @@ class RootActivity : AppCompatActivity(), RootScreen {
         val appWidgetManager: AppWidgetManager = this.getSystemService(AppWidgetManager::class.java)
         val addTransactionWidget = ComponentName(this, widget)
         appWidgetManager.requestPinAppWidget(addTransactionWidget, null, null)
+    }
+}
+
+@Composable
+@Suppress("FunctionNaming") // composable
+private fun ThemedBackdrop(color: Color, content: @Composable () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(color)
+    ) {
+        content()
     }
 }

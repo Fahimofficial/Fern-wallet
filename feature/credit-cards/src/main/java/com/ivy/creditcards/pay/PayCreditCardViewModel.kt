@@ -51,6 +51,8 @@ data class PaySource(val id: UUID, val name: String, val currency: String)
 @Immutable
 data class PayState(
     val loading: Boolean,
+    /** The card no longer exists (e.g. deleted while this screen was on the back stack). */
+    val notFound: Boolean,
     val cardName: String,
     val currency: String,
     val outstanding: BigDecimal,
@@ -108,6 +110,7 @@ class PayCreditCardViewModel @Inject constructor(
     private var conversionJob: Job? = null
     private var converting by mutableStateOf(false)
     private var started = false
+    private var loadFinished by mutableStateOf(false)
 
     fun start(screen: PayCreditCardScreen) {
         if (started) return
@@ -126,6 +129,7 @@ class PayCreditCardViewModel @Inject constructor(
             loaded?.overview?.latestStatement?.remainingDue?.takeIf { it.signum() > 0 }?.let {
                 updateAmount(it.toPlainString())
             }
+            loadFinished = true
         }
     }
 
@@ -138,7 +142,8 @@ class PayCreditCardViewModel @Inject constructor(
         val outstanding = item?.overview?.outstanding ?: BigDecimal.ZERO
         val statement = item?.overview?.latestStatement
         return PayState(
-            loading = item == null,
+            loading = !loadFinished,
+            notFound = loadFinished && item == null,
             cardName = item?.account?.name?.value.orEmpty(),
             currency = item?.account?.asset?.code.orEmpty(),
             outstanding = outstanding,
