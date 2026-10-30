@@ -23,6 +23,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -92,8 +93,8 @@ fun CreditCardVisual(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(CardAspectRatio)
-            .clip(RoundedCornerShape(20.dp))
-            .background(Brush.linearGradient(listOf(palette.start, palette.end)))
+            .clip(RoundedCornerShape(CardCornerRadius))
+            .cardSurface(palette)
             .clearAndSetSemantics { contentDescription = description }
     ) {
         CardPattern(palette.accent)
@@ -143,6 +144,30 @@ fun CreditCardVisual(
             }
         }
         if (data.closed) ClosedOverlay()
+    }
+}
+
+/**
+ * The card's own gradient plus two soft light sources: a white sheen from the top-left and a glow
+ * in the card's accent colour from the bottom-right. Gives every design some depth (a subtle,
+ * iridescent feel) without images; brushes are built once per size, not on every frame.
+ */
+fun Modifier.cardSurface(palette: CardPalette): Modifier = drawWithCache {
+    val base = Brush.linearGradient(listOf(palette.start, palette.end))
+    val sheen = Brush.radialGradient(
+        colors = listOf(Color.White.copy(alpha = SheenAlpha), Color.Transparent),
+        center = Offset(size.width * SheenCenterX, 0f),
+        radius = size.maxDimension * SheenRadius,
+    )
+    val glow = Brush.radialGradient(
+        colors = listOf(palette.accent.copy(alpha = GlowAlpha), Color.Transparent),
+        center = Offset(size.width, size.height),
+        radius = size.maxDimension * GlowRadius,
+    )
+    onDrawBehind {
+        drawRect(base)
+        drawRect(glow)
+        drawRect(sheen)
     }
 }
 
@@ -234,6 +259,12 @@ fun monogram(name: String): String {
 }
 
 private const val CardAspectRatio = 1.586f // ISO/IEC 7810 ID-1
+private val CardCornerRadius = 20.dp
+private const val SheenAlpha = 0.16f
+private const val SheenCenterX = 0.15f
+private const val SheenRadius = 0.9f
+private const val GlowAlpha = 0.22f
+private const val GlowRadius = 0.75f
 private const val PatternCenterX = 1.05f
 private const val PatternCenterY = -0.1f
 private const val PatternRings = 5
