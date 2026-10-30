@@ -25,7 +25,7 @@ fun zip(context: Context, zipFile: Uri, files: List<File>) {
     }
 }
 
-private fun zip(
+internal fun zip(
     outStream: ZipOutputStream,
     files: List<File>,
     includeParentFolder: Boolean = false
@@ -35,13 +35,13 @@ private fun zip(
             file.mkdir()
             zip(outStream, file.listFiles()?.toList() ?: emptyList(), includeParentFolder = true)
         } else {
+            // Always a relative name ("folder/file"); unzip() rejects absolute entry names.
+            val parentName = file.parentFile?.name
             val fileLoc: String =
-                if (file.parent.isNullOrEmpty() || !includeParentFolder) {
+                if (parentName.isNullOrEmpty() || !includeParentFolder) {
                     file.name
                 } else {
-                    (file.parent!!).substring(
-                        file.parent!!.lastIndexOf("/")
-                    ) + "/" + file.name
+                    "$parentName/${file.name}"
                 }
 
             outStream.putNextEntry(ZipEntry(fileLoc))
@@ -70,16 +70,13 @@ fun unzip(fileInputStream: FileInputStream, location: File) {
 
         val destination = location.canonicalFile
 
-        var zipEntry: ZipEntry?
-        var unzipFile: File
-        var unzipParentDir: File?
-
-        while (zipInputStream.nextEntry.also { zipEntry = it } != null) {
-            unzipFile = resolveZipEntry(destination, zipEntry!!.name)
-            if (zipEntry!!.isDirectory) {
+        while (true) {
+            val zipEntry: ZipEntry = zipInputStream.nextEntry ?: break
+            val unzipFile = resolveZipEntry(destination, zipEntry.name)
+            if (zipEntry.isDirectory) {
                 if (!unzipFile.isDirectory) unzipFile.mkdirs()
             } else {
-                unzipParentDir = unzipFile.parentFile
+                val unzipParentDir = unzipFile.parentFile
                 if (unzipParentDir != null && !unzipParentDir.isDirectory) {
                     unzipParentDir.mkdirs()
                 }
@@ -91,12 +88,18 @@ fun unzip(fileInputStream: FileInputStream, location: File) {
     }
 }
 
+private val windowsDrivePrefix = Regex("^[A-Za-z]:")
+
 /**
- * Resolves a zip entry name inside [destination] and rejects names that would escape it
- * ("Zip Slip"), e.g. `../../shared_prefs/x.xml` or an absolute path. Backups are user-picked
- * files, so a crafted archive must not be able to overwrite the app's database or preferences.
+ * Resolves a zip entry name inside [destination] and rejects names that are absolute or would
+ * escape it ("Zip Slip"), e.g. `../../shared_prefs/x.xml` or `/data/data/<app>/databases/x.db`.
+ * Backups are user-picked files, so a crafted archive must not be able to overwrite the app's
+ * database or preferences. Archives written by the app only ever contain relative names.
  */
 internal fun resolveZipEntry(destination: File, entryName: String): File {
+    if (entryName.startsWith("/") || entryName.startsWith("\\") || windowsDrivePrefix.containsMatchIn(entryName)) {
+        throw ZipException("Zip entry has an absolute path: $entryName")
+    }
     val resolved = File(destination, entryName).canonicalFile
     if (!resolved.toPath().startsWith(destination.toPath())) {
         throw ZipException("Zip entry is outside of the target directory: $entryName")
