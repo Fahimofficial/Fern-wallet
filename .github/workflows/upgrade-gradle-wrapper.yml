@@ -1,28 +1,34 @@
 name: 'Gradle Wrapper Upgrade'
 
+# Note: Dependabot (gradle ecosystem) also updates the wrapper. See docs/CI_CD.md for why both exist.
+
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 8 * * 1'
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
+
+concurrency:
+  group: upgrade-gradle-wrapper
+  cancel-in-progress: false
 
 jobs:
   upgrade-gradle-wrapper:
+    name: Open wrapper upgrade PR
     runs-on: ubuntu-latest
-    env:
-      WRAPPER_UPGRADE_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    timeout-minutes: 20
+    permissions:
+      contents: write # push the upgrade branch
+      pull-requests: write # open the upgrade PR
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - name: Setup git
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git config --global url."https://unused-username:${WRAPPER_UPGRADE_GIT_TOKEN}@github.com/".insteadOf "https://github.com/"
+      # Validate the current wrapper before executing it with a write token.
+      - uses: gradle/actions/wrapper-validation@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
 
       - name: Setup Java SDK
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
@@ -30,5 +36,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      # The org.gradle.wrapper-upgrade plugin pushes its branch and opens the PR through git and
+      # the GitHub API; it reads the token from WRAPPER_UPGRADE_GIT_TOKEN only in this step.
       - name: Upgrade Gradle Wrapper
-        run: ./gradlew upgradeGradleWrapperFernWallet
+        env:
+          WRAPPER_UPGRADE_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global url."https://unused-username:${WRAPPER_UPGRADE_GIT_TOKEN}@github.com/".insteadOf "https://github.com/"
+          ./gradlew upgradeGradleWrapperFernWallet

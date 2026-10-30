@@ -1,5 +1,13 @@
 # Configuration options:
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#about-the-dependabotyml-file
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Policy (docs/SECURITY.md → Dependency updates):
+# - Security updates are opened as soon as an advisory exists (repository setting) and ignore the cooldown.
+# - Version updates wait 7 days after a release (cooldown), so a compromised or broken release
+#   is usually yanked before it reaches a PR.
+# - Toolchain pieces that must move together are grouped; other minor/patch updates are grouped;
+#   major updates get their own PR so one breaking change doesn't block everything else
+#   (a single 61-update PR needed an AGP 9 migration before it could build).
 
 version: 2
 
@@ -13,16 +21,38 @@ updates:
       - jitpack
       - maven-central
     open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
+    labels:
+      - "dependencies"
     groups:
-      gradle-dependencies:
+      # Kotlin, KSP and the Compose compiler plugin are released for specific Kotlin versions.
+      kotlin-toolchain:
         patterns:
-          - "*"
+          - "org.jetbrains.kotlin*"
+          - "com.google.devtools.ksp*"
+      # AGP and the libraries/plugins that are tied to it.
+      android-build-toolchain:
+        patterns:
+          - "com.android.tools*"
+          - "com.google.dagger*"
+          - "app.cash.paparazzi*"
+      gradle-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
+    labels:
+      - "dependencies"
     groups:
       github-actions:
         patterns:
@@ -34,6 +64,10 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    labels:
+      - "dependencies"
     groups:
       bundler:
         patterns:

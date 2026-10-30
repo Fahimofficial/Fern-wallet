@@ -1,0 +1,40 @@
+name: Dependency review
+
+# Blocks pull requests that add or upgrade to a dependency with a known High/Critical
+# vulnerability, and reports license and OpenSSF Scorecard information for new dependencies.
+# Gradle dependencies come from GitHub's automatic dependency submission for the PR head;
+# for pull requests from forks only manifest-based ecosystems (Actions, Bundler) are seen.
+
+on:
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: dependency-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          fail-on-scopes: runtime, unknown
+          vulnerability-check: true
+          # Reported in the job summary, not enforced: Android/Play SDK licenses are not SPDX,
+          # so an allowlist would produce false failures. Review new licenses for GPL-3.0
+          # compatibility by hand (docs/SECURITY.md).
+          license-check: true
+          show-openssf-scorecard: true
+          warn-on-openssf-scorecard-level: 3
+          # Wait for the Gradle dependency snapshot of the PR head before comparing.
+          retry-on-snapshot-warnings: true
+          retry-on-snapshot-warnings-timeout: 600
+          # Fork PRs get a read-only token; the job summary carries the result instead.
+          comment-summary-in-pr: never

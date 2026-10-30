@@ -1,0 +1,55 @@
+{
+  "_comment": "Allowlist for scripts/ci/check_apk_policy.py, applied to the merged manifest of the release APK. Adding an entry is a security/privacy decision: say why in the PR and keep PRIVACY.md in sync.",
+  "application": {
+    "debuggable": false,
+    "usesCleartextTraffic": false,
+    "allowBackup": false
+  },
+  "permissions": {
+    "android.permission.INTERNET": "exchange rates; GitHub releases/contributors screens",
+    "android.permission.ACCESS_NETWORK_STATE": "WorkManager network constraints (library)",
+    "android.permission.POST_NOTIFICATIONS": "transaction and credit-card due reminders",
+    "android.permission.RECEIVE_BOOT_COMPLETED": "WorkManager reschedules reminders after reboot (library)",
+    "android.permission.WAKE_LOCK": "WorkManager (library)",
+    "android.permission.FOREGROUND_SERVICE": "WorkManager SystemForegroundService (library)",
+    "android.permission.VIBRATE": "haptic feedback",
+    "android.permission.USE_BIOMETRIC": "optional app lock (androidx.biometric)",
+    "android.permission.USE_FINGERPRINT": "optional app lock on older devices (androidx.biometric)",
+    "com.fernwallet.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION": "signature permission AndroidX adds for non-exported runtime receivers"
+  },
+  "exported_components": {
+    "com.ivy.wallet.RootActivity": {
+      "reason": "main activity; also handles the ADD_TRANSACTION shortcut action (only selects a transaction type)"
+    },
+    "com.ivy.wallet.LauncherDefault": { "reason": "launcher icon alias" },
+    "com.ivy.wallet.LauncherMono": { "reason": "launcher icon alias" },
+    "com.ivy.wallet.LauncherGraphite": { "reason": "launcher icon alias" },
+    "com.ivy.wallet.LauncherMidnight": { "reason": "launcher icon alias" },
+    "com.ivy.widget.transaction.AddTransactionWidget": { "reason": "home-screen widget (APPWIDGET_UPDATE)" },
+    "com.ivy.widget.transaction.AddTransactionWidgetCompact": { "reason": "home-screen widget (APPWIDGET_UPDATE)" },
+    "com.ivy.widget.balance.WalletBalanceWidgetReceiver": { "reason": "home-screen widget (APPWIDGET_UPDATE)" },
+    "com.ivy.wallet.PaymentTileService": {
+      "permission": "android.permission.BIND_QUICK_SETTINGS_TILE",
+      "reason": "Quick Settings tile; only the system can bind"
+    },
+    "androidx.glance.appwidget.GlanceRemoteViewsService": {
+      "permission": "android.permission.BIND_REMOTEVIEWS",
+      "reason": "Glance widgets (library); only the system can bind"
+    },
+    "androidx.work.impl.background.systemjob.SystemJobService": {
+      "permission": "android.permission.BIND_JOB_SERVICE",
+      "reason": "WorkManager (library); only the system can bind"
+    },
+    "androidx.work.impl.diagnostics.DiagnosticsReceiver": {
+      "permission": "android.permission.DUMP",
+      "reason": "WorkManager diagnostics (library); DUMP is a system/shell permission"
+    },
+    "androidx.profileinstaller.ProfileInstallReceiver": {
+      "permission": "android.permission.DUMP",
+      "reason": "baseline profiles (library); DUMP is a system/shell permission"
+    },
+    "androidx.compose.ui.tooling.PreviewActivity": {
+      "reason": "KNOWN ISSUE: ui-tooling is an `implementation` dependency, so this Compose preview activity ships in release. It finishes immediately when the app is not debuggable. Fix tracked in docs/SECURITY.md (move ui-tooling to debugImplementation), then delete this entry."
+    }
+  }
+}

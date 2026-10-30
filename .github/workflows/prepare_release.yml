@@ -1,35 +1,49 @@
 name: Prepare release
 
-# Manually triggered. Bumps version-name (today's UTC date, YYYY.MM.DD) and version-code (+1)
-# in gradle/libs.versions.toml and opens a PR. After merging, push the tag `v<version-name>`
-# to build the signed draft release (see .github/workflows/release.yml and docs/Releasing.md).
+# Opens a PR that bumps version-name (today's UTC date) and version-code (+1). After it is
+# merged, push the tag v<version-name> on the merge commit to build the signed draft release
+# (see .github/workflows/release.yml and docs/RELEASE.md).
 #
-# No workflow inputs by design: the release version is derived only from the date, so the build
-# output can't be influenced by user-supplied parameters (CKV_GHA_7 / SLSA build integrity).
+# GitHub does not run pull_request workflows for PRs opened with GITHUB_TOKEN, so run
+# "PR validation" on the release branch manually (Actions → PR validation → Run workflow), or
+# close and reopen the PR, before merging.
+
 on:
   workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: {}
+
+concurrency:
+  group: prepare-release
+  cancel-in-progress: false
 
 jobs:
   bump-version:
+    name: Bump version and open PR
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
-      contents: write
-      pull-requests: write
+      contents: write # push the release/v* branch
+      pull-requests: write # open the release PR
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # create-pull-request pushes the release branch with the checkout credentials. This job
+      # uploads no artifacts and runs no repository code, so the persisted token stays on the runner.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 # zizmor: ignore[artipacked]
 
       - name: Bump version in libs.versions.toml
         id: bump
         run: |
           FILE=gradle/libs.versions.toml
           NAME="$(date -u +'%Y.%m.%d')"
-          CODE=$(grep -E '^version-code *=' $FILE | sed -E 's/.*"(.*)".*/\1/')
+          CODE="$(python3 -c 'import tomllib; print(tomllib.load(open("gradle/libs.versions.toml", "rb"))["versions"]["version-code"])')"
+          [[ "$CODE" =~ ^[0-9]+$ ]] || { echo "::error::version-code '$CODE' is not an integer"; exit 1; }
           NEW_CODE=$((CODE + 1))
-          sed -i -E "s/^version-name = \".*\"/version-name = \"$NAME\"/" $FILE
-          sed -i -E "s/^version-code = \".*\"/version-code = \"$NEW_CODE\"/" $FILE
+          sed -i -E "s/^version-name[[:space:]]*=[[:space:]]*\".*\"/version-name = \"$NAME\"/" "$FILE"
+          sed -i -E "s/^version-code[[:space:]]*=[[:space:]]*\".*\"/version-code = \"$NEW_CODE\"/" "$FILE"
+          if ! grep -qx "version-name = \"$NAME\"" "$FILE" || ! grep -qx "version-code = \"$NEW_CODE\"" "$FILE"; then
+            echo "::error::Could not update version-name/version-code in $FILE"
+            exit 1
+          fi
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           echo "code=$NEW_CODE" >> "$GITHUB_OUTPUT"
 
@@ -44,9 +58,16 @@ jobs:
           body: |
             Bumps `version-name` to `${{ steps.bump.outputs.name }}` and `version-code` to `${{ steps.bump.outputs.code }}`.
 
+            CI does not start automatically for PRs opened by GitHub Actions. Before merging, run
+            **Actions → PR validation → Run workflow** on `release/v${{ steps.bump.outputs.name }}`
+            (or close and reopen this PR).
+
             After merging, tag the merge commit to build the signed draft release:
             ```
+            git checkout main && git pull
             git tag v${{ steps.bump.outputs.name }} && git push origin v${{ steps.bump.outputs.name }}
             ```
+
+            Closes N/A
           labels: release
           delete-branch: true

@@ -1,0 +1,48 @@
+name: PR validation
+
+# Everything a pull request must pass before merging. Runs with a read-only token and no
+# secrets, including for pull requests from forks. Required check names: docs/CI_CD.md.
+
+on:
+  pull_request:
+  # Lets a maintainer validate a branch whose PR was opened by GITHUB_TOKEN (e.g. the
+  # "Prepare release" PR), which GitHub does not run pull_request workflows for.
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android checks
+    uses: ./.github/workflows/android-checks.yml
+    permissions:
+      contents: read
+
+  pr-description:
+    name: PR description
+    # Dependabot writes its own PR bodies and can't add a "Closes #..." line.
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-build
+
+      - name: Check the PR template's "Closes #..." line
+        env:
+          # Passed through the environment, never interpolated into the script.
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if [ -z "$PR_BODY" ]; then
+            echo "::error title=PR description::The PR description is empty. Fill in .github/PULL_REQUEST_TEMPLATE.md, including 'Closes #123' or 'Closes N/A'."
+            exit 1
+          fi
+          ./gradlew :ci-actions:pr-description-check:run --args="$(printf '%s' "$PR_BODY" | base64 -w0)"

@@ -1,0 +1,321 @@
+name: Android checks
+
+# Reusable build, test and analysis jobs. Called by pr-validation.yml (pull requests) and
+# ci.yml (pushes to main) so both run exactly the same checks. No secrets are used.
+# See docs/CI_CD.md for what each job covers and how to reproduce it locally.
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  gradle-wrapper:
+    name: Gradle wrapper validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: gradle/actions/wrapper-validation@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+
+  build:
+    name: Build debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-build
+
+      - name: Assemble debug
+        run: ./gradlew :app:assembleDebug
+
+      - name: Verify package identity
+        run: |
+          AAPT2="$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -1)"
+          BADGING="$("$AAPT2" dump badging app/build/outputs/apk/debug/app-debug.apk)"
+          echo "$BADGING" | grep -E "^package|application-label:"
+          echo "$BADGING" | grep -q "package: name='com.fernwallet.app.debug'" \
+            || { echo "::error::Unexpected applicationId (expected com.fernwallet.app.debug)"; exit 1; }
+          echo "$BADGING" | grep -q "application-label:'Fern Wallet Debug'" \
+            || { echo "::error::Unexpected app label (expected 'Fern Wallet Debug')"; exit 1; }
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: FernWallet-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+
+  unit-tests:
+    name: Unit & screenshot tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-build
+
+      - name: Unit tests (all modules)
+        run: ./gradlew testDebugUnitTest --continue
+
+      - name: Paparazzi screenshot verification
+        run: ./gradlew verifyPaparazziDebug
+
+      - name: CI tooling tests (ci-actions)
+        run: >-
+          ./gradlew
+          :ci-actions:base:test
+          :ci-actions:issue-assign:test
+          :ci-actions:issue-create-comment:test
+          :ci-actions:compose-stability:test
+          :ci-actions:pr-description-check:test
+
+      - name: Test summary
+        if: always()
+        run: python3 scripts/ci/junit_summary.py "JVM tests" "**/build/test-results/**/*.xml"
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+            **/build/paparazzi/failures/
+          retention-days: 7
+
+  static-analysis:
+    name: Detekt & Android lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-build
+
+      - name: Detekt (static analysis + ktlint formatting rules)
+        run: ./gradlew detekt
+
+      - name: Android lint (release, all modules)
+        run: ./gradlew lintRelease
+
+      - name: Fail on lint errors (including promoted security checks)
+        run: python3 scripts/ci/lint_gate.py build/reports/lint/lint.xml
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: static-analysis-reports
+          path: |
+            build/reports/lint/
+            build/reports/detekt/
+          retention-days: 7
+
+  release-build:
+    name: Release build & APK policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-build
+
+      # Exercises the real release signing path (env-provided keystore) without any secret:
+      # the key is generated here, lives only in RUNNER_TEMP and is valid for one day.
+      - name: Create throwaway signing key
+        run: |
+          umask 077
+          PASSWORD="$(openssl rand -hex 24)"
+          echo "::add-mask::$PASSWORD"
+          keytool -genkeypair -noprompt -keystore "$RUNNER_TEMP/ci-throwaway.jks" -storetype PKCS12 \
+            -alias ci -keyalg RSA -keysize 2048 -validity 1 -dname "CN=Fern Wallet CI throwaway" \
+            -storepass "$PASSWORD" -keypass "$PASSWORD"
+          {
+            echo "SIGNING_STORE_FILE=$RUNNER_TEMP/ci-throwaway.jks"
+            echo "SIGNING_STORE_PASSWORD=$PASSWORD"
+            echo "SIGNING_KEY_ALIAS=ci"
+            echo "SIGNING_KEY_PASSWORD=$PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Assemble release (R8, resource shrinking)
+        run: ./gradlew :app:assembleRelease
+
+      - name: Remove throwaway key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/ci-throwaway.jks"
+
+      - name: Verify signature
+        run: |
+          BT="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          APK=app/build/outputs/apk/release/app-release.apk
+          "$BT/apksigner" verify --verbose "$APK" | grep -E "Verified using v[23] scheme.*true" \
+            || { echo "::error::Release APK is not signed with APK signature scheme v2/v3"; exit 1; }
+          "$BT/apksigner" verify --print-certs "$APK" | grep -q "CN=Fern Wallet CI throwaway" \
+            || { echo "::error::Release APK is not signed with the key from SIGNING_STORE_FILE; check signingConfigs.release"; exit 1; }
+
+      - name: APK policy (permissions, exported components, debuggable, cleartext, backup)
+        run: |
+          AAPT2="$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -1)"
+          python3 scripts/ci/check_apk_policy.py --apk app/build/outputs/apk/release/app-release.apk \
+            --aapt2 "$AAPT2" --policy .github/apk-policy.json --package com.fernwallet.app --label "Fern Wallet"
+
+      # The release compile above produced the Compose compiler reports this analyses.
+      - name: Compose stability
+        run: ./gradlew :ci-actions:compose-stability:run
+
+      - name: Upload release APK (for the smoke test job)
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-apk-ci-signed
+          path: app/build/outputs/apk/release/app-release.apk
+          retention-days: 3
+
+      - name: Upload Compose stability report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: compose-stability-report
+          path: ci-actions/compose-stability/ivy-compose-stability-report.txt
+          if-no-files-found: ignore
+          retention-days: 7
+
+  integration-tests:
+    name: Integration tests (emulator)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-build
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: AVD cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-34-google_apis-x86_64
+
+      - name: Create AVD snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Build androidTest APKs
+        run: >-
+          ./gradlew
+          :shared:data:core:assembleDebug :shared:data:core:assembleAndroidTest
+          :shared:domain:assembleDebug :shared:domain:assembleAndroidTest
+
+      - name: Run androidTest on emulator (Room migrations, backup, DB)
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew :shared:data:core:connectedDebugAndroidTest :shared:domain:connectedDebugAndroidTest --continue
+
+      - name: Test summary
+        if: always()
+        run: python3 scripts/ci/junit_summary.py "Instrumentation tests" "**/build/outputs/androidTest-results/**/*.xml"
+
+      - name: Upload androidTest reports
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-test-reports
+          path: |
+            **/build/reports/androidTests/
+            **/build/outputs/androidTest-results/
+          retention-days: 7
+
+  release-smoke-test:
+    name: Release APK smoke test (emulator)
+    needs: release-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download release APK
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-apk-ci-signed
+          path: build/release-apk
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: AVD cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-34-google_apis-x86_64
+
+      - name: Install, launch and check for crashes
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: scripts/ci/smoke_test_apk.sh build/release-apk/app-release.apk com.fernwallet.app build/smoke-test
+
+      - name: Upload smoke test logs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: smoke-test-logs
+          path: build/smoke-test/
+          retention-days: 7

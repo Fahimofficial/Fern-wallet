@@ -1,0 +1,97 @@
+name: Workflow audit
+
+# Lints GitHub Actions workflows (actionlint + shellcheck), audits them for dangerous patterns
+# (zizmor: script injection, excessive permissions, credential persistence, cache poisoning,
+# unpinned or impostor action commits), and checks that repository config files parse.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    # Weekly: zizmor's online audits pick up new advisories for the pinned actions.
+    - cron: '23 5 * * 3'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: workflow-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  ACTIONLINT_VERSION: 1.7.12
+  ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+  ZIZMOR_VERSION: 1.31.1
+  ZIZMOR_SHA256: d185f726bdaf92df78273217dfdd24ebcd6b0ef48cf3ce776ff5762b6e138c99
+
+jobs:
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install actionlint (checksum-verified)
+        run: |
+          cd "$RUNNER_TEMP"
+          curl -fsSLo actionlint.tar.gz "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          echo "${ACTIONLINT_SHA256}  actionlint.tar.gz" | sha256sum -c -
+          tar -xzf actionlint.tar.gz actionlint
+      - name: Lint workflows (uses the runner's shellcheck for run scripts)
+        run: '"$RUNNER_TEMP/actionlint" -color'
+
+  zizmor:
+    name: zizmor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install zizmor (checksum-verified)
+        run: |
+          cd "$RUNNER_TEMP"
+          curl -fsSLo zizmor.tar.gz "https://github.com/zizmorcore/zizmor/releases/download/v${ZIZMOR_VERSION}/zizmor-x86_64-unknown-linux-gnu.tar.gz"
+          echo "${ZIZMOR_SHA256}  zizmor.tar.gz" | sha256sum -c -
+          tar -xzf zizmor.tar.gz
+          ./zizmor --version
+      # Online audits use the read-only token to check pinned SHAs against the action repos
+      # (impostor commits, ref confusion) and against known-vulnerable action versions.
+      - name: Audit workflows, local actions and Dependabot config
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          "$RUNNER_TEMP/zizmor" --format github .
+
+  config-files:
+    name: Config files parse
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: YAML, JSON and TOML files are valid
+        run: |
+          status=0
+          while IFS= read -r -d '' f; do
+            yq eval 'true' "$f" > /dev/null || { echo "::error file=$f::invalid YAML"; status=1; }
+          done < <(find .github -type f \( -name '*.yml' -o -name '*.yaml' \) -print0)
+          for f in .github/apk-policy.json; do
+            python3 -m json.tool "$f" > /dev/null || { echo "::error file=$f::invalid JSON"; status=1; }
+          done
+          for f in osv-scanner.toml gradle/libs.versions.toml; do
+            python3 -c 'import sys, tomllib; tomllib.load(open(sys.argv[1], "rb"))' "$f" \
+              || { echo "::error file=$f::invalid TOML"; status=1; }
+          done
+          exit "$status"
