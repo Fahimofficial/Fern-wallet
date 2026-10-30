@@ -227,5 +227,7 @@ opencsv = [
 ]
 
 [plugins]
+# SBOM (CycloneDX) of the release runtime classpath; used by the security and release workflows.
+cyclonedx = { id = "org.cyclonedx.bom", version = "3.5.1" }
 gradleWrapperUpgrade = { id = "org.gradle.wrapper-upgrade", version = "0.12" }
 koverPlugin = { id = "org.jetbrains.kotlinx.kover", version = "0.9.11" }

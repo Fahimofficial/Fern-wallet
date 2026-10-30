@@ -19,7 +19,13 @@ const val BaselineFileName = "ivy-compose-stability-baseline.txt"
 fun main(args: Array<String>) {
     val shouldGenerateBaseline = BaselineArg in args
     val baselineComposables = readBaseline()
-    val unstableComposables = findComposeReportFolders()
+    val reportFolders = findComposeReportFolders().toList()
+    if (reportFolders.isEmpty()) {
+        // Without reports there is nothing to analyse; passing here would hide a broken setup.
+        println("ERROR: no '$ComposeReportFolderName' report folders found. Compile the app first (e.g. :app:assembleRelease).")
+        exitProcess(1)
+    }
+    val unstableComposables = reportFolders
         .flatMap { reportFolder ->
             unstableComposables(reportFolder).fold(
                 ifRight = ::identity,

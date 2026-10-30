@@ -5,7 +5,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven(url = "https://jitpack.io")
+        // JitPack builds artifacts from mutable git tags, so it may serve only the one group we
+        // need from it (detekt-explicit), and that group only from JitPack.
+        exclusiveContent {
+            forRepository { maven(url = "https://jitpack.io") }
+            filter { includeGroup("com.github.Ivy-Apps") }
+        }
         gradlePluginPortal()
     }
 }
