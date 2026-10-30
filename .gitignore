@@ -123,3 +123,7 @@ signing.properties
 google-services.json
 google-play-console-user.json
 play_config.json*
+
+# Python bytecode (scripts/ci)
+__pycache__/
+*.pyc
