@@ -16,13 +16,15 @@ const val ComposeReportFolderName = "compose_compiler"
 const val BaselineArg = "generateBaseline"
 const val BaselineFileName = "ivy-compose-stability-baseline.txt"
 
+// The task runs with the module directory as working directory.
+private const val RootDirRelativePath = "../../"
+
 fun main(args: Array<String>) {
     val shouldGenerateBaseline = BaselineArg in args
     val baselineComposables = readBaseline()
-    val reportFolders = findComposeReportFolders().toList()
-    if (reportFolders.isEmpty()) {
-        // Without reports there is nothing to analyse; passing here would hide a broken setup.
-        println("ERROR: no '$ComposeReportFolderName' report folders found. Compile the app first (e.g. :app:assembleRelease).")
+    val reportFolders = findComposeReportFolders(File(RootDirRelativePath))
+    missingReportsError(reportFolders)?.let { error ->
+        println(error)
         exitProcess(1)
     }
     val unstableComposables = reportFolders
@@ -56,11 +58,22 @@ fun main(args: Array<String>) {
     }
 }
 
-private fun findComposeReportFolders(): Sequence<File> {
-    val rootDirRelativePath = "../../"
-    return File(rootDirRelativePath).walk()
+internal fun findComposeReportFolders(root: File): List<File> =
+    root.walk()
         .filter { it.isDirectory && it.name == ComposeReportFolderName }
-}
+        .toList()
+
+/**
+ * Without compiler reports there is nothing to analyse, so passing would hide a broken setup
+ * (e.g. the Compose compiler reports were turned off or the app wasn't compiled first).
+ */
+internal fun missingReportsError(reportFolders: List<File>): String? =
+    if (reportFolders.isEmpty()) {
+        "ERROR: no '$ComposeReportFolderName' report folders found. " +
+            "Compile the app first (e.g. :app:assembleRelease)."
+    } else {
+        null
+    }
 
 private fun unstableComposables(
     reportFolder: File
