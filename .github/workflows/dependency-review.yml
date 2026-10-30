@@ -2,8 +2,11 @@ name: Dependency review
 
 # Blocks pull requests that add or upgrade to a dependency with a known High/Critical
 # vulnerability, and reports license and OpenSSF Scorecard information for new dependencies.
-# Gradle dependencies come from GitHub's automatic dependency submission for the PR head;
-# for pull requests from forks only manifest-based ecosystems (Actions, Bundler) are seen.
+# Gradle dependencies (app, plugins and build classpath) come from GitHub's automatic
+# dependency submission for the PR head; this job waits for that snapshot and fails if it never
+# arrives, instead of silently reviewing only the workflow files. Fork PRs get no snapshot (the
+# submission only runs for branches of this repository), so for them only Actions and Bundler
+# changes are reviewed and the summary says so.
 
 on:
   pull_request:
@@ -18,10 +21,29 @@ jobs:
   dependency-review:
     name: Dependency review
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     permissions:
       contents: read
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/ci
+
+      - name: Wait for the Gradle dependency snapshot
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: scripts/ci/wait_for_dependency_snapshot.sh "$BASE_SHA" "$HEAD_SHA"
+
+      - name: Note for pull requests from forks
+        if: github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          echo "::warning title=Dependency review::Gradle dependencies of fork PRs aren't in the dependency graph, so only Actions and Bundler changes are reviewed here. The OSV scan on main covers the rest after merge."
+          echo "### ⚠️ Gradle dependencies not reviewed (pull request from a fork)" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: high
@@ -33,8 +55,7 @@ jobs:
           license-check: true
           show-openssf-scorecard: true
           warn-on-openssf-scorecard-level: 3
-          # Wait for the Gradle dependency snapshot of the PR head before comparing.
           retry-on-snapshot-warnings: true
-          retry-on-snapshot-warnings-timeout: 600
+          retry-on-snapshot-warnings-timeout: 120
           # Fork PRs get a read-only token; the job summary carries the result instead.
           comment-summary-in-pr: never

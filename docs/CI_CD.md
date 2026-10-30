@@ -40,10 +40,10 @@ Principles:
 | `pr-validation.yml` | PR, manual | `android-checks.yml` + PR description check | merge |
 | `ci.yml` | push to `main`, manual | `android-checks.yml` on the integrated result | release |
 | `android-checks.yml` | called by the two above | build, tests, lint, release build, emulator tests | (via callers) |
-| `security.yml` | PR, push `main`, weekly, manual | gitleaks (full history); OSV scan of the release SBOM | merge (gitleaks), release (both) |
+| `security.yml` | PR, push `main`, weekly, manual | gitleaks (full history); OSV scan of the release Software Bill of Materials (SBOM) | merge (gitleaks), release (both) |
 | `codeql.yml` | PR, push `main`, weekly, manual | CodeQL SAST for Kotlin/Java and for the workflows | merge (analysis must run); alerts via ruleset |
 | `dependency-review.yml` | PR | blocks new High/Critical vulnerable dependencies; license + Scorecard info | merge |
-| `workflow-audit.yml` | PR, push `main`, weekly, manual | actionlint, zizmor, config files parse | merge |
+| `workflow-audit.yml` | PR, push `main`, weekly, manual | actionlint, zizmor, `scripts/ci` tests, config files parse | merge |
 | `release.yml` | tag `v*` | validated, signed, verified, attested draft release | - |
 | `prepare_release.yml` | manual | version bump PR | - |
 | `stale.yml` | weekly | close stale issues/PRs (`security`, `bug`, `P0`, `keep` exempt) | - |
@@ -62,7 +62,7 @@ advisory.
 | Unit & screenshot tests | all JVM tests, Paparazzi screenshots, CI-tooling tests pass | `./gradlew testDebugUnitTest verifyPaparazziDebug` |
 | Detekt & Android lint | no Detekt findings; no lint Error/Fatal, including the security checks promoted to errors in `app/build.gradle.kts` | `./gradlew detekt lintRelease && python3 scripts/ci/lint_gate.py build/reports/lint/lint.xml` |
 | Release build & APK policy | the R8-minified release build works and is signed through `signingConfigs.release` (with a throwaway key); the shipped manifest matches `.github/apk-policy.json`; Compose stability | see [CI-Troubleshooting.md](CI-Troubleshooting.md#release-build--apk-policy) |
-| Integration tests (emulator) | Room migrations, backup and DB tests on Android 14 | `./gradlew :shared:data:core:connectedDebugAndroidTest :shared:domain:connectedDebugAndroidTest` |
+| Integration tests (emulator) | Room migrations, backup and DB tests on Android 14; fails if a test APK doesn't install or a module reports no tests | `./gradlew :shared:data:core:connectedDebugAndroidTest :shared:domain:connectedDebugAndroidTest` |
 | Release APK smoke test (emulator) | the minified release APK installs, launches and doesn't crash or ANR (catches R8 and DI regressions) | `scripts/ci/smoke_test_apk.sh app/build/outputs/apk/release/app-release.apk com.fernwallet.app` |
 
 Failures put the reason in the job summary (failed tests, lint issues, policy violations, vulnerable packages)
@@ -86,6 +86,7 @@ Make these **required status checks** on `main` (exact names as shown on a PR):
 | `Secret scan (gitleaks, full history)` | no new secrets |
 | `Dependency review` | no new High/Critical vulnerable dependency |
 | `actionlint`, `zizmor`, `Config files parse` | workflow security |
+| `CI scripts tests` | the Python/shell gates in `scripts/ci` work (they would otherwise fail open) |
 | `CodeQL (java-kotlin)`, `CodeQL (actions)` | SAST analysis completed |
 
 Advisory (don't require): `Dependency vulnerabilities (OSV, release classpath)` on PRs (it reports existing
@@ -136,16 +137,24 @@ is an advanced setup).
   branch, or close and reopen the PR. Using a GitHub App token would fix this but adds a long-lived credential.
 - **Two wrapper updaters.** Dependabot's Gradle ecosystem already updates the wrapper, so `upgrade-gradle-wrapper.yml`
   can open duplicate PRs. Keep one (recommended: Dependabot, which gets CI) and delete the other.
-- **Dependency review and forks.** Gradle dependencies are visible to dependency review only through GitHub's
-  automatic dependency submission, which doesn't run for fork PRs. For those, the OSV scan on `main` after merge
-  and at release time is the backstop.
-- **CodeQL lags Kotlin.** If `CodeQL (java-kotlin)` fails with `KotlinVersionTooRecentError` after a Kotlin bump,
+- **Dependency review waits for the Gradle snapshot.** Gradle dependencies (app, plugins, build classpath) reach the
+  dependency graph only through GitHub's automatic dependency submission (`submit-gradle`), a few minutes after a push.
+  `dependency-review.yml` waits up to 15 minutes for that snapshot and fails if it never arrives; before this, the
+  review could pass having compared only workflow files. Fork PRs get no snapshot, so for them only Actions and
+  Bundler changes are reviewed (the job summary says so); the OSV scan on `main` and at release covers the rest.
+- **CodeQL lags Kotlin.** `codeql.yml` checks that the database contains at least 90% of the app's Kotlin source files
+  (`scripts/ci/check_codeql_coverage.py`), because an unsupported Kotlin version can make the extractor skip files
+  without failing. If that check, or the build with `KotlinVersionTooRecentError`, fails after a Kotlin bump,
   CodeQL doesn't support that Kotlin yet. Don't silence it: either wait for the next CodeQL release before
   merging the bump, or temporarily remove `java-kotlin` from the matrix in a reviewed PR and record that in
   docs/SECURITY.md.
 - **zizmor `self-repository` is disabled** (`.github/zizmor.yml`) because actionlint doesn't understand GitHub's
   new `uses: $/…` syntax yet. Re-enable both together when actionlint supports it.
-- **Emulator tests** use API 34 `google_apis` x86_64 with KVM. `SyncExchangeRatesUseCaseTest` calls the live
+- **Emulator tests** use API 34 `google_apis` x86_64 with KVM. AGP 9's connected-test runner logs
+  `AndroidTestRunner failed … INSTALL_FAILED_…` and still reports `BUILD SUCCESSFUL`, so
+  `scripts/ci/run_android_tests.sh` fails on those messages and `junit_summary.py --require-tests-per-file` fails when a
+  module produced no test results. The AVD snapshot cache is keyed `…-v2`; bump the suffix if a cached snapshot ever
+  contains installed packages again. `SyncExchangeRatesUseCaseTest` calls the live
   exchange-rate API and can fail when that service is down.
 
 ## Troubleshooting

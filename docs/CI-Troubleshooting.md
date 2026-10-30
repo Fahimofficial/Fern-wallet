@@ -139,4 +139,4 @@ graph is broken. Download `smoke-test-logs` (contains `crash.txt` and `logcat.tx
   `KotlinVersionTooRecentError`, see [CI_CD.md → Notes](CI_CD.md#notes-and-known-limitations).
 - **zizmor / actionlint**: a workflow change uses a risky pattern (e.g. `${{ github.event.* }}` inside `run:`, missing
   `persist-credentials: false`, broad permissions) or has a syntax error. The annotation names the audit; its
-  documentation is at https://docs.zizmor.sh/audits/.
+  documentation is at <https://docs.zizmor.sh/audits/>.

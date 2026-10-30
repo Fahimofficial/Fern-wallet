@@ -56,7 +56,7 @@ contributors, which is no longer maintained upstream. Fern Wallet continues deve
 ## Download
 
 Signed APKs and AABs are published on the [Releases page](https://github.com/Fahimofficial/Fern-wallet/releases),
-each with a `SHA256SUMS.txt`, an SBOM and a build-provenance attestation. Verify a download with:
+each with a `SHA256SUMS.txt`, a Software Bill of Materials (SBOM) and a build-provenance attestation. Verify a download with:
 
 ```sh
 sha256sum -c SHA256SUMS.txt --ignore-missing

@@ -28,7 +28,7 @@ The tag must match `version-name`, otherwise the workflow stops before building 
 |---|---|
 | `FernWallet-<tag-without-v>-<code>.apk` | universal APK (arm64-v8a, armeabi-v7a, x86, x86_64), signed with APK Signature Scheme v2 |
 | `FernWallet-<…>.aab` | Android App Bundle, signed with the same key (for Play or other stores) |
-| `FernWallet-<…>-sbom.cdx.json` | CycloneDX SBOM of every dependency inside the app (release runtime classpath) |
+| `FernWallet-<…>-sbom.cdx.json` | Software Bill of Materials (SBOM, CycloneDX) of every dependency inside the app (release runtime classpath) |
 | `SHA256SUMS.txt` | SHA-256 of the APK, AAB and SBOM |
 | provenance attestation | Sigstore-signed SLSA provenance for the APK, AAB and SBOM, stored by GitHub |
 

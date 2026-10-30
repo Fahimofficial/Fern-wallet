@@ -20,8 +20,8 @@ credentials. Fixes go into the next release; only the latest release is supporte
 | Android security lint | lint checks promoted to errors in `app/build.gradle.kts` (WebView JS/interfaces, trust-all TLS, hostname verifiers, unsafe intents and PendingIntents, world-readable files, insecure random, crypto `getInstance`, exported providers, hard-coded debuggable …) | `android-checks.yml` | merge |
 | Shipped manifest | `scripts/ci/check_apk_policy.py` + `.github/apk-policy.json`: permissions and exported components allowlist, not debuggable, no cleartext, backup off | `android-checks.yml`, `release.yml` | merge, release |
 | New vulnerable dependencies | GitHub dependency review | `dependency-review.yml` | merge (High+) |
-| Known vulnerabilities in shipped dependencies | osv-scanner on the CycloneDX SBOM of `:app` `releaseRuntimeClasspath` | `security.yml`, `release.yml` | release; `main` goes red |
-| Workflow security | zizmor, actionlint, CodeQL `actions` | `workflow-audit.yml`, `codeql.yml` | merge |
+| Known vulnerabilities in shipped dependencies | osv-scanner on the CycloneDX Software Bill of Materials (SBOM) of `:app` `releaseRuntimeClasspath` | `security.yml`, `release.yml` | release; `main` goes red |
+| Workflow security | zizmor, actionlint, CodeQL `actions`; unit tests for the `scripts/ci` gates | `workflow-audit.yml`, `codeql.yml` | merge |
 | Gradle wrapper integrity | `wrapper-validation`, `setup-gradle` | every Gradle job | merge, release |
 | Release artifact integrity | signature/cert checks, SHA-256 sums, Sigstore provenance | `release.yml` | release |
 
@@ -90,7 +90,7 @@ to the change; open items are tracked here until fixed.
 
 | ID | Severity | Finding | Status |
 |---|---|---|---|
-| F1 | **High** | **Zip Slip in backup import**: `ZipUtils.unzip` wrote entries to `destination + entryName` without checking for `../`. A crafted "backup" could overwrite the database or `shared_prefs` (e.g. disable the app lock) on Android 9–13; Android 14+ blocks `..` entries itself. | **Fixed**: canonical-path check (`resolveZipEntry`), regression tests in `shared/base/.../ZipUtilsTest.kt`. |
+| F1 | **High** | **Zip Slip in backup import**: `ZipUtils.unzip` wrote entries to `destination + entryName` without checking for `../`. A crafted "backup" could overwrite the database or `shared_prefs` (e.g. disable the app lock) on Android 9–13; Android 14+ blocks `..` entries itself. | **Fixed**: absolute entry names are rejected and every entry must resolve inside the destination (`resolveZipEntry`); regression tests in `shared/base/.../ZipUtilsTest.kt`. |
 | F2 | Medium | App lock unlocks without a prompt when the device has no secure lock screen (`AppLockedScreen.kt`, `hasLockScreen()` → `onContinueWithoutAuthentication`). | Open. Refuse to enable the lock without a device credential; never auto-unlock. |
 | F3 | Medium | Re-lock timeout counts 1-second coroutine ticks (`RootViewModel.startUserInactiveTimeCounter`); time while the process is frozen isn't counted, so the app can resume unlocked long after 60 s. | Open. Compare `SystemClock.elapsedRealtime()` between `onStop` and `onStart`. |
 | F4 | Low | The lock is UI-only (`BIOMETRIC_WEAK`, no `CryptoObject`); Room DB and preferences are not encrypted. | Open / design decision. |
@@ -119,6 +119,14 @@ secrets in the current tree.
 - Gradle wrapper jar validated in every Gradle job; `distributionSha256Sum` pins the distribution.
 - SBOM (CycloneDX 1.6) for every release, scanned before signing and published with the release.
 - Sigstore build provenance for the APK, AAB and SBOM (`gh attestation verify`).
+- Build-classpath floors in the root `build.gradle.kts`: the CycloneDX and wrapper-upgrade plugins pulled in jackson
+  2.22.2/2.16.0 and guava 33.7.1 with High advisories (GHSA-p6pp-m3f8-5c89, GHSA-7hhh-6rmp-j9qf, GHSA-wv8q-qhhj-9h54,
+  GHSA-cxp5-3px4-pw24, GHSA-xxph-c9ww-hj94). They now resolve to jackson 2.22.4 and guava 33.7.2. These libraries run
+  only during the build and are not in the APK.
+- Known, pre-existing build-toolchain advisories (not shipped): GitHub's dependency graph for `main` also lists
+  vulnerable versions brought in by AGP, Hilt and other Gradle plugins (e.g. bouncycastle, commons-io, freemarker,
+  jdom2). They are visible under *Security → Dependabot alerts*; fix them by upgrading the plugin that brings them in,
+  or with a classpath floor like the one above once the plugin is tested against the newer version.
 - Not done, by decision: **Gradle dependency verification** (`verification-metadata.xml`) and **dependency
   locking**. Both are valuable but Dependabot doesn't update `verification-metadata.xml` or Gradle lockfiles, so every
   Dependabot PR would fail. Revisit if Dependabot gains support, or regenerate them in a trusted workflow.

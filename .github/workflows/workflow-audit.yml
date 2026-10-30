@@ -71,6 +71,23 @@ jobs:
         run: |
           "$RUNNER_TEMP/zizmor" --format github .
 
+  ci-scripts:
+    name: CI scripts tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The gates these scripts implement (APK policy, lint, OSV, test results, release version,
+      # CodeQL coverage, waits) would fail open if they broke, so they have their own tests.
+      - name: Unit tests for scripts/ci
+        run: python3 -m unittest discover --start-directory scripts/ci/tests --top-level-directory scripts/ci -v
+      - name: shellcheck scripts/ci
+        run: shellcheck scripts/ci/*.sh
+
   config-files:
     name: Config files parse
     runs-on: ubuntu-latest

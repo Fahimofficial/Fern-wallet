@@ -61,6 +61,16 @@ jobs:
           :app:assembleDebug
 
       - name: Analyze
+        id: analyze
         uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           category: /language:${{ matrix.language }}
+
+      # The Kotlin extractor lags new Kotlin releases and can skip files instead of failing the
+      # build, which would leave Kotlin unanalysed behind a green check. Require that the
+      # database really contains the app's Kotlin sources.
+      - name: Check the app's Kotlin sources were analysed
+        if: matrix.language == 'java-kotlin'
+        env:
+          DB_LOCATIONS: ${{ steps.analyze.outputs.db-locations }}
+        run: python3 scripts/ci/check_codeql_coverage.py --db-locations "$DB_LOCATIONS" --min-ratio 0.9

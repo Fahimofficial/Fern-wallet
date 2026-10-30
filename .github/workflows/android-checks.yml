@@ -83,7 +83,7 @@ jobs:
 
       - name: Test summary
         if: always()
-        run: python3 scripts/ci/junit_summary.py "JVM tests" "**/build/test-results/**/*.xml"
+        run: python3 scripts/ci/junit_summary.py "JVM tests" "**/build/test-results/**/*.xml" --min-tests 1
 
       - name: Upload test reports
         if: failure()
@@ -139,29 +139,20 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-build
 
-      # Exercises the real release signing path (env-provided keystore) without any secret:
-      # the key is generated here, lives only in RUNNER_TEMP and is valid for one day.
-      - name: Create throwaway signing key
+      # Exercises the real release signing path (env-provided keystore) without any secret. The
+      # key and its random password exist only inside this step: the password is never printed,
+      # never written to GITHUB_ENV, and the key is deleted when the step ends.
+      - name: Assemble release (R8, resource shrinking) with a throwaway signing key
         run: |
           umask 077
+          KEYSTORE="$RUNNER_TEMP/ci-throwaway.jks"
+          trap 'rm -f "$KEYSTORE"' EXIT
           PASSWORD="$(openssl rand -hex 24)"
-          echo "::add-mask::$PASSWORD"
-          keytool -genkeypair -noprompt -keystore "$RUNNER_TEMP/ci-throwaway.jks" -storetype PKCS12 \
+          keytool -genkeypair -noprompt -keystore "$KEYSTORE" -storetype PKCS12 \
             -alias ci -keyalg RSA -keysize 2048 -validity 1 -dname "CN=Fern Wallet CI throwaway" \
             -storepass "$PASSWORD" -keypass "$PASSWORD"
-          {
-            echo "SIGNING_STORE_FILE=$RUNNER_TEMP/ci-throwaway.jks"
-            echo "SIGNING_STORE_PASSWORD=$PASSWORD"
-            echo "SIGNING_KEY_ALIAS=ci"
-            echo "SIGNING_KEY_PASSWORD=$PASSWORD"
-          } >> "$GITHUB_ENV"
-
-      - name: Assemble release (R8, resource shrinking)
-        run: ./gradlew :app:assembleRelease
-
-      - name: Remove throwaway key
-        if: always()
-        run: rm -f "$RUNNER_TEMP/ci-throwaway.jks"
+          SIGNING_STORE_FILE="$KEYSTORE" SIGNING_STORE_PASSWORD="$PASSWORD" SIGNING_KEY_ALIAS=ci \
+            SIGNING_KEY_PASSWORD="$PASSWORD" ./gradlew --no-configuration-cache :app:assembleRelease
 
       - name: Verify signature
         run: |
@@ -223,7 +214,9 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-34-google_apis-x86_64
+          # v2: the v1 snapshot was saved after a test run and contained test APKs signed with
+          # another runner's debug key, so installs failed (INSTALL_FAILED_UPDATE_INCOMPATIBLE).
+          key: avd-34-google_apis-x86_64-v2
 
       - name: Create AVD snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -252,20 +245,26 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew :shared:data:core:connectedDebugAndroidTest :shared:domain:connectedDebugAndroidTest --continue
+          script: scripts/ci/run_android_tests.sh build/android-tests.log :shared:data:core:connectedDebugAndroidTest :shared:domain:connectedDebugAndroidTest --continue
 
+      # Fails when a module produced no test results, e.g. because its test APK didn't install.
       - name: Test summary
         if: always()
-        run: python3 scripts/ci/junit_summary.py "Instrumentation tests" "**/build/outputs/androidTest-results/**/*.xml"
+        run: >-
+          python3 scripts/ci/junit_summary.py "Instrumentation tests"
+          "**/build/outputs/androidTest-results/**/*.xml"
+          --min-files 2 --require-tests-per-file
 
       - name: Upload androidTest reports
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: android-test-reports
           path: |
+            build/android-tests.log
             **/build/reports/androidTests/
             **/build/outputs/androidTest-results/
+          if-no-files-found: warn
           retention-days: 7
 
   release-smoke-test:
@@ -299,7 +298,9 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-34-google_apis-x86_64
+          # v2: the v1 snapshot was saved after a test run and contained test APKs signed with
+          # another runner's debug key, so installs failed (INSTALL_FAILED_UPDATE_INCOMPATIBLE).
+          key: avd-34-google_apis-x86_64-v2
 
       - name: Install, launch and check for crashes
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0

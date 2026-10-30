@@ -26,4 +26,7 @@ runs:
         # Open-source caching (actions/cache) instead of the default proprietary provider.
         cache-provider: basic
         cache-disabled: ${{ inputs.cache == 'disabled' }}
+        # Only pushes to main may write the shared Gradle cache; pull requests (including forks)
+        # and other refs only read it, so they can't plant content that main or releases restore.
+        cache-read-only: ${{ github.event_name != 'push' || github.ref != 'refs/heads/main' }}
         add-job-summary: on-failure

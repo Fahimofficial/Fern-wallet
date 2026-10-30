@@ -44,36 +44,13 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # Strict tag charset (the tag ends up in file names, titles and commands) and tag/catalog match.
+      # Tested in scripts/ci/tests/test_release_version.py.
       - name: Validate tag against the version catalog
         id: version
         env:
           TAG: ${{ github.ref_name }}
-        run: |
-          # Strict charset: the tag ends up in file names, titles and shell commands below.
-          if [[ ! "$TAG" =~ ^v([0-9]{4}\.[0-9]{2}\.[0-9]{2})(-[0-9A-Za-z][0-9A-Za-z.]{0,30})?$ ]]; then
-            echo "::error title=Invalid tag::'$TAG' must be v<YYYY.MM.DD> or v<YYYY.MM.DD>-<suffix> (letters, digits, dots)"
-            exit 1
-          fi
-          BASE="${BASH_REMATCH[1]}"
-          SUFFIX="${BASH_REMATCH[2]}"
-          read -r VERSION_NAME VERSION_CODE < <(python3 - <<'EOF'
-          import tomllib
-          v = tomllib.load(open("gradle/libs.versions.toml", "rb"))["versions"]
-          print(v["version-name"], v["version-code"])
-          EOF
-          )
-          [[ "$VERSION_CODE" =~ ^[0-9]+$ ]] || { echo "::error::version-code '$VERSION_CODE' is not an integer"; exit 1; }
-          if [ "$BASE" != "$VERSION_NAME" ]; then
-            echo "::error title=Version mismatch::tag $TAG does not match version-name $VERSION_NAME in gradle/libs.versions.toml"
-            exit 1
-          fi
-          {
-            echo "version_name=$VERSION_NAME"
-            echo "version_code=$VERSION_CODE"
-            echo "prerelease=$([ -n "$SUFFIX" ] && echo true || echo false)"
-            echo "artifact_base=FernWallet-${TAG#v}-${VERSION_CODE}"
-          } >> "$GITHUB_OUTPUT"
-          echo "Releasing $TAG: version-name $VERSION_NAME, version-code $VERSION_CODE"
+        run: python3 scripts/ci/release_version.py validate --tag "$TAG" --catalog gradle/libs.versions.toml
 
       - name: Tagged commit must be on main
         run: |
@@ -89,12 +66,9 @@ jobs:
         run: |
           PREV_TAG="$(git tag --list 'v*' --sort=-creatordate --merged "$GITHUB_SHA" | grep -vxF "$TAG" | head -n 1 || true)"
           if [ -z "$PREV_TAG" ]; then echo "No earlier release tag; skipping."; exit 0; fi
-          PREV_CODE="$(git show "$PREV_TAG:gradle/libs.versions.toml" | python3 -c 'import sys, tomllib; print(tomllib.loads(sys.stdin.read())["versions"]["version-code"])')"
-          echo "Previous release $PREV_TAG had version-code $PREV_CODE"
-          if [ "$VERSION_CODE" -le "$PREV_CODE" ]; then
-            echo "::error title=version-code::$VERSION_CODE must be greater than $PREV_CODE ($PREV_TAG); Android refuses to install updates otherwise"
-            exit 1
-          fi
+          git show "$PREV_TAG:gradle/libs.versions.toml" > "$RUNNER_TEMP/previous-catalog.toml"
+          python3 scripts/ci/release_version.py compare-code --current "$VERSION_CODE" \
+            --previous-catalog "$RUNNER_TEMP/previous-catalog.toml" --previous-tag "$PREV_TAG"
 
       - name: Wait for CI and Security on this commit
         env:
