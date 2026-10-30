@@ -3,6 +3,7 @@ package com.ivy.legacy.ui.component.transaction
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -16,8 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -104,6 +104,13 @@ fun TransactionCard(
     onSkipTransaction: (Transaction) -> Unit = {},
     onClick: (Transaction) -> Unit,
 ) {
+    // Looked up once per card and data change instead of on every recomposition.
+    val account = remember(baseData.accounts, transaction.accountId) {
+        baseData.accounts.find { it.id == transaction.accountId }
+    }
+    val toAccount = remember(baseData.accounts, transaction.toAccountId) {
+        baseData.accounts.find { it.id == transaction.toAccountId }
+    }
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -111,21 +118,16 @@ fun TransactionCard(
             .padding(top = 10.dp)
             .clip(UI.shapes.r4)
             .clickable {
-                if (baseData.accounts.find { it.id == transaction.accountId } != null) {
+                if (account != null) {
                     onClick(transaction)
                 }
             }
             .background(UI.colors.medium, UI.shapes.r4)
             .testTag("transaction_card")
     ) {
-        // TODO: Optimize this
-        val transactionCurrency =
-            baseData.accounts.find { it.id == transaction.accountId }?.currency
-                ?: baseData.baseCurrency
+        val transactionCurrency = account?.currency ?: baseData.baseCurrency
 
-        val toAccountCurrency =
-            baseData.accounts.find { it.id == transaction.toAccountId }?.currency
-                ?: baseData.baseCurrency
+        val toAccountCurrency = toAccount?.currency ?: baseData.baseCurrency
 
         // Compact vertical rhythm: transaction cards are scanned in long lists.
         Spacer(Modifier.height(16.dp))
@@ -271,23 +273,24 @@ fun TransactionCard(
 private fun ColumnScope.TransactionTags(tags: ImmutableList<LegacyTag>) {
     Spacer(Modifier.height(12.dp))
 
-    LazyRow(
-        modifier = Modifier.padding(horizontal = 24.dp)
+    // A plain scrollable Row: a nested lazy layout per card is costly for a few short tags.
+    Row(
+        modifier = Modifier
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp)
     ) {
-        item {
-            // Tag Text
-            Text(
-                text = "Tags:",
-                style = UI.typo.nC.style(
-                    color = UI.colors.gray,
-                    fontWeight = FontWeight.Normal
-                )
+        // Tag Text
+        Text(
+            text = "Tags:",
+            style = UI.typo.nC.style(
+                color = UI.colors.gray,
+                fontWeight = FontWeight.Normal
             )
+        )
 
-            Spacer(modifier = Modifier.width(8.dp))
-        }
+        Spacer(modifier = Modifier.width(8.dp))
 
-        items(tags, key = { it.id }) { tag ->
+        tags.forEach { tag ->
             Text(
                 text = "#${tag.name}",
                 style = UI.typo.nC.style(

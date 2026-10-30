@@ -34,8 +34,13 @@ import com.ivy.wallet.domain.deprecated.logic.currency.ExchangeRatesLogic
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -61,13 +66,14 @@ class AccountsViewModel @Inject constructor(
     private val exchangeRatesLogic: ExchangeRatesLogic,
 ) : ComposeViewModel<AccountsState, AccountsEvent>() {
     private var baseCurrency by mutableStateOf("")
-    private var accountsData by mutableStateOf(listOf<AccountData>())
+    private var accountsData by mutableStateOf<ImmutableList<AccountData>>(persistentListOf())
     private var totalBalanceWithExcluded by mutableStateOf("")
     private var totalBalanceWithExcludedText by mutableStateOf("")
     private var totalBalanceWithoutExcluded by mutableStateOf("")
     private var totalBalanceWithoutExcludedText by mutableStateOf("")
     private var reorderVisible by mutableStateOf(false)
-    private var creditCards by mutableStateOf<List<CreditCardTileUi>>(emptyList())
+    private var creditCards by mutableStateOf<ImmutableList<CreditCardTileUi>>(persistentListOf())
+    private var loadJob: Job? = null
     private var cardsOutstandingTotal by mutableStateOf<Double?>(null)
 
     init {
@@ -102,7 +108,7 @@ class AccountsViewModel @Inject constructor(
             reorderVisible = getReorderVisible(),
             compactAccountsModeEnabled = getCompactAccountsMode(),
             hideTotalBalance = getHideTotalBalance(),
-            creditCards = creditCards.toImmutableList(),
+            creditCards = creditCards,
             cardsOutstandingTotal = cardsOutstandingTotal,
             today = timeProvider.localDateNow(),
         )
@@ -120,7 +126,7 @@ class AccountsViewModel @Inject constructor(
 
     @Composable
     private fun getAccountsData(): ImmutableList<AccountData> {
-        return accountsData.toImmutableList()
+        return accountsData
     }
 
     @Composable
@@ -169,11 +175,19 @@ class AccountsViewModel @Inject constructor(
             }
         }
 
-        startInternally()
+        onStart()
     }
 
+    /**
+     * Reloads are requested on screen entry and on every account/card write (a single save can
+     * emit several events). Only the newest load may publish its result: a slower, older load
+     * finishing last would otherwise overwrite fresh data with stale data (e.g. an old card design).
+     */
+    @Synchronized
     private fun onStart() {
-        viewModelScope.launch(Dispatchers.Default) {
+        val previous = loadJob
+        loadJob = viewModelScope.launch(Dispatchers.Default) {
+            previous?.cancelAndJoin()
             startInternally()
         }
     }
@@ -216,6 +230,7 @@ class AccountsViewModel @Inject constructor(
         val cards = creditCardOverviewUseCase.loadAll()
         val cardTiles = cards.map { cardUiMapper.tile(it, today) }
             .sortedWith(compareBy<CreditCardTileUi> { it.status == CardStatus.CLOSED }.thenBy { it.orderNum })
+            .toImmutableList()
         val outstandingTotal = cards.takeIf { it.isNotEmpty() }?.sumOf { item ->
             exchangeRatesLogic.convertAmount(
                 baseCurrency = baseCurrencyCode,
@@ -225,8 +240,9 @@ class AccountsViewModel @Inject constructor(
             )
         }
 
+        currentCoroutineContext().ensureActive()
         baseCurrency = baseCurrencyCode
-        accountsData = accountsDataList
+        accountsData = accountsDataList.toImmutableList()
         creditCards = cardTiles
         cardsOutstandingTotal = outstandingTotal
         totalBalanceWithExcluded = totalBalanceWithExcludedAccounts.toString()

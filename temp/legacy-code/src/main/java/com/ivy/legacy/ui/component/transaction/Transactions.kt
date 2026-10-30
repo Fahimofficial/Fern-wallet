@@ -219,7 +219,8 @@ private fun LazyListScope.trnItems(
 ) {
     items(
         items = transactions,
-        key = { it.id }
+        key = { it.id },
+        contentType = { ContentTypeTransaction },
     ) {
         val nav = navigation()
         TransactionCard(
@@ -255,6 +256,13 @@ private fun LazyListScope.historySection(
                     is Transaction -> it.id.toString()
                     is TransactionHistoryDateDivider -> it.date.toString()
                     else -> "unknown"
+                }
+            },
+            // Cards and date dividers have different layouts: let Compose reuse each with its own kind.
+            contentType = {
+                when (it) {
+                    is TransactionHistoryDateDivider -> ContentTypeDateDivider
+                    else -> ContentTypeTransaction
                 }
             }
         ) {
@@ -370,3 +378,6 @@ private fun LazyListScope.scrollHackSpacer(
         }
     }
 }
+
+private const val ContentTypeTransaction = "transaction"
+private const val ContentTypeDateDivider = "date_divider"
