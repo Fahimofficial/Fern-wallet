@@ -1,5 +1,6 @@
 """Tests for the shell scripts, with fake `gh`, `adb` and `gradlew` commands on PATH."""
 import os
+import stat
 import shutil
 # Tests run this repository's scripts with fixed argument lists.
 import subprocess  # nosec B404
@@ -23,7 +24,7 @@ class ShellScriptTestCase(ScriptTestCase):
         path = os.path.join(self.bin, name)
         with open(path, "w", encoding="utf-8") as f:
             f.write("#!/usr/bin/env bash\n" + body)
-        os.chmod(path, 0o700)
+        os.chmod(path, stat.S_IRWXU)
 
     def run_script(self, script: str, *args: str, cwd: str | None = None) -> subprocess.CompletedProcess:
         env = {**os.environ, "PATH": f"{self.bin}:{os.environ.get('PATH', '')}",
@@ -97,15 +98,16 @@ class WaitForDependencySnapshotTest(ShellScriptTestCase):
 class RunAndroidTestsTest(ShellScriptTestCase):
     def setUp(self):
         super().setUp()
-        self.fake("adb", 'if [ "$1" = shell ]; then printf "package:com.ivy.data.test\\npackage:com.other\\n"; '
-                         'else echo "$@" >> "$ADB_LOG"; fi\n')
+        self.fake("adb", 'case "$1" in shell) printf "package:com.ivy.data.test\\npackage:com.other\\n" ;; '
+                         'logcat) [ "$2" = -c ] || echo "$CRASH_LOG" ;; *) echo "$@" >> "$ADB_LOG" ;; esac\n')
+        os.environ["CRASH_LOG"] = ""
         os.environ["ADB_LOG"] = os.path.join(self.tmp, "adb.log")
 
     def gradlew(self, output: str, status: int = 0) -> None:
         path = os.path.join(self.tmp, "gradlew")
         with open(path, "w", encoding="utf-8") as f:
             f.write(f"#!/usr/bin/env bash\nprintf '%s\\n' '{output}'\nexit {status}\n")
-        os.chmod(path, 0o700)
+        os.chmod(path, stat.S_IRWXU)
 
     def test_passes_and_removes_stale_test_packages(self):
         self.gradlew("BUILD SUCCESSFUL")
@@ -119,6 +121,14 @@ class RunAndroidTestsTest(ShellScriptTestCase):
         result = self.run_script("run_android_tests.sh", "logs/t.log", ":m:connectedDebugAndroidTest")
         self.assertEqual(result.returncode, 1)
         self.assertIn("did not run", result.stdout)
+
+    def test_prints_crash_from_logcat(self):
+        os.environ["CRASH_LOG"] = "FATAL EXCEPTION: main\njava.lang.NoClassDefFoundError: java.lang.StackWalker"
+        self.gradlew("BUILD SUCCESSFUL")
+        result = self.run_script("run_android_tests.sh", "logs/t.log", ":m:connectedDebugAndroidTest")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("NoClassDefFoundError", result.stdout)
+        self.assertTrue(os.path.exists(os.path.join(self.tmp, "logs", "logcat-crash.txt")))
 
     def test_gradle_failure_is_propagated(self):
         self.gradlew("BUILD FAILED", status=3)

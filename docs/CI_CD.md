@@ -139,7 +139,8 @@ is an advanced setup).
   can open duplicate PRs. Keep one (recommended: Dependabot, which gets CI) and delete the other.
 - **Dependency review waits for the Gradle snapshot.** Gradle dependencies (app, plugins, build classpath) reach the
   dependency graph only through GitHub's automatic dependency submission (`submit-gradle`), a few minutes after a push.
-  `dependency-review.yml` waits up to 15 minutes for that snapshot and fails if it never arrives; before this, the
+  GitHub took 10-40 minutes to process them for this repository, so `dependency-review.yml` waits up to 60
+  minutes for that snapshot and fails if it never arrives (re-run the job then); before this, the
   review could pass having compared only workflow files. Fork PRs get no snapshot, so for them only Actions and
   Bundler changes are reviewed (the job summary says so); the OSV scan on `main` and at release covers the rest.
 - **CodeQL lags Kotlin.** `codeql.yml` checks that the database contains at least 90% of the app's Kotlin source files

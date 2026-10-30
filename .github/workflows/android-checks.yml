@@ -262,6 +262,8 @@ jobs:
           name: android-test-reports
           path: |
             build/android-tests.log
+            build/logcat.txt
+            build/logcat-crash.txt
             **/build/reports/androidTests/
             **/build/outputs/androidTest-results/
           if-no-files-found: warn

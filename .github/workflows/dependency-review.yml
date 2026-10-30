@@ -21,7 +21,8 @@ jobs:
   dependency-review:
     name: Dependency review
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Mostly waiting: GitHub took 10-40 minutes to process this repo's Gradle snapshots.
+    timeout-minutes: 75
     permissions:
       contents: read
     steps:
@@ -36,6 +37,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          WAIT_TIMEOUT_SECONDS: '3600'
+          WAIT_INTERVAL_SECONDS: '30'
         run: scripts/ci/wait_for_dependency_snapshot.sh "$BASE_SHA" "$HEAD_SHA"
 
       - name: Note for pull requests from forks
