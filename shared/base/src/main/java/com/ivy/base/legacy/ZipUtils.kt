@@ -8,6 +8,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
+import java.util.zip.ZipException
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
@@ -67,20 +68,14 @@ fun unzip(fileInputStream: FileInputStream, location: File) {
 
         if (!location.isDirectory) location.mkdirs()
 
-        val locationPath = location.absolutePath.let {
-            if (!it.endsWith(File.separator)) {
-                "$it${File.separator}"
-            } else {
-                it
-            }
-        }
+        val destination = location.canonicalFile
 
         var zipEntry: ZipEntry?
         var unzipFile: File
         var unzipParentDir: File?
 
         while (zipInputStream.nextEntry.also { zipEntry = it } != null) {
-            unzipFile = File(locationPath + zipEntry!!.name)
+            unzipFile = resolveZipEntry(destination, zipEntry!!.name)
             if (zipEntry!!.isDirectory) {
                 if (!unzipFile.isDirectory) unzipFile.mkdirs()
             } else {
@@ -94,4 +89,17 @@ fun unzip(fileInputStream: FileInputStream, location: File) {
             }
         }
     }
+}
+
+/**
+ * Resolves a zip entry name inside [destination] and rejects names that would escape it
+ * ("Zip Slip"), e.g. `../../shared_prefs/x.xml` or an absolute path. Backups are user-picked
+ * files, so a crafted archive must not be able to overwrite the app's database or preferences.
+ */
+internal fun resolveZipEntry(destination: File, entryName: String): File {
+    val resolved = File(destination, entryName).canonicalFile
+    if (!resolved.toPath().startsWith(destination.toPath())) {
+        throw ZipException("Zip entry is outside of the target directory: $entryName")
+    }
+    return resolved
 }
