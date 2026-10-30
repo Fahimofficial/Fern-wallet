@@ -89,3 +89,54 @@ Paparazzi is used for automated visual testing. It captures screenshots of vario
 5. Repeat this process iteratively for all modules that have failed Paparazzi tests, ensuring thorough validation and updating of baseline images as needed.
 
 > **Note**: Ensure the use of static data only. Dynamic data, such as current time or date, will cause test failures due to its variability.
+
+## Release build & APK policy
+
+This job builds the minified release APK (signed with a throwaway key created in the job), then checks the
+manifest that actually ships, after all library manifests are merged, against
+[`.github/apk-policy.json`](../.github/apk-policy.json).
+
+- **"permission X is not in the allowlist"**: your change (or a new/updated library) added a permission. Remove it,
+  or add it to `permissions` in `apk-policy.json` with the feature that needs it **and** update `PRIVACY.md`.
+- **"exported … is not in the allowlist"**: a component became reachable by other apps. Set
+  `android:exported="false"` (or `tools:node="remove"` for an unwanted library component), or review it and add it
+  to `exported_components` with the permission that guards it.
+- **debuggable / cleartext / allowBackup**: release builds must keep `isDebuggable = false`,
+  `usesCleartextTraffic="false"` and `allowBackup="false"`.
+- **"not signed with the key from SIGNING_STORE_FILE"**: `signingConfigs.release` in `app/build.gradle.kts` no longer
+  reads the signing environment variables.
+
+Run it locally:
+
+```sh
+keytool -genkeypair -keystore /tmp/ci.jks -storetype PKCS12 -alias ci -keyalg RSA -dname "CN=local" -storepass password -keypass password
+SIGNING_STORE_FILE=/tmp/ci.jks SIGNING_STORE_PASSWORD=password SIGNING_KEY_ALIAS=ci SIGNING_KEY_PASSWORD=password ./gradlew :app:assembleRelease
+python3 scripts/ci/check_apk_policy.py --apk app/build/outputs/apk/release/app-release.apk \
+  --aapt2 "$ANDROID_HOME/build-tools/<version>/aapt2" --policy .github/apk-policy.json --package com.fernwallet.app
+```
+
+The same job runs the Compose stability analysis on the release compile.
+
+## Integration tests and release smoke test (emulator)
+
+Both boot an Android 14 emulator. Integration tests run the `androidTest` suites of `:shared:data:core` and
+`:shared:domain` (Room migrations, backup, DB). The smoke test installs the minified release APK, launches it and
+fails if it crashes, ANRs or isn't running after 15 seconds. That usually means an R8 rule is missing or the Hilt
+graph is broken. Download `smoke-test-logs` (contains `crash.txt` and `logcat.txt`) from the failed run.
+
+## Security checks
+
+- **Secret scan (gitleaks)**: a commit in your PR contains something that looks like a credential. Values are
+  redacted in the log. If it is real: **revoke it first**, then remove it from the branch history (rebase) before
+  merging. If it is a false positive (test data), change the test data; ask a maintainer before adding a
+  fingerprint to `.gitleaksignore`.
+- **Dependency review**: your PR adds or upgrades to a dependency version with a High/Critical advisory. Use a
+  patched version (shown in the job summary).
+- **Dependency vulnerabilities (OSV)**: on PRs this only reports. On `main` and at release time it blocks on
+  High/Critical/unscored advisories in the dependencies that ship in the app. Upgrade the dependency, or record a
+  justified, expiring exception in `osv-scanner.toml`.
+- **CodeQL**: open the alert under *Security → Code scanning* and fix the flagged code. If the job itself fails with
+  `KotlinVersionTooRecentError`, see [CI_CD.md → Notes](CI_CD.md#notes-and-known-limitations).
+- **zizmor / actionlint**: a workflow change uses a risky pattern (e.g. `${{ github.event.* }}` inside `run:`, missing
+  `persist-credentials: false`, broad permissions) or has a syntax error. The annotation names the audit; its
+  documentation is at https://docs.zizmor.sh/audits/.

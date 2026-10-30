@@ -35,4 +35,4 @@ The ID follows the developer's existing convention (`com.quantummpv.app`).
   To add crash reporting again, create your own Firebase project for `com.fernwallet.app`, and update `PRIVACY.md`.
 - **Google Play:** publishing on Play would need a new Play Console listing for `com.fernwallet.app`
   (`fastlane/Appfile` already uses it). The old Play listing and its signing key belong to Ivy Apps.
-- **Release signing key:** create your own and add it as GitHub secrets (see `docs/Releasing.md`).
+- **Release signing key:** create your own and add it as GitHub secrets (see `docs/RELEASE.md`).
