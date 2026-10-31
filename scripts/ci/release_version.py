@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
-"""Release version checks used by .github/workflows/release.yml.
+"""Release version checks used by .github/workflows/release.yml."""
 
-validate      Check the tag format (v<YYYY.MM.DD>[-suffix]) and that it matches version-name in
-              gradle/libs.versions.toml. Prints the outputs and appends them to $GITHUB_OUTPUT.
-compare-code  Check version-code is greater than the one in the previous release's catalog.
-
-The tag charset is strict on purpose: the tag ends up in file names, release titles and
-shell commands. Exit code 0 = ok, 1 = check failed.
-"""
 from __future__ import annotations
 
 import argparse
@@ -17,6 +10,15 @@ import sys
 import tomllib
 
 import ci_common
+
+_DETAILS = """\
+validate      Check the tag format (v<YYYY.MM.DD>[-suffix]) and that it matches version-name in
+              gradle/libs.versions.toml. Prints the outputs and appends them to $GITHUB_OUTPUT.
+compare-code  Check version-code is greater than the one in the previous release's catalog.
+
+The tag charset is strict on purpose: the tag ends up in file names, release titles and
+shell commands. Exit code 0 = ok, 1 = check failed.
+"""
 
 # Matched with fullmatch(): "$" would also accept a trailing newline.
 TAG_RE = re.compile(r"v(?P<base>[0-9]{4}\.[0-9]{2}\.[0-9]{2})(?P<suffix>-[0-9A-Za-z][0-9A-Za-z.]{0,30})?")
@@ -75,7 +77,9 @@ def _read(path: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=f"{__doc__}\n\n{_DETAILS}", formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     sub = ap.add_subparsers(dest="command", required=True)
     v = sub.add_parser("validate")
     v.add_argument("--tag", required=True)

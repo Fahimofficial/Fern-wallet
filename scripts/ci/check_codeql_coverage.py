@@ -1,14 +1,6 @@
 #!/usr/bin/env python3
-"""Fail if a CodeQL java-kotlin database doesn't contain the app's Kotlin sources.
+"""Fail if a CodeQL java-kotlin database doesn't contain the app's Kotlin sources."""
 
-CodeQL's Kotlin extractor supports Kotlin versions with a delay. With an unsupported compiler it
-can skip files without failing the build, which would leave Kotlin code unanalysed behind a green
-check. This compares the Kotlin files in the database's source archive with the Kotlin files the
-analysed build compiles (src/main of every module except CI tooling, buildSrc and test-support
-modules) and fails below --min-ratio.
-
-Usage: check_codeql_coverage.py --db-locations '<analyze step db-locations output>' [--min-ratio 0.9]
-"""
 from __future__ import annotations
 
 import argparse
@@ -19,6 +11,16 @@ import zipfile
 from pathlib import Path
 
 import ci_common
+
+_DETAILS = """\
+CodeQL's Kotlin extractor supports Kotlin versions with a delay. With an unsupported compiler it
+can skip files without failing the build, which would leave Kotlin code unanalysed behind a green
+check. This compares the Kotlin files in the database's source archive with the Kotlin files the
+analysed build compiles (src/main of every module except CI tooling, buildSrc and test-support
+modules) and fails below --min-ratio.
+
+Usage: check_codeql_coverage.py --db-locations '<analyze step db-locations output>' [--min-ratio 0.9]
+"""
 
 # Not compiled by `:app:assembleDebug`: CI tools, build logic and test-only helper modules.
 EXCLUDED_PREFIXES = ("ci-actions/", "buildSrc/", "shared/data/model-testing/", "shared/ui/testing/",
@@ -67,7 +69,9 @@ def java_database(db_locations: str) -> Path:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=f"{__doc__}\n\n{_DETAILS}", formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--db-locations", required=True)
     ap.add_argument("--repo", default=os.getcwd())
     ap.add_argument("--min-ratio", type=float, default=0.9)

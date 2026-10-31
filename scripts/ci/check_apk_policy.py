@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
-"""Check a built APK against the security/privacy policy in .github/apk-policy.json.
+"""Check a built APK against the security/privacy policy in .github/apk-policy.json."""
 
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+# Only used to run aapt2 with an argument list (never a shell); see run_aapt2().
+import subprocess  # nosec B404
+import sys
+from dataclasses import dataclass, field
+
+import ci_common
+
+_DETAILS = """\
 It reads the manifest that actually ships (after library manifests are merged) with
 `aapt2 dump`, so a dependency that silently adds a permission or an exported component
 fails the check and has to be reviewed and added to the allowlist in a pull request.
@@ -14,18 +28,6 @@ Checks:
 Exit code 0 = policy satisfied, 1 = violations, 2 = usage/tool error.
 Only the Python standard library is used.
 """
-from __future__ import annotations
-
-import argparse
-import json
-import os
-import re
-# Only used to run aapt2 with an argument list (never a shell); see run_aapt2().
-import subprocess  # nosec B404
-import sys
-from dataclasses import dataclass, field
-
-import ci_common
 
 COMPONENT_TAGS = ("activity", "activity-alias", "service", "receiver", "provider")
 PERMISSION_TAGS = ("uses-permission", "uses-permission-sdk-23")
@@ -227,7 +229,9 @@ def render_summary(apk: str, report: Report) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=f"{__doc__}\n\n{_DETAILS}", formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--apk", required=True)
     ap.add_argument("--aapt2", required=True, help="path to the aapt2 binary from Android build-tools")
     ap.add_argument("--policy", required=True, help="path to .github/apk-policy.json")

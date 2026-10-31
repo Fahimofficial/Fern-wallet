@@ -1,6 +1,17 @@
 #!/usr/bin/env python3
-"""Summarise JUnit XML results and fail if tests failed or too few tests ran.
+"""Summarise JUnit XML results and fail if tests failed or too few tests ran."""
 
+from __future__ import annotations
+
+import argparse
+import glob
+import sys
+from dataclasses import dataclass, field
+
+import ci_common
+import safe_xml
+
+_DETAILS = """\
 Writes totals and every failed test (class, name, first line of the failure) to the job summary,
 so the reason is visible without downloading the report artifact.
 
@@ -11,15 +22,6 @@ e.g. AGP 9's connected-test runner, don't fail the build for these, so this is a
 
 Usage: junit_summary.py "<title>" <glob> [<glob> ...] [--min-tests N] [--min-files N] [--require-tests-per-file]
 """
-from __future__ import annotations
-
-import argparse
-import glob
-import sys
-from dataclasses import dataclass, field
-
-import ci_common
-import safe_xml
 
 MAX_ANNOTATIONS = 20
 MAX_SUMMARY_ROWS = 100
@@ -122,7 +124,9 @@ def render_summary(title: str, results: Results, reasons: list[str]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=f"{__doc__}\n\n{_DETAILS}", formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("title")
     ap.add_argument("patterns", nargs="+", help="glob(s) of JUnit XML files; ** is recursive")
     ap.add_argument("--min-tests", type=int, default=0)

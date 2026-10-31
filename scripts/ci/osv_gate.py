@@ -1,6 +1,17 @@
 #!/usr/bin/env python3
-"""Apply the vulnerability severity policy to an osv-scanner JSON report.
+"""Apply the vulnerability severity policy to an osv-scanner JSON report."""
 
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from dataclasses import dataclass
+
+import ci_common
+
+_DETAILS = """\
 Policy (see docs/SECURITY.md):
   Critical (CVSS >= 9.0) and High (>= 7.0) -> blocking
   unknown severity                         -> blocking until triaged (fix it, or add a
@@ -12,15 +23,6 @@ osv-scanner removes them from the report before this script runs.
 
 Exit code 0 = no blocking findings, 1 = blocking findings, 2 = bad input.
 """
-from __future__ import annotations
-
-import argparse
-import json
-import os
-import sys
-from dataclasses import dataclass
-
-import ci_common
 
 ORDER = ["Critical", "High", "Unknown", "Medium", "Low", "Informational"]
 BLOCKING = {"Critical", "High", "Unknown"}
@@ -101,7 +103,9 @@ def render_summary(title: str, rows: list[Finding], blocked: list[Finding]) -> s
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=f"{__doc__}\n\n{_DETAILS}", formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("report", help="osv-scanner --format json output")
     ap.add_argument("--advisory", action="store_true",
                     help="report only, never fail (for tooling that does not ship, e.g. Gemfile.lock)")

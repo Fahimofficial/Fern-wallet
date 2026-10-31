@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Fail if Android lint reported Error or Fatal issues, listing each with its location.
+"""Fail if Android lint reported Error or Fatal issues, listing each with its location."""
 
-app/build.gradle.kts sets lint abortOnError=false so that one report covers every module;
-this script is the gate. Issues already in app/lint-baseline.xml are not in the report.
-Exit code 0 = no blocking issues, 1 = blocking issues or an unreadable/missing report.
+# app/build.gradle.kts sets lint abortOnError=false so that one report covers every module;
+# this script is the gate. Issues already in app/lint-baseline.xml are not in the report.
+# Exit code 0 = no blocking issues, 1 = blocking issues or an unreadable/missing report.
+#
+# Usage: lint_gate.py build/reports/lint/lint.xml
 
-Usage: lint_gate.py build/reports/lint/lint.xml
-"""
 from __future__ import annotations
 
 import os

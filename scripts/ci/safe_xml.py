@@ -1,10 +1,10 @@
-"""Minimal, hardened XML reader for the CI reports these scripts read (JUnit results, Android lint).
+"""Minimal, hardened XML reader for the CI reports these scripts read (JUnit, Android lint)."""
 
-Gradle and lint never write a document type declaration, so any DTD is rejected outright. That
-rules out entity expansion ("billion laughs") and external entities (XXE) regardless of the
-parser's own defaults. Input size is capped too. Standard library only, so the scripts run on a
-bare runner without installing packages.
-"""
+# Gradle and lint never write a document type declaration, so any DTD is rejected outright. That
+# rules out entity expansion ("billion laughs") and external entities (XXE) regardless of the
+# parser's own defaults. Input size is capped too. Standard library only, so the scripts run on a
+# bare runner without installing packages.
+
 from __future__ import annotations
 
 import os
