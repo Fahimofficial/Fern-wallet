@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ivy.creditcards.ui.AmountLine
+import com.ivy.creditcards.ui.CardLoading
 import com.ivy.creditcards.ui.CardScreen
 import com.ivy.creditcards.ui.ChoiceChip
 import com.ivy.creditcards.ui.CreditCardVisual
@@ -95,7 +96,10 @@ internal fun CreditCardDetailsUi(state: CardDetailsState, onEvent: (CardDetailsE
         }
     ) {
         val overview = state.overview
-        if (state.loading) return@CardScreen
+        if (state.loading) {
+            CardLoading()
+            return@CardScreen
+        }
         if (state.notFound || overview == null || state.visual == null) {
             Disclaimer(stringResource(R.string.cc_not_found))
             return@CardScreen

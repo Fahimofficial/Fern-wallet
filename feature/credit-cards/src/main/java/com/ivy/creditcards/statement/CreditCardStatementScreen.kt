@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ivy.creditcards.details.TransactionRow
 import com.ivy.creditcards.edit.DateRow
 import com.ivy.creditcards.ui.AmountLine
+import com.ivy.creditcards.ui.CardLoading
 import com.ivy.creditcards.ui.CardScreen
 import com.ivy.creditcards.ui.Disclaimer
 import com.ivy.creditcards.ui.DueSummary
@@ -56,7 +57,10 @@ internal fun CreditCardStatementUi(state: StatementState, onEvent: (StatementEve
         onBack = { nav.back() },
         backDescription = stringResource(R.string.cc_back),
     ) {
-        if (state.loading) return@CardScreen
+        if (state.loading) {
+            CardLoading()
+            return@CardScreen
+        }
         if (statement == null) {
             Disclaimer(stringResource(R.string.cc_statement_not_found))
             return@CardScreen

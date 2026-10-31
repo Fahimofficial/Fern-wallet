@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark system theme: matches the app's dark background (old design Black). -->
+    <color name="window_background">#111114</color>
+</resources>

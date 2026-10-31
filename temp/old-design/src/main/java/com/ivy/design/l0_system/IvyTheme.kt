@@ -7,6 +7,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
@@ -50,9 +51,12 @@ fun IvyTheme(
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colors = design.colors(theme, isDarkTheme)
-    val typography = design.typography()
-    val shapes = design.shapes()
+    // `design` is a new object on every call site recomposition and colors()/typography()/shapes()
+    // build new objects each time. Providing a new instance through the CompositionLocals would
+    // recompose every UI.colors/UI.typo/UI.shapes reader in the screen, so build them once per theme.
+    val colors = remember(theme, isDarkTheme) { design.colors(theme, isDarkTheme) }
+    val typography = remember { design.typography() }
+    val shapes = remember { design.shapes() }
 
     CompositionLocalProvider(
         LocalIvyColors provides colors,
@@ -64,8 +68,11 @@ fun IvyTheme(
             SideEffect {
                 val window = (view.context as Activity).window
                 window.statusBarColor = Color.Transparent.toArgb()
-                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
-                    colors.isLight
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = colors.isLight
+                    // Follow the app theme, not the system one (e.g. app light, system dark).
+                    isAppearanceLightNavigationBars = colors.isLight
+                }
             }
         }
 

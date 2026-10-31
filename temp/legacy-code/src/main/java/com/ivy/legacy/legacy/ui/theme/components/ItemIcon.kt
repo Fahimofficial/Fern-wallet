@@ -19,6 +19,8 @@ import com.ivy.design.l0_system.UI
 import com.ivy.design.utils.thenWhen
 import com.ivy.legacy.IvyWalletComponentPreview
 import com.ivy.legacy.utils.toLowerCaseLocal
+import java.util.Optional
+import java.util.concurrent.ConcurrentHashMap
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
@@ -196,8 +198,25 @@ fun getCustomIconIdS(
     )?.iconId ?: defaultIcon
 }
 
+// Icon names resolve to the same drawable for the whole process, but `Resources.getIdentifier` is a
+// slow name lookup. It ran for every icon of every list item on every composition (several per
+// transaction card while scrolling), so results are cached. Missing icons are cached too.
+private val resolvedCustomIconIds = ConcurrentHashMap<String, Optional<IconInfo>>()
+
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 fun getCustomIconId(
+    context: Context,
+    iconName: String?,
+    size: String,
+): IconInfo? {
+    if (iconName == null) return null
+    val cacheKey = "${context.packageName}|$size|$iconName"
+    return resolvedCustomIconIds.getOrPut(cacheKey) {
+        Optional.ofNullable(resolveCustomIconId(context, iconName, size))
+    }.orElse(null)
+}
+
+private fun resolveCustomIconId(
     context: Context,
     iconName: String?,
     size: String,

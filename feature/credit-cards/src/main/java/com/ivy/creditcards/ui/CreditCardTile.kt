@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,23 +48,34 @@ fun CreditCardTile(
     modifier: Modifier = Modifier,
 ) {
     val palette = tile.visual.appearance.palette()
+    val closed = tile.status == CardStatus.CLOSED
+    // The tile carries the card's own colours: a soft wash of its design behind the content and a
+    // tinted outline, strong enough to tell cards apart, light enough to keep text readable in
+    // light, dark and AMOLED themes. Closed cards are toned down.
+    // Deep design colour on light surfaces, its light accent on dark/AMOLED surfaces.
+    val identity = if (UI.colors.isLight) palette.end else palette.accent
+    val tint = identity.copy(alpha = if (closed) TintAlphaClosed else TintAlpha)
+    val wash = remember(tint) {
+        Brush.horizontalGradient(listOf(tint, tint.copy(alpha = tint.alpha * WashEndFraction)))
+    }
     Column(
         modifier = modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .clip(UI.shapes.r4)
-            .border(1.dp, UI.colors.medium, UI.shapes.r4)
+            .background(wash)
+            .border(1.dp, identity.copy(alpha = if (closed) BorderAlphaClosed else BorderAlpha), UI.shapes.r4)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(16.dp)
             .testTag("credit_card_tile")
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Mini card thumbnail in the card's design
+            // Mini card in the card's design
             Box(
                 modifier = Modifier
-                    .size(width = 48.dp, height = 32.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Brush.linearGradient(listOf(palette.start, palette.end))),
+                    .size(width = 52.dp, height = 34.dp)
+                    .clip(RoundedCornerShape(7.dp))
+                    .cardSurface(palette),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -203,6 +215,11 @@ fun DueChip(
 }
 
 private const val HIDDEN = "••••"
+private const val TintAlpha = 0.12f
+private const val TintAlphaClosed = 0.06f
+private const val WashEndFraction = 0.35f
+private const val BorderAlpha = 0.45f
+private const val BorderAlphaClosed = 0.2f
 private const val HighUtilisation = 0.9f
 private const val MediumUtilisation = 0.5f
 private const val PERCENT = 100

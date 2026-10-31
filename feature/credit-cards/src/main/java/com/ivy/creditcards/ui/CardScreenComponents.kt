@@ -1,6 +1,7 @@
 package com.ivy.creditcards.ui
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,18 +23,23 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -46,6 +52,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
+import com.ivy.design.system.motion.IvyMotion
 import com.ivy.wallet.ui.theme.Ivy
 
 /** Root of every card screen: own background + system-bar insets (non-legacy screen). */
@@ -303,9 +310,37 @@ fun Disclaimer(text: String, modifier: Modifier = Modifier) {
     )
 }
 
+/**
+ * Loading state of a card screen. Loads are usually a few milliseconds, so the indicator fades in
+ * only after a short moment instead of flashing; the screen keeps its title and background meanwhile.
+ */
+@Composable
+fun ColumnScope.CardLoading(modifier: Modifier = Modifier) {
+    val alpha = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        alpha.animateTo(1f, IvyMotion.standard(IvyMotion.Duration.Medium, delayMillis = LoadingFadeInDelay))
+    }
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .weight(1f)
+            .semantics { contentDescription = "Loading" },
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier
+                .size(32.dp)
+                .graphicsLayer { this.alpha = alpha.value },
+            color = Ivy,
+            strokeWidth = 3.dp,
+        )
+    }
+}
+
 @Composable
 fun VerticalSpace(height: Dp, modifier: Modifier = Modifier) {
     Spacer(modifier.height(height))
 }
 
 private const val ChipBorderAlpha = 0.4f
+private const val LoadingFadeInDelay = 150

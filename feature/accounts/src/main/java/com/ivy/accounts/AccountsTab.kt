@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -97,6 +98,10 @@ private fun BoxWithConstraintsScope.UI(
                 ?: 0
         )
     }
+    // Cards are listed in their own section below; filter once per data change, not per frame.
+    val regularAccounts = remember(state.accountsData) {
+        state.accountsData.filter { it.account.type != AccountType.CREDIT_CARD }
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -157,8 +162,9 @@ private fun BoxWithConstraintsScope.UI(
             }
         }
         items(
-            items = state.accountsData.filter { it.account.type != AccountType.CREDIT_CARD },
-            key = { it.account.id.value }
+            items = regularAccounts,
+            key = { it.account.id.value },
+            contentType = { "account" },
         ) {
             Spacer(Modifier.height(16.dp))
             AccountCard(
@@ -262,7 +268,7 @@ private fun LazyListScope.creditCardsSection(
             )
         }
     }
-    items(state.creditCards, key = { "card-${it.accountId}" }) { tile ->
+    items(state.creditCards, key = { "card-${it.accountId}" }, contentType = { "credit_card" }) { tile ->
         Spacer(Modifier.height(12.dp))
         CreditCardTile(
             tile = tile,

@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -324,14 +325,25 @@ fun HomeLazyColumn(
 ) {
     val ivyContext = ivyWalletCtx()
 
-    val nestedScrollConnection = remember {
+    val currentOnSetExpand by rememberUpdatedState(onSetExpand)
+    val nestedScrollConnection = remember(listState) {
         object : NestedScrollConnection {
+            private var lastExpanded: Boolean? = null
+
             override fun onPostScroll(
                 consumed: Offset,
                 available: Offset,
                 source: NestedScrollSource
             ): Offset {
-                onSetExpand(listState.firstVisibleItemScrollOffset == 0)
+                // Called for every scroll delta (several per frame while flinging): only report
+                // changes. Expanded means "at the very top", not "an item edge is at the top",
+                // which used to collapse and re-expand the header repeatedly mid-scroll.
+                val expanded = listState.firstVisibleItemIndex == 0 &&
+                    listState.firstVisibleItemScrollOffset == 0
+                if (expanded != lastExpanded) {
+                    lastExpanded = expanded
+                    currentOnSetExpand(expanded)
+                }
                 return super.onPostScroll(consumed, available, source)
             }
         }
