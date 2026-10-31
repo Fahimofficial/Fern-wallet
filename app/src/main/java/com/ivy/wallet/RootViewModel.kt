@@ -58,16 +58,16 @@ class RootViewModel @Inject constructor(
     private val _appLocked = MutableStateFlow<Boolean?>(null)
     val appLocked = _appLocked.readOnly()
 
-    /** This ViewModel outlives Activity recreation: the initial navigation must happen only once. */
-    private var started = false
+    // This ViewModel outlives Activity recreation, so start() can run more than once.
+    private var initialNavigationDone = false
 
     /**
      * Called on first composition and again whenever the system dark mode changes (the Activity
      * is recreated for configuration changes and this ViewModel survives it).
      */
     fun start(systemDarkMode: Boolean, intent: Intent) {
-        val firstStart = !started
-        started = true
+        val firstStart = !initialNavigationDone
+        initialNavigationDone = true
 
         viewModelScope.launch {
             TestIdlingResource.increment()

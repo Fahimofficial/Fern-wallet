@@ -58,7 +58,7 @@ internal fun PayCreditCardUi(state: PayState, onEvent: (PayEvent) -> Unit) {
                     .fillMaxWidth()
                     .padding(16.dp),
                 text = stringResource(R.string.cc_record_payment),
-                enabled = state.canSubmit(),
+                enabled = state.isReadyToRecordPayment(),
                 onClick = { onEvent(PayEvent.Save(defaultTitle)) }
             )
         }
@@ -201,6 +201,5 @@ private fun QuickAmounts(state: PayState, onEvent: (PayEvent) -> Unit) {
     }
 }
 
-/** The payment can be recorded: the card is loaded, nothing is in flight and there's a source. */
-private fun PayState.canSubmit(): Boolean =
+private fun PayState.isReadyToRecordPayment(): Boolean =
     !loading && !notFound && !saving && !converting && sources.isNotEmpty()
