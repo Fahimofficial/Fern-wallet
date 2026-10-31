@@ -118,7 +118,13 @@ internal fun AutoBackupSection(state: AutoBackupUi, actions: AutoBackupActions) 
             onClick = { if (!state.busy) actions.onBackUpNow() },
         )
         Spacer(Modifier.height(8.dp))
-        SectionText(state.statusText())
+        val status = state.statusRes()
+        val statusText = if (status == R.string.auto_backup_last) {
+            stringResource(status, state.lastBackup.orEmpty())
+        } else {
+            stringResource(status)
+        }
+        SectionText(statusText)
     }
 
     if (frequencyDialog) {
@@ -147,13 +153,12 @@ internal fun AutoBackupSection(state: AutoBackupUi, actions: AutoBackupActions) 
 
 internal const val AutoBackupsKept = 10
 
-@Composable
-private fun AutoBackupUi.statusText(): String = when (lastFailure) {
-    AutoBackupFailure.FOLDER_UNAVAILABLE -> stringResource(R.string.auto_backup_failed_folder)
-    AutoBackupFailure.KEY_UNAVAILABLE -> stringResource(R.string.auto_backup_failed_key)
-    AutoBackupFailure.WRITE_FAILED -> stringResource(R.string.auto_backup_failed_write)
-    null -> lastBackup?.let { stringResource(R.string.auto_backup_last, it) }
-        ?: stringResource(R.string.auto_backup_never)
+/** The status line's string resource; [AutoBackupUi.lastBackup] is its argument when it has one. */
+private fun AutoBackupUi.statusRes(): Int = when (lastFailure) {
+    AutoBackupFailure.FOLDER_UNAVAILABLE -> R.string.auto_backup_failed_folder
+    AutoBackupFailure.KEY_UNAVAILABLE -> R.string.auto_backup_failed_key
+    AutoBackupFailure.WRITE_FAILED -> R.string.auto_backup_failed_write
+    null -> if (lastBackup != null) R.string.auto_backup_last else R.string.auto_backup_never
 }
 
 private fun AutoBackupFrequency.labelRes(): Int = when (this) {
