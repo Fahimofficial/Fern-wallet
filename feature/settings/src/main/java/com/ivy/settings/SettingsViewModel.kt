@@ -41,6 +41,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.ivy.base.Toaster
 import com.ivy.legacy.utils.hasLockScreen
+import com.ivy.data.backup.auto.AutoBackupFrequency
+import com.ivy.data.backup.auto.AutoBackupPreferences
+import com.ivy.data.backup.auto.AutoBackupScheduler
+import com.ivy.data.backup.auto.AutoBackupUseCase
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import javax.inject.Inject
 
 @Stable
@@ -61,6 +69,9 @@ class SettingsViewModel @Inject constructor(
     private val exportCsvUseCase: ExportCsvUseCase,
     @ApplicationContext private val context: Context,
     private val toaster: Toaster,
+    private val autoBackupUseCase: AutoBackupUseCase,
+    private val autoBackupPreferences: AutoBackupPreferences,
+    private val autoBackupScheduler: AutoBackupScheduler,
 ) : ComposeViewModel<SettingsState, SettingsEvent>() {
 
     private val currencyCode = mutableStateOf("")
@@ -73,6 +84,7 @@ class SettingsViewModel @Inject constructor(
     private val treatTransfersAsIncomeExpense = mutableStateOf(false)
     private val startDateOfMonth = mutableIntStateOf(1)
     private val progressState = mutableStateOf(false)
+    private val autoBackup = mutableStateOf(AutoBackupUi.Empty)
 
     @Composable
     override fun uiState(): SettingsState {
@@ -91,7 +103,8 @@ class SettingsViewModel @Inject constructor(
             startDateOfMonth = getStartDateOfMonth(),
             progressState = getProgressState(),
             hideIncome = getHideIncome(),
-            languageOptionVisible = isLanguageOptionVisible()
+            languageOptionVisible = isLanguageOptionVisible(),
+            autoBackup = autoBackup.value,
         )
     }
 
@@ -105,6 +118,63 @@ class SettingsViewModel @Inject constructor(
         initializeHideIncome()
         initializeTransfersAsIncomeExpense()
         initializeStartDateOfMonth()
+        refreshAutoBackup()
+    }
+
+    private suspend fun refreshAutoBackup(busy: Boolean = false) {
+        autoBackup.value = ioThread {
+            AutoBackupUi(
+                folderName = autoBackupUseCase.folderName(),
+                frequency = autoBackupPreferences.frequency,
+                passwordProtected = autoBackupUseCase.isPasswordProtected(),
+                lastBackup = autoBackupPreferences.lastSuccessMillis?.let { millis ->
+                    DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+                        .format(Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()))
+                },
+                lastFailure = autoBackupPreferences.lastFailure,
+                busy = busy,
+            )
+        }
+    }
+
+    private fun setAutoBackupFolder(treeUri: String) {
+        viewModelScope.launch {
+            ioThread { autoBackupUseCase.setFolder(treeUri) }
+            refreshAutoBackup()
+        }
+    }
+
+    private fun setAutoBackupFrequency(frequency: AutoBackupFrequency) {
+        viewModelScope.launch {
+            if (frequency != AutoBackupFrequency.OFF && autoBackupPreferences.folderUri == null) {
+                toaster.show(com.ivy.ui.R.string.auto_backup_choose_folder_first)
+                return@launch
+            }
+            autoBackupPreferences.frequency = frequency
+            autoBackupScheduler.apply(frequency)
+            refreshAutoBackup()
+        }
+    }
+
+    private fun setAutoBackupPassword(password: String?) {
+        viewModelScope.launch {
+            refreshAutoBackup(busy = true)
+            autoBackupUseCase.setPassword(password?.toCharArray())
+            refreshAutoBackup()
+        }
+    }
+
+    private fun backUpNow() {
+        viewModelScope.launch {
+            if (autoBackupPreferences.folderUri == null) {
+                toaster.show(com.ivy.ui.R.string.auto_backup_choose_folder_first)
+                return@launch
+            }
+            refreshAutoBackup(busy = true)
+            val failure = autoBackupUseCase.backUpNow()
+            refreshAutoBackup()
+            if (failure == null) toaster.show(com.ivy.ui.R.string.auto_backup_done)
+        }
     }
 
     private suspend fun initializeCurrency() {
@@ -215,7 +285,11 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetCurrency -> setCurrency(event.newCurrency)
             is SettingsEvent.SetName -> setName(event.newName)
             is SettingsEvent.ExportToCsv -> exportToCSV(event.rootScreen)
-            is SettingsEvent.BackupData -> exportToZip(event.rootScreen)
+            is SettingsEvent.BackupData -> backupData(event.rootScreen, event.password)
+            is SettingsEvent.SetAutoBackupFolder -> setAutoBackupFolder(event.treeUri)
+            is SettingsEvent.SetAutoBackupFrequency -> setAutoBackupFrequency(event.frequency)
+            is SettingsEvent.SetAutoBackupPassword -> setAutoBackupPassword(event.password)
+            SettingsEvent.BackUpNow -> backUpNow()
             SettingsEvent.SwitchTheme -> switchTheme()
             is SettingsEvent.SetLockApp -> setLockApp(event.lockApp)
             is SettingsEvent.SetShowNotifications -> setShowNotifications(event.showNotifications)
@@ -288,15 +362,17 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun exportToZip(rootScreen: RootScreen) {
+    private fun backupData(rootScreen: RootScreen, password: String?) {
+        // Protected backups aren't ZIP files anymore, so they get their own extension.
+        val extension = if (password.isNullOrEmpty()) ".zip" else ".fernbackup"
         ivyContext.createNewFile(
             "FernWalletBackup_${
                 timeNowUTC().getISOFormattedDateTime()
-            }.zip"
+            }$extension"
         ) { fileUri ->
             viewModelScope.launch(Dispatchers.IO) {
                 progressState.value = true
-                backupDataUseCase.exportToFile(zipFileUri = fileUri)
+                backupDataUseCase.exportToFile(zipFileUri = fileUri, password = password?.toCharArray())
                 progressState.value = false
 
                 sharedPrefs.putBoolean(SharedPrefs.DATA_BACKUP_COMPLETED, true)

@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,6 +80,9 @@ fun BoxWithConstraintsScope.SettingsScreen() {
     val viewModel: SettingsViewModel = screenScopedViewModel()
     val uiState = viewModel.uiState()
     val rootScreen = rootScreen()
+    val pickBackupFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri?.let { viewModel.onEvent(SettingsEvent.SetAutoBackupFolder(it.toString())) }
+    }
 
     UI(
         currencyCode = uiState.currencyCode,
@@ -100,9 +105,16 @@ fun BoxWithConstraintsScope.SettingsScreen() {
         onSetName = {
             viewModel.onEvent(SettingsEvent.SetName(it))
         },
-        onBackupData = {
-            viewModel.onEvent(SettingsEvent.BackupData(rootScreen))
+        onBackupData = { password ->
+            viewModel.onEvent(SettingsEvent.BackupData(rootScreen, password))
         },
+        autoBackup = uiState.autoBackup,
+        autoBackupActions = AutoBackupActions(
+            onPickFolder = { pickBackupFolder.launch(null) },
+            onSetFrequency = { viewModel.onEvent(SettingsEvent.SetAutoBackupFrequency(it)) },
+            onSetPassword = { viewModel.onEvent(SettingsEvent.SetAutoBackupPassword(it)) },
+            onBackUpNow = { viewModel.onEvent(SettingsEvent.BackUpNow) },
+        ),
         onExportToCSV = {
             viewModel.onEvent(SettingsEvent.ExportToCsv(rootScreen))
         },
@@ -154,7 +166,9 @@ private fun BoxWithConstraintsScope.UI(
     progressState: Boolean = false,
     treatTransfersAsIncomeExpense: Boolean = false,
     onSetName: (String) -> Unit = {},
-    onBackupData: () -> Unit = {},
+    onBackupData: (password: String?) -> Unit = {},
+    autoBackup: AutoBackupUi = AutoBackupUi.Empty,
+    autoBackupActions: AutoBackupActions = AutoBackupActions.None,
     onExportToCSV: () -> Unit = {},
     onSetLockApp: (Boolean) -> Unit = {},
     onSetShowNotifications: (Boolean) -> Unit = {},
@@ -172,6 +186,7 @@ private fun BoxWithConstraintsScope.UI(
     var deleteCloudDataModalVisible by remember { mutableStateOf(false) }
     var deleteAllDataModalVisible by remember { mutableStateOf(false) }
     var deleteAllDataModalFinalVisible by remember { mutableStateOf(false) }
+    var backupPasswordVisible by remember { mutableStateOf(false) }
     val nav = navigation()
 
     LazyColumn(
@@ -250,7 +265,7 @@ private fun BoxWithConstraintsScope.UI(
                 text = stringResource(R.string.backup_data),
                 iconPadding = 8.dp
             ) {
-                onBackupData()
+                backupPasswordVisible = true
             }
 
             Spacer(Modifier.height(12.dp))
@@ -266,6 +281,11 @@ private fun BoxWithConstraintsScope.UI(
                     )
                 )
             }
+        }
+
+        item {
+            Spacer(Modifier.height(20.dp))
+            AutoBackupSection(state = autoBackup, actions = autoBackupActions)
         }
 
         item {
@@ -523,6 +543,19 @@ private fun BoxWithConstraintsScope.UI(
         dismiss = { chooseStartDateOfMonthVisible = false }
     ) {
         onSetStartDateOfMonth(it)
+    }
+
+    if (backupPasswordVisible) {
+        PasswordDialog(
+            title = stringResource(R.string.backup_password_title),
+            text = stringResource(R.string.backup_password_text),
+            confirmLabel = stringResource(R.string.backup_password_confirm),
+            onConfirm = { password ->
+                backupPasswordVisible = false
+                onBackupData(password)
+            },
+            onDismiss = { backupPasswordVisible = false },
+        )
     }
 
     DeleteModal(

@@ -62,6 +62,7 @@ fun BoxWithConstraintsScope.ImportCSVScreen(screen: ImportScreen) {
                 onboardingViewModel = onboardingViewModel
             )
         },
+        onImportWithPassword = viewModel::importWithPassword,
     )
 }
 
@@ -80,6 +81,7 @@ private fun BoxWithConstraintsScope.UI(
     onSkip: () -> Unit = {},
     onFinish: () -> Unit = {},
     onUndoImport: () -> Unit = {},
+    onImportWithPassword: (String) -> Unit = {},
 ) {
     when (importStep) {
         ImportStep.IMPORT_FROM -> {
@@ -111,6 +113,7 @@ private fun BoxWithConstraintsScope.UI(
                 result = importResult!!,
                 launchedFromOnboarding = screen.launchedFromOnboarding,
                 onUndoImport = onUndoImport,
+                onImportWithPassword = onImportWithPassword,
             ) {
                 onFinish()
             }

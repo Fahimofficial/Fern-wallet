@@ -6,6 +6,7 @@ import com.ivy.base.legacy.SharedPrefs
 import com.ivy.base.threading.DispatchersProvider
 import com.ivy.data.DataObserver
 import com.ivy.data.DataWriteEvent
+import com.ivy.data.backup.auto.BackupWriter
 import com.ivy.data.db.DbTransactionRunner
 import com.ivy.data.db.dao.read.AccountDao
 import com.ivy.data.db.dao.read.BudgetDao
@@ -81,17 +82,27 @@ class BackupDataUseCase @Inject constructor(
     private val creditCardWriter: WriteCreditCardDao,
     private val transactionRunner: DbTransactionRunner,
     private val preRestoreSnapshots: PreRestoreSnapshots,
-) {
+) : BackupWriter {
+    /** Writes a backup to [zipFileUri], protected with [password] when it isn't null or empty. */
     suspend fun exportToFile(
-        zipFileUri: Uri
+        zipFileUri: Uri,
+        password: CharArray? = null,
     ) {
-        val jsonString = generateJsonBackup()
         withContext(dispatchersProvider.io) {
+            val key = password?.takeIf { it.isNotEmpty() }?.let { BackupCrypto.newKey(it) }
             val descriptor = context.contentResolver.openFileDescriptor(zipFileUri, MODE_WRITE)
                 ?: error("Couldn't open the backup file for writing")
             descriptor.use {
-                FileOutputStream(it.fileDescriptor).use { out -> BackupArchive.writeZip(out, jsonString) }
+                FileOutputStream(it.fileDescriptor).use { out -> writeBackup(out, key) }
             }
+        }
+    }
+
+    /** Writes a full backup to [output], encrypted with [key] when given. Doesn't close [output]. */
+    override suspend fun writeBackup(output: java.io.OutputStream, key: BackupCrypto.Key?) {
+        val jsonString = generateJsonBackup()
+        withContext(dispatchersProvider.io) {
+            BackupArchive.writeBackup(output, jsonString, key)
         }
     }
 
@@ -140,13 +151,16 @@ class BackupDataUseCase @Inject constructor(
 
     suspend fun importBackupFile(
         backupFileUri: Uri,
+        password: CharArray? = null,
         onProgress: suspend (progressPercent: Double) -> Unit
     ): ImportResult = withContext(dispatchersProvider.io) {
         try {
             val jsonString = try {
                 val descriptor = context.contentResolver.openFileDescriptor(backupFileUri, MODE_READ)
                     ?: throw BackupImportException(ImportFailure.NOT_A_BACKUP)
-                descriptor.use { BackupArchive.readJson(java.io.FileInputStream(it.fileDescriptor)) }
+                descriptor.use {
+                    BackupArchive.readJson(java.io.FileInputStream(it.fileDescriptor), password = password)
+                }
             } catch (e: BackupImportException) {
                 throw e
             } catch (e: CancellationException) {

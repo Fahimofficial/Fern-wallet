@@ -10,6 +10,7 @@ android {
 
 dependencies {
     implementation(projects.shared.base)
+    implementation(libs.androidx.work)
     api(projects.shared.data.model)
 
     api(libs.datastore)
