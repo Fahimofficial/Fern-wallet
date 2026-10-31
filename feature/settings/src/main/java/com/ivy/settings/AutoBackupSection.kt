@@ -84,47 +84,14 @@ internal fun AutoBackupSection(state: AutoBackupUi, actions: AutoBackupActions) 
         Spacer(Modifier.height(8.dp))
         SectionText(stringResource(R.string.auto_backup_description, AutoBackupsKept))
         Spacer(Modifier.height(16.dp))
-
-        SettingsDefaultButton(
-            icon = R.drawable.ic_vue_files_folder,
-            iconPadding = 6.dp,
-            text = stringResource(R.string.auto_backup_folder),
-            description = state.folderName ?: stringResource(R.string.auto_backup_folder_not_set),
-            onClick = actions.onPickFolder,
-        )
-        Spacer(Modifier.height(12.dp))
-        SettingsDefaultButton(
-            icon = R.drawable.ic_vue_main_calendar,
-            iconPadding = 6.dp,
-            text = stringResource(R.string.auto_backup_frequency),
-            description = stringResource(state.frequency.labelRes()),
-            onClick = { frequencyDialog = true },
-        )
-        Spacer(Modifier.height(12.dp))
-        SettingsDefaultButton(
-            icon = R.drawable.ic_vue_security_key,
-            iconPadding = 6.dp,
-            text = stringResource(R.string.auto_backup_password),
-            description = stringResource(
-                if (state.passwordProtected) R.string.auto_backup_password_on else R.string.auto_backup_password_off
-            ),
-            onClick = { passwordDialog = true },
-        )
-        Spacer(Modifier.height(12.dp))
-        SettingsDefaultButton(
-            icon = R.drawable.ic_vue_security_shield,
-            iconPadding = 8.dp,
-            text = stringResource(if (state.busy) R.string.auto_backup_running else R.string.auto_backup_now),
-            onClick = { if (!state.busy) actions.onBackUpNow() },
+        AutoBackupButtons(
+            state = state,
+            actions = actions,
+            onFrequencyClick = { frequencyDialog = true },
+            onPasswordClick = { passwordDialog = true },
         )
         Spacer(Modifier.height(8.dp))
-        val status = state.statusRes()
-        val statusText = if (status == R.string.auto_backup_last) {
-            stringResource(status, state.lastBackup.orEmpty())
-        } else {
-            stringResource(status)
-        }
-        SectionText(statusText)
+        AutoBackupStatus(state)
     }
 
     if (frequencyDialog) {
@@ -151,10 +118,64 @@ internal fun AutoBackupSection(state: AutoBackupUi, actions: AutoBackupActions) 
     }
 }
 
+@Composable
+private fun AutoBackupButtons(
+    state: AutoBackupUi,
+    actions: AutoBackupActions,
+    onFrequencyClick: () -> Unit,
+    onPasswordClick: () -> Unit,
+) {
+    Column(Modifier.fillMaxWidth()) {
+        SettingsDefaultButton(
+            icon = R.drawable.ic_vue_files_folder,
+            iconPadding = 6.dp,
+            text = stringResource(R.string.auto_backup_folder),
+            description = state.folderName ?: stringResource(R.string.auto_backup_folder_not_set),
+            onClick = actions.onPickFolder,
+        )
+        Spacer(Modifier.height(12.dp))
+        SettingsDefaultButton(
+            icon = R.drawable.ic_vue_main_calendar,
+            iconPadding = 6.dp,
+            text = stringResource(R.string.auto_backup_frequency),
+            description = stringResource(state.frequency.labelRes()),
+            onClick = onFrequencyClick,
+        )
+        Spacer(Modifier.height(12.dp))
+        SettingsDefaultButton(
+            icon = R.drawable.ic_vue_security_key,
+            iconPadding = 6.dp,
+            text = stringResource(R.string.auto_backup_password),
+            description = stringResource(
+                if (state.passwordProtected) R.string.auto_backup_password_on else R.string.auto_backup_password_off
+            ),
+            onClick = onPasswordClick,
+        )
+        Spacer(Modifier.height(12.dp))
+        SettingsDefaultButton(
+            icon = R.drawable.ic_vue_security_shield,
+            iconPadding = 8.dp,
+            text = stringResource(if (state.busy) R.string.auto_backup_running else R.string.auto_backup_now),
+            onClick = { if (!state.busy) actions.onBackUpNow() },
+        )
+    }
+}
+
+@Composable
+private fun AutoBackupStatus(state: AutoBackupUi) {
+    val status = state.statusLineRes()
+    val statusText = if (status == R.string.auto_backup_last) {
+        stringResource(status, state.lastBackup.orEmpty())
+    } else {
+        stringResource(status)
+    }
+    SectionText(statusText)
+}
+
 internal const val AutoBackupsKept = 10
 
-/** The status line's string resource; [AutoBackupUi.lastBackup] is its argument when it has one. */
-private fun AutoBackupUi.statusRes(): Int = when (lastFailure) {
+// R.string.auto_backup_last takes AutoBackupUi.lastBackup as its argument.
+private fun AutoBackupUi.statusLineRes(): Int = when (lastFailure) {
     AutoBackupFailure.FOLDER_UNAVAILABLE -> R.string.auto_backup_failed_folder
     AutoBackupFailure.KEY_UNAVAILABLE -> R.string.auto_backup_failed_key
     AutoBackupFailure.WRITE_FAILED -> R.string.auto_backup_failed_write

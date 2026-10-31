@@ -74,12 +74,12 @@ class ImportViewModel @Inject constructor(
         }
     }
 
-    /** The backup file shown on the result screen, kept to retry it with a password. */
-    private var lastBackupUri: Uri? = null
+    // The backup file shown on the result screen, kept to retry it with a password.
+    private var backupUriForPasswordRetry: Uri? = null
 
     /** Retries the last backup file with the password the user entered. */
     fun importWithPassword(password: String) {
-        val uri = lastBackupUri ?: return
+        val uri = backupUriForPasswordRetry ?: return
         viewModelScope.launch {
             _importStep.value = ImportStep.LOADING
             _importResult.value = importBackup(uri, password.toCharArray())
@@ -88,7 +88,7 @@ class ImportViewModel @Inject constructor(
     }
 
     private suspend fun importBackup(uri: Uri, password: CharArray?): ImportResult {
-        lastBackupUri = uri
+        backupUriForPasswordRetry = uri
         return backupDataUseCase.importBackupFile(backupFileUri = uri, password = password) { progressPercent ->
             com.ivy.legacy.utils.uiThread {
                 _importProgressPercent.value = (progressPercent * 100).roundToInt()
