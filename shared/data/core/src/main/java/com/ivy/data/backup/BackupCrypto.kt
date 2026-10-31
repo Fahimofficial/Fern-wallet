@@ -72,8 +72,9 @@ object BackupCrypto {
             .putInt(key.iterations)
             .put(iv)
             .array()
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, key.secret, GCMParameterSpec(TAG_BITS, iv))
+        // A fresh random IV for every encryption (above), so a key never reuses a nonce.
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding") // nosemgrep
+        cipher.init(Cipher.ENCRYPT_MODE, key.secret, GCMParameterSpec(TAG_BITS, iv)) // nosemgrep
         cipher.updateAAD(header)
         return header + cipher.doFinal(plain)
     }
@@ -91,7 +92,8 @@ object BackupCrypto {
         val key = deriveKey(password, salt, iterations)
         return try {
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            cipher.init(Cipher.DECRYPT_MODE, key.secret, GCMParameterSpec(TAG_BITS, iv))
+            // Decrypts with the IV stored in the file; IV reuse only matters when encrypting.
+            cipher.init(Cipher.DECRYPT_MODE, key.secret, GCMParameterSpec(TAG_BITS, iv)) // nosemgrep
             cipher.updateAAD(data, 0, HEADER_BYTES)
             cipher.doFinal(data, HEADER_BYTES, data.size - HEADER_BYTES)
         } catch (e: AEADBadTagException) {

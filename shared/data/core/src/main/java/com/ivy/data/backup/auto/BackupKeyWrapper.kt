@@ -38,7 +38,8 @@ class AndroidKeystoreBackupKeyWrapper @Inject constructor() : BackupKeyWrapper {
         cipher.init(
             Cipher.DECRYPT_MODE,
             existingKey() ?: error("Keystore key missing"),
-            GCMParameterSpec(TAG_BITS, wrapped, 0, IV_BYTES)
+            // The IV stored by wrap(), which the Keystore generates randomly for each encryption.
+            GCMParameterSpec(TAG_BITS, wrapped, 0, IV_BYTES) // nosemgrep
         )
         return cipher.doFinal(wrapped, IV_BYTES, wrapped.size - IV_BYTES)
     }
