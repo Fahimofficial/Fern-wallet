@@ -98,7 +98,7 @@ class BackupDataUseCaseAndroidTest {
     }
 
     @Test
-    fun aFailureWhileSavingRollsBackEveryWrite() = runBlocking {
+    fun aFailureWhileSavingRollsBackEveryWrite() = runBlocking<Unit> {
         // given: loans are written after transactions, accounts and categories
         val failingLoans = object : WriteLoanDao by db.writeLoanDao {
             override suspend fun saveMany(value: List<LoanEntity>) {
@@ -120,7 +120,7 @@ class BackupDataUseCaseAndroidTest {
     }
 
     @Test
-    fun undoRestoresTheWalletAsItWasBeforeTheImport() = runBlocking {
+    fun undoRestoresTheWalletAsItWasBeforeTheImport() = runBlocking<Unit> {
         // given: a wallet with data
         useCase.importBackupFile(copyTestResourceToInternalStorage("backups/450-150.zip"), onProgress = {})
             .shouldBeSuccessful()
