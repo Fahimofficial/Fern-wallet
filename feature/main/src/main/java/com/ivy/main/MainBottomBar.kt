@@ -1,7 +1,6 @@
 package com.ivy.main
 
 import androidx.annotation.DrawableRes
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,9 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -49,7 +45,6 @@ import com.ivy.legacy.IvyWalletPreview
 import com.ivy.legacy.data.model.MainTab
 import com.ivy.legacy.ivyWalletCtx
 import com.ivy.legacy.utils.clickableNoIndication
-import com.ivy.legacy.utils.densityScope
 import com.ivy.legacy.utils.lerp
 import com.ivy.legacy.utils.navigationBarInset
 import com.ivy.legacy.utils.rememberInteractionSource
@@ -72,6 +67,33 @@ import com.ivy.wallet.ui.theme.pureBlur
 import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalView
+import com.ivy.design.system.motion.IvyHaptics
+import com.ivy.design.system.motion.IvyMotion
+import com.ivy.design.system.motion.pressScale
+import kotlinx.coroutines.launch
+
+private const val MenuVisibleThreshold = 0.01f
+
+/**
+ * Apple's rubber-band curve: the further past the rest position, the less the element follows,
+ * so a pull reads as "responsive, but tethered" instead of stopping hard.
+ */
+private fun rubberBand(distance: Float, range: Float, constant: Float = 0.55f): Float =
+    distance * range * constant / (range + constant * abs(distance))
 
 val TRN_BUTTON_CLICK_AREA_HEIGHT = 150.dp
 val FAB_BUTTON_SIZE = 56.dp
@@ -105,28 +127,27 @@ fun BoxWithConstraintsScope.BottomBar(
         expanded = false
     }
 
-    val screenHeightDp = densityScope { ivyContext.screenHeight.toDp() }
-    val expandedBackgroundOffset by animateDpAsState(
-        targetValue = if (expanded) 0.dp else screenHeightDp,
-        animationSpec = springBounceFast()
-    )
-
-    val fabRotation by animateFloatAsState(
+    // Animated values are kept as State and read only inside layout/draw lambdas, so the menu
+    // opening moves and fades things without recomposing the bar on every frame.
+    val fabRotation = animateFloatAsState(
         targetValue = if (expanded) 45f else 0f,
-        animationSpec = springBounceFast()
+        animationSpec = springBounceFast(),
+        label = "fab_rotation",
     )
 
-    val buttonsShownPercent by animateFloatAsState(
+    val buttonsShown = animateFloatAsState(
         targetValue = if (expanded) 1f else 0f,
-        animationSpec = springBounceFast()
+        animationSpec = springBounceFast(),
+        label = "fab_menu",
     )
+    val menuOnScreen by remember { derivedStateOf { buttonsShown.value > MenuVisibleThreshold } }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .align(Alignment.BottomCenter)
             .background(pureBlur())
-            .alpha(1f - buttonsShownPercent)
+            .graphicsLayer { alpha = (1f - buttonsShown.value).coerceIn(0f, 1f) }
             .navigationBarsPadding()
             .clickableNoIndication(rememberInteractionSource()) {
                 // consume click
@@ -154,14 +175,17 @@ fun BoxWithConstraintsScope.BottomBar(
         }
     }
 
-    if (expandedBackgroundOffset < screenHeightDp) {
+    if (menuOnScreen) {
+        // The backdrop fades in place (it used to sweep the whole screen up) while the actions
+        // fly out of the FAB, so the motion stays anchored to the button that opened it.
         Spacer(
             modifier = Modifier
                 .fillMaxSize()
-                .offset(y = expandedBackgroundOffset)
+                .graphicsLayer { alpha = buttonsShown.value.coerceIn(0f, 1f) }
                 .background(UI.colors.pure.copy(alpha = 0.95f))
                 .clickableNoIndication(rememberInteractionSource()) {
-                    // consume click, do nothing
+                    // Tapping outside the actions closes the menu, like every other overlay.
+                    expanded = false
                 }
                 .zIndex(100f)
         )
@@ -173,7 +197,8 @@ fun BoxWithConstraintsScope.BottomBar(
             30.dp.toDensityPx() - FAB_BUTTON_SIZE.toDensityPx()
 
     TransactionButtons(
-        buttonsShownPercent = buttonsShownPercent,
+        visible = menuOnScreen,
+        buttonsShownPercent = { buttonsShown.value },
 
         fabStartX = fabStartX,
         fabStartY = fabStartY,
@@ -187,6 +212,13 @@ fun BoxWithConstraintsScope.BottomBar(
     var dragOffset by remember {
         mutableStateOf(Offset.Zero)
     }
+    // Where the FAB is drawn while the user swipes it: it follows the finger with resistance,
+    // so the swipe shortcuts (up: expense, up-left: income, up-right: transfer) feel physical.
+    val fabPull = remember { Animatable(Offset.Zero, Offset.VectorConverter) }
+    var swipeCommitted by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val view = LocalView.current
+    val fabPullRangePx = FAB_BUTTON_SIZE.toDensityPx()
     // + & x button
     IvyCircleButton(
         modifier = Modifier
@@ -200,19 +232,30 @@ fun BoxWithConstraintsScope.BottomBar(
                 }
             }
             .size(FAB_BUTTON_SIZE)
-            .rotate(fabRotation)
+            .graphicsLayer {
+                rotationZ = fabRotation.value
+                translationX = fabPull.value.x
+                translationY = fabPull.value.y
+            }
             .zIndex(200f)
             .thenIf(tab == MainTab.HOME) {
                 pointerInput(Unit) {
+                    fun settle() {
+                        dragOffset = Offset.Zero
+                        swipeCommitted = false
+                        scope.launch { fabPull.animateTo(Offset.Zero, IvyMotion.Springs.release()) }
+                    }
                     detectDragGestures(
-                        onDragCancel = {
-                            dragOffset = Offset.Zero
-                        },
-                        onDragEnd = {
-                            dragOffset = Offset.Zero
-                        },
+                        onDragCancel = { settle() },
+                        onDragEnd = { settle() },
                         onDrag = { _, dragAmount ->
+                            if (swipeCommitted) return@detectDragGestures
                             dragOffset += dragAmount
+                            val pull = Offset(
+                                x = rubberBand(dragOffset.x, fabPullRangePx),
+                                y = rubberBand(dragOffset.y, fabPullRangePx),
+                            )
+                            scope.launch { fabPull.snapTo(pull) }
 
                             val horizontalThreshold = 40
                             val verticalThreshold = 60
@@ -221,21 +264,27 @@ fun BoxWithConstraintsScope.BottomBar(
                                 abs(dragOffset.x) < horizontalThreshold &&
                                         dragOffset.y < -verticalThreshold -> {
                                     // swipe up
-                                    dragOffset = Offset.Zero // prevent double open of the screen
+                                    // One action per swipe: ignore the rest of this drag.
+                                    swipeCommitted = true
+                                    IvyHaptics.gestureCommit(view)
                                     onAddExpense()
                                 }
 
                                 dragOffset.x < -horizontalThreshold &&
                                         dragOffset.y < -verticalThreshold -> {
                                     // swipe up left
-                                    dragOffset = Offset.Zero // prevent double open of the screen
+                                    // One action per swipe: ignore the rest of this drag.
+                                    swipeCommitted = true
+                                    IvyHaptics.gestureCommit(view)
                                     onAddIncome()
                                 }
 
                                 dragOffset.x > horizontalThreshold &&
                                         dragOffset.y < -verticalThreshold -> {
                                     // swipe up right
-                                    dragOffset = Offset.Zero // prevent double open of the screen
+                                    // One action per swipe: ignore the rest of this drag.
+                                    swipeCommitted = true
+                                    IvyHaptics.gestureCommit(view)
                                     onAddTransfer()
                                 }
                             }
@@ -276,7 +325,8 @@ fun BoxWithConstraintsScope.BottomBar(
 
 @Composable
 private fun TransactionButtons(
-    buttonsShownPercent: Float,
+    visible: Boolean,
+    buttonsShownPercent: () -> Float,
 
     fabStartX: Float,
     fabStartY: Float,
@@ -292,7 +342,7 @@ private fun TransactionButtons(
     val bV = 20.dp // 24.dp
     val bCenterV = 74.dp // 80.dp
 
-    if (buttonsShownPercent > 0.01f) {
+    if (visible) {
         val buttonLeftX = bH.toDensityPx()
         val buttonRightX = ivyContext.screenWidth - bH.toDensityPx() - FAB_BUTTON_SIZE.toDensityPx()
 
@@ -313,7 +363,7 @@ private fun TransactionButtons(
                     }
                 }
                 .padding(horizontal = 8.dp)
-                .alpha(buttonsShownPercent)
+                .graphicsLayer { alpha = buttonsShownPercent().coerceIn(0f, 1f) }
                 .zIndex(200f),
             iconStart = R.drawable.ic_planned_payments,
             text = stringResource(R.string.add_planned_payment),
@@ -361,7 +411,7 @@ private fun TransactionButtons(
 
 @Composable
 private fun AddIncomeButton(
-    buttonsShownPercent: Float,
+    buttonsShownPercent: () -> Float,
     fabStartX: Float,
     fabStartY: Float,
     buttonLeftX: Float,
@@ -374,11 +424,11 @@ private fun AddIncomeButton(
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
 
-                val x = lerp(fabStartX, buttonLeftX, buttonsShownPercent)
+                val x = lerp(fabStartX, buttonLeftX, buttonsShownPercent())
                 val y = lerp(
                     fabStartY,
                     sideButtonsY - FAB_BUTTON_SIZE.roundToPx(),
-                    buttonsShownPercent
+                    buttonsShownPercent()
                 )
 
                 layout(placeable.width, placeable.height) {
@@ -408,7 +458,7 @@ private fun AddIncomeButton(
                     )
                 }
             }
-            .alpha(buttonsShownPercent)
+            .graphicsLayer { alpha = buttonsShownPercent().coerceIn(0f, 1f) }
             .clickableNoIndication(rememberInteractionSource()) {
                 onAddIncome()
             }
@@ -447,7 +497,7 @@ private fun AddIncomeButton(
 
 @Composable
 private fun AddExpenseButton(
-    buttonsShownPercent: Float,
+    buttonsShownPercent: () -> Float,
     fabStartX: Float,
     fabStartY: Float,
     buttonCenterY: Float,
@@ -463,7 +513,7 @@ private fun AddExpenseButton(
                     lerp(
                         fabStartY,
                         buttonCenterY - FAB_BUTTON_SIZE.roundToPx(),
-                        buttonsShownPercent
+                        buttonsShownPercent()
                     )
 
                 layout(placeable.width, placeable.height) {
@@ -494,7 +544,7 @@ private fun AddExpenseButton(
                     )
                 }
             }
-            .alpha(buttonsShownPercent)
+            .graphicsLayer { alpha = buttonsShownPercent().coerceIn(0f, 1f) }
             .clickableNoIndication(rememberInteractionSource()) {
                 onAddExpense()
             }
@@ -533,7 +583,7 @@ private fun AddExpenseButton(
 
 @Composable
 private fun AddTransferButton(
-    buttonsShownPercent: Float,
+    buttonsShownPercent: () -> Float,
     fabStartX: Float,
     fabStartY: Float,
     buttonRightX: Float,
@@ -546,11 +596,11 @@ private fun AddTransferButton(
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
 
-                val x = lerp(fabStartX, buttonRightX, buttonsShownPercent)
+                val x = lerp(fabStartX, buttonRightX, buttonsShownPercent())
                 val y = lerp(
                     fabStartY,
                     sideButtonsY - FAB_BUTTON_SIZE.roundToPx(),
-                    buttonsShownPercent
+                    buttonsShownPercent()
                 )
 
                 layout(placeable.width, placeable.height) {
@@ -580,7 +630,7 @@ private fun AddTransferButton(
                     )
                 }
             }
-            .alpha(buttonsShownPercent)
+            .graphicsLayer { alpha = buttonsShownPercent().coerceIn(0f, 1f) }
             .clickableNoIndication(rememberInteractionSource()) {
                 onAddTransfer()
             }
@@ -625,12 +675,25 @@ private fun RowScope.Tab(
     selectedColor: Color,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val tint by animateColorAsState(
+        targetValue = if (selected) selectedColor else UI.colors.pureInverse,
+        animationSpec = IvyMotion.standard(IvyMotion.Duration.Short),
+        label = "tab_tint",
+    )
     Row(
         modifier = Modifier
             .weight(1f)
+            .pressScale(interactionSource)
             .clip(UI.shapes.rFull)
             // Announced as "<name>, Tab, Selected/Not selected"; descendants are merged.
-            .selectable(selected = selected, role = Role.Tab, onClick = onClick)
+            .selectable(
+                selected = selected,
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                role = Role.Tab,
+                onClick = onClick,
+            )
             .padding(top = 12.dp, bottom = 16.dp)
             .testTag(name.lowercase()),
         horizontalArrangement = Arrangement.Center,
@@ -638,21 +701,31 @@ private fun RowScope.Tab(
     ) {
         IvyIcon(
             icon = icon,
-            tint = if (selected) selectedColor else UI.colors.pureInverse,
+            tint = tint,
             // The label text is only visible when selected; otherwise the icon carries the name.
             contentDescription = if (selected) null else name
         )
 
-        if (selected) {
-            Spacer(modifier = Modifier.width(4.dp))
+        // The label grows out of the icon instead of popping in and shifting the icon sideways.
+        AnimatedVisibility(
+            visible = selected,
+            enter = fadeIn(IvyMotion.standard(IvyMotion.Duration.Medium)) +
+                expandHorizontally(IvyMotion.standard(IvyMotion.Duration.Medium)),
+            exit = fadeOut(IvyMotion.standard(IvyMotion.Duration.Short)) +
+                shrinkHorizontally(IvyMotion.standard(IvyMotion.Duration.Medium)),
+            label = "tab_label",
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.width(4.dp))
 
-            Text(
-                text = name,
-                style = UI.typo.c.style(
-                    fontWeight = FontWeight.Bold,
-                    color = selectedColor
+                Text(
+                    text = name,
+                    style = UI.typo.c.style(
+                        fontWeight = FontWeight.Bold,
+                        color = selectedColor
+                    )
                 )
-            )
+            }
         }
     }
 }

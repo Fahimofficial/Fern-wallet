@@ -21,6 +21,7 @@ import com.ivy.base.legacy.TransactionHistoryItem
 import com.ivy.base.legacy.stringRes
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
+import com.ivy.design.system.motion.IvyMotion
 import com.ivy.legacy.data.AppBaseData
 import com.ivy.legacy.data.LegacyDueSection
 import com.ivy.navigation.EditTransactionScreen
@@ -122,6 +123,7 @@ private fun LazyListScope.upcomingSection(
         item(
             key = "upcoming_section"
         ) {
+            AnimatedItem(Modifier.animateSectionItem(this)) {
             SectionDivider(
                 expanded = upcoming.expanded,
                 setExpanded = setExpanded,
@@ -131,6 +133,7 @@ private fun LazyListScope.upcomingSection(
                 income = upcoming.stats.income.toDouble(),
                 expenses = upcoming.stats.expense.abs().toDouble()
             )
+            }
         }
 
         if (upcoming.expanded) {
@@ -162,6 +165,7 @@ private fun LazyListScope.overdueSection(
         item(
             key = "overdue_section"
         ) {
+            AnimatedItem(Modifier.animateSectionItem(this)) {
             SectionDivider(
                 expanded = overdue.expanded,
                 setExpanded = setExpanded,
@@ -171,13 +175,16 @@ private fun LazyListScope.overdueSection(
                 income = overdue.stats.income.toDouble(),
                 expenses = overdue.stats.expense.abs().toDouble()
             )
+            }
         }
 
         if (overdue.expanded) {
-            item {
+            item(key = "overdue_skip_all") {
                 val isLightTheme = UI.colors.pure == White
                 IvyButton(
-                    modifier = Modifier.padding(horizontal = 24.dp),
+                    modifier = Modifier
+                        .animateSectionItem(this)
+                        .padding(horizontal = 24.dp),
                     text = stringRes(R.string.skip_all),
                     wrapContentMode = false,
                     backgroundGradient = if (isLightTheme) {
@@ -224,6 +231,7 @@ private fun LazyListScope.trnItems(
     ) {
         val nav = navigation()
         TransactionCard(
+            modifier = Modifier.animateSectionItem(this),
             baseData = baseData,
 
             transaction = it,
@@ -271,6 +279,7 @@ private fun LazyListScope.historySection(
                     val nav = navigation()
 
                     TransactionCard(
+                        modifier = Modifier.animateHistoryItem(this),
                         baseData = baseData,
 
                         transaction = it,
@@ -285,6 +294,7 @@ private fun LazyListScope.historySection(
                 }
 
                 is TransactionHistoryDateDivider -> {
+                    AnimatedItem(Modifier.animateHistoryItem(this)) {
                     HistoryDateDivider(
                         date = it.date,
                         spacerTop = dateDividerMarginTop
@@ -293,6 +303,7 @@ private fun LazyListScope.historySection(
                         income = it.income,
                         expenses = it.expenses
                     )
+                    }
                 }
             }
         }
@@ -377,6 +388,37 @@ private fun LazyListScope.scrollHackSpacer(
             }
         }
     }
+}
+
+/** Groups an item's sibling nodes so the lazy list can animate them as one. */
+@Composable
+private fun AnimatedItem(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Column(modifier) { content() }
+}
+
+/**
+ * Upcoming/overdue rows appear and disappear as their section expands or collapses: they fade,
+ * and the rows below glide to their new place instead of jumping.
+ */
+private fun Modifier.animateSectionItem(scope: LazyItemScope): Modifier = with(scope) {
+    animateItem(
+        fadeInSpec = IvyMotion.standard(IvyMotion.Duration.Medium),
+        placementSpec = IvyMotion.Springs.surface(),
+        fadeOutSpec = IvyMotion.standard(IvyMotion.Duration.Short),
+    )
+}
+
+/**
+ * History rows: a new transaction fades in and the others make room smoothly; a deleted one
+ * leaves at once (no ghost overlapping the rows that slide up). Rows already on screen when the
+ * list first appears, or scrolled into view, don't animate.
+ */
+private fun Modifier.animateHistoryItem(scope: LazyItemScope): Modifier = with(scope) {
+    animateItem(
+        fadeInSpec = IvyMotion.standard(IvyMotion.Duration.Medium),
+        placementSpec = IvyMotion.Springs.surface(),
+        fadeOutSpec = null,
+    )
 }
 
 private const val ContentTypeTransaction = "transaction"
