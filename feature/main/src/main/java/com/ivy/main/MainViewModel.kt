@@ -18,8 +18,6 @@ import com.ivy.wallet.domain.deprecated.logic.model.CreateAccountData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import com.ivy.wallet.domain.deprecated.logic.PlannedPaymentsGenerator
-import kotlinx.coroutines.CancellationException
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -57,14 +55,9 @@ class MainViewModel @Inject constructor(
                 sharedPrefs.getBoolean(SharedPrefs.DATA_BACKUP_COMPLETED, false)
 
             ioThread {
-                // Keep recurring planned payments generated ahead of today.
-                try {
-                    plannedPaymentsGenerator.extendAll()
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    Timber.e(e, "Couldn't extend planned payments")
-                }
+                // Keep recurring planned payments generated ahead of today. Expected failures
+                // (database, invalid dates) are handled per rule inside extendAll().
+                plannedPaymentsGenerator.extendAll()
             }
 
             ioThread {

@@ -1,5 +1,6 @@
 package com.ivy.wallet.domain.deprecated.logic
 
+import android.database.SQLException
 import com.ivy.base.legacy.Transaction
 import com.ivy.base.time.TimeProvider
 import com.ivy.data.db.dao.read.PlannedPaymentRuleDao
@@ -11,6 +12,8 @@ import com.ivy.legacy.datamodel.temp.toDomain
 import com.ivy.legacy.datamodel.temp.toLegacyDomain
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import timber.log.Timber
+import java.time.DateTimeException
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -52,24 +55,46 @@ class PlannedPaymentsGenerator @Inject constructor(
         }
     }
 
-    /** Adds upcoming instances to every recurring rule whose window has moved on. Never deletes. */
+    /**
+     * Adds upcoming instances to every recurring rule whose window has moved on. Never deletes.
+     * A rule that can't be extended (invalid dates, database error) is logged and skipped, so it
+     * doesn't stop the others. Other exceptions are bugs and propagate.
+     */
     suspend fun extendAll() {
-        plannedPaymentRuleDao.findAllByOneTime(oneTime = false)
-            .map { it.toLegacyDomain() }
-            .forEach { extend(it) }
+        val rules = try {
+            plannedPaymentRuleDao.findAllByOneTime(oneTime = false)
+        } catch (e: SQLException) {
+            Timber.e(e, "Couldn't load planned payment rules")
+            return
+        }
+        for (rule in rules.map { it.toLegacyDomain() }) {
+            try {
+                extend(rule)
+            } catch (e: SQLException) {
+                logExtendFailure(rule, e)
+            } catch (e: DateTimeException) {
+                logExtendFailure(rule, e)
+            } catch (e: ArithmeticException) {
+                // Date arithmetic overflow for an absurd start date or interval.
+                logExtendFailure(rule, e)
+            }
+        }
+    }
+
+    private fun logExtendFailure(rule: PlannedPaymentRule, e: Exception) {
+        Timber.e(e, "Couldn't extend planned payment rule ${rule.id}")
     }
 
     private suspend fun extend(rule: PlannedPaymentRule): Unit = mutex.withLock {
         val schedule = rule.schedule() ?: return@withLock
         val existing = transactionRepository.findAllByRecurringRuleId(recurringRuleId = rule.id)
         val upcoming = existing.filter { !it.settled }.map { it.time }
-        val dueDates = if (upcoming.isEmpty()) {
-            // Everything was paid or skipped: continue after the paid ones, as regenerating would.
-            PlannedOccurrences.regenerate(schedule, paidCount = existing.size, now = timeProvider.utcNow())
-        } else {
-            PlannedOccurrences.extend(schedule, upcomingDueDates = upcoming, now = timeProvider.utcNow())
-        }
-        dueDates.forEach { generateTransaction(rule, it) }
+        PlannedOccurrences.extend(
+            schedule = schedule,
+            upcomingDueDates = upcoming,
+            paidCount = existing.size - upcoming.size,
+            now = timeProvider.utcNow(),
+        ).forEach { generateTransaction(rule, it) }
     }
 
     private fun PlannedPaymentRule.schedule(): PlannedOccurrences.Schedule? {
