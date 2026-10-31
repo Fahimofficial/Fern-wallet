@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream
 /** Files that must be refused without loading them fully. */
 class BackupArchiveRejectionTest {
     private val json = BackupTestJson
+    private val validJsonEntry = BackupArchive.JSON_ENTRY_NAME to json.toByteArray(Charsets.UTF_16)
 
     private fun failureOf(bytes: ByteArray, max: Long = BackupArchive.MAX_JSON_BYTES): ImportFailure =
         shouldThrow<BackupImportException> { readBackup(bytes, max) }.failure
@@ -37,13 +38,13 @@ class BackupArchiveRejectionTest {
     fun `entries larger than the limit are refused (zip bomb)`() {
         // 1 MB of zeros compresses to ~1 KB.
         val huge = ByteArray(1024 * 1024)
-        failureOf(zipOf("data.json" to huge), max = 64 * 1024) shouldBe ImportFailure.TOO_LARGE
+        failureOf(zipOf(BackupArchive.JSON_ENTRY_NAME to huge), max = 64 * 1024) shouldBe ImportFailure.TOO_LARGE
     }
 
     @Test
     fun `large non-JSON entries are refused instead of being decompressed in full`() {
         val huge = ByteArray(1024 * 1024)
-        val zip = zipOf("padding.bin" to huge, "data.json" to json.toByteArray(Charsets.UTF_16))
+        val zip = zipOf("padding.bin" to huge, validJsonEntry)
 
         failureOf(zip, max = 64 * 1024) shouldBe ImportFailure.TOO_LARGE
     }
@@ -52,7 +53,7 @@ class BackupArchiveRejectionTest {
     fun `the limit applies to all entries together`() {
         // Each entry fits the limit on its own; together they don't.
         val part = ByteArray(40 * 1024)
-        val zip = zipOf("a.bin" to part, "b.bin" to part, "data.json" to json.toByteArray(Charsets.UTF_16))
+        val zip = zipOf("a.bin" to part, "b.bin" to part, validJsonEntry)
 
         failureOf(zip, max = 64 * 1024) shouldBe ImportFailure.TOO_LARGE
     }
