@@ -19,6 +19,7 @@ import com.ivy.navigation.EditTransactionScreen
 import com.ivy.navigation.MainScreen
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.OnboardingScreen
+import com.ivy.navigation.Screen
 import com.ivy.ui.R
 import com.ivy.wallet.domain.deprecated.logic.notification.CreditCardReminderScheduler
 import com.ivy.wallet.domain.deprecated.logic.notification.TransactionReminderLogic
@@ -58,7 +59,76 @@ class RootViewModel @Inject constructor(
     private val _appLocked = MutableStateFlow<Boolean?>(null)
     val appLocked = _appLocked.readOnly()
 
-    fun start(systemDarkMode: Boolean, intent: Intent) {
+    private var started = false
+    private var initialNavigation: Job? = null
+
+    /**
+     * Called whenever the activity's content is (re)composed, including when the system dark mode
+     * changes. Only the theme is applied every time; navigation, the lock state and migrations are
+     * set up once per activity:
+     * - [isRecreation] with the navigation still in memory (configuration change): nothing to do.
+     * - [isRecreation] after process death: [savedScreens] brings back the previous back stack.
+     * - otherwise (a fresh launch, also from a widget or shortcut): start from Home or the
+     *   screen the intent asks for.
+     */
+    fun start(
+        systemDarkMode: Boolean,
+        intent: Intent,
+        isRecreation: Boolean = false,
+        savedScreens: List<Screen>? = null,
+    ) {
+        applyTheme(systemDarkMode)
+        if (started) return
+        started = true
+
+        initialNavigation = viewModelScope.launch {
+            TestIdlingResource.increment()
+
+            ioThread {
+                appLockEnabled = sharedPrefs.getBoolean(SharedPrefs.APP_LOCK_ENABLED, false)
+                // Initial locked state; never unlock an already locked app here.
+                if (_appLocked.value == null) _appLocked.value = appLockEnabled
+
+                when {
+                    isRecreation && nav.currentScreen != null -> Unit
+                    isRecreation && savedScreens != null -> nav.restore(savedScreens)
+                    else -> {
+                        nav.resetBackStack()
+                        if (isOnboardingCompleted()) {
+                            navigateOnboardedUser(intent)
+                        } else {
+                            nav.navigateTo(OnboardingScreen)
+                        }
+                    }
+                }
+                if (!legalRepo.isDisclaimerAccepted() && nav.currentScreen != DisclaimerScreen) {
+                    nav.navigateTo(DisclaimerScreen)
+                }
+            }
+
+            TestIdlingResource.decrement()
+        }
+
+        viewModelScope.launch {
+            migrationsManager.executeMigrations()
+        }
+    }
+
+    /**
+     * A new intent for the running activity, e.g. an "add expense" shortcut. Handled after the
+     * initial navigation, which resets the back stack and would otherwise drop the new screen.
+     */
+    fun handleNewIntent(intent: Intent) {
+        val pendingStart = initialNavigation
+        viewModelScope.launch {
+            pendingStart?.join()
+            ioThread {
+                if (isOnboardingCompleted()) handleSpecialStart(intent)
+            }
+        }
+    }
+
+    private fun applyTheme(systemDarkMode: Boolean) {
         viewModelScope.launch {
             TestIdlingResource.increment()
 
@@ -71,31 +141,6 @@ class RootViewModel @Inject constructor(
             }
 
             TestIdlingResource.decrement()
-        }
-
-        viewModelScope.launch {
-            TestIdlingResource.increment()
-
-            ioThread {
-                appLockEnabled = sharedPrefs.getBoolean(SharedPrefs.APP_LOCK_ENABLED, false)
-                // initial app locked state
-                _appLocked.value = appLockEnabled
-
-                if (isOnboardingCompleted()) {
-                    navigateOnboardedUser(intent)
-                } else {
-                    nav.navigateTo(OnboardingScreen)
-                }
-                if (!legalRepo.isDisclaimerAccepted()) {
-                    nav.navigateTo(DisclaimerScreen)
-                }
-            }
-
-            TestIdlingResource.decrement()
-        }
-
-        viewModelScope.launch {
-            migrationsManager.executeMigrations()
         }
     }
 

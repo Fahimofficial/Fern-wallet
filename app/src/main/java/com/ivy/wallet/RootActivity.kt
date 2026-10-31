@@ -53,6 +53,7 @@ import com.ivy.legacy.utils.activityForResultLauncher
 import com.ivy.legacy.utils.simpleActivityForResultLauncher
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.NavigationRoot
+import com.ivy.navigation.NavigationState
 import com.ivy.ui.R
 import com.ivy.ui.time.TimeFormatter
 import com.ivy.ui.time.impl.DateTimePicker
@@ -108,7 +109,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
             val isSystemInDarkTheme = isSystemInDarkTheme()
 
             LaunchedEffect(isSystemInDarkTheme) {
-                viewModel.start(isSystemInDarkTheme, intent)
+                startViewModel(viewModel, isSystemInDarkTheme, savedInstanceState)
             }
 
             val appLocked by viewModel.appLocked.collectAsState()
@@ -171,6 +172,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
     }
 
     private companion object {
+        const val KEY_NAVIGATION = "fern_navigation_back_stack"
         private const val MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000
     }
 
@@ -357,6 +359,26 @@ class RootActivity : AppCompatActivity(), RootScreen {
             .build()
 
         biometricPrompt.authenticate(promptInfo)
+    }
+
+    private fun startViewModel(viewModel: RootViewModel, systemDarkMode: Boolean, savedState: Bundle?) {
+        viewModel.start(
+            systemDarkMode = systemDarkMode,
+            intent = intent,
+            isRecreation = savedState != null,
+            savedScreens = NavigationState.decode(savedState?.getString(KEY_NAVIGATION)),
+        )
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(KEY_NAVIGATION, NavigationState.encode(navigation.snapshot()))
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        viewModel.handleNewIntent(intent)
     }
 
     private fun openSecuritySettings() {

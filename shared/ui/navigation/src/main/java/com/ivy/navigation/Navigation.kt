@@ -75,6 +75,17 @@ class Navigation @Inject constructor() {
     lastScreen = screen
   }
 
+  /** The back stack, oldest first, ending with the current screen. */
+  fun snapshot(): List<Screen> = backStack.toList() + listOfNotNull(currentScreen)
+
+  /** Replaces the whole back stack with [screens] (oldest first); the last one becomes current. */
+  fun restore(screens: List<Screen>) {
+    if (screens.isEmpty()) return
+    resetBackStack()
+    screens.dropLast(1).forEach { backStack.push(it) }
+    switchScreen(screens.last())
+  }
+
   fun resetBackStack() {
     while (!backStackEmpty()) {
       popBackStack()

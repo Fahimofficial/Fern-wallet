@@ -730,4 +730,7 @@
     <string name="app_lock_needs_screen_lock">To use App lock, first set a screen lock (PIN, pattern or password) in your phone\'s settings.</string>
     <string name="app_lock_no_screen_lock">App lock is on, but this phone has no screen lock anymore. Set a PIN, pattern or password in the phone\'s settings to unlock the app.</string>
     <string name="app_lock_open_settings">Open security settings</string>
+    <!-- Transaction input feedback -->
+    <string name="msg_enter_amount">Enter an amount first.</string>
+    <string name="msg_add_account_first">Add an account first (Accounts tab), then add transactions to it.</string>
 </resources>
