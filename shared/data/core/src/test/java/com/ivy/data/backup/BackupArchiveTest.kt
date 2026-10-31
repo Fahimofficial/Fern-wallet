@@ -7,6 +7,8 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.util.UUID
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -56,11 +58,17 @@ class BackupArchiveTest {
 
     @Test
     fun `entry names with path traversal are read in memory and never written to disk`() {
-        val before = tempFolder.root.parentFile!!.list()!!.toSet()
+        val name = "fern-zip-slip-${UUID.randomUUID()}.json"
+        val traversal = "../../$name"
+        val wouldBeWritten = listOf(
+            File(tempFolder.root, traversal).canonicalFile,
+            File(System.getProperty("user.dir"), traversal).canonicalFile,
+            File(System.getProperty("java.io.tmpdir"), name),
+        )
 
-        read(zipOf("../../shared_prefs/evil.json" to json.toByteArray(Charsets.UTF_16))) shouldBe json
+        read(zipOf(traversal to json.toByteArray(Charsets.UTF_16))) shouldBe json
 
-        tempFolder.root.parentFile!!.list()!!.toSet() shouldBe before
+        wouldBeWritten.forEach { it.exists() shouldBe false }
     }
 
     @Test
