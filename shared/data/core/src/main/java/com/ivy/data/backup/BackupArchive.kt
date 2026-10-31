@@ -22,8 +22,9 @@ object BackupArchive {
     const val JSON_ENTRY_NAME = "data.json"
 
     /**
-     * Upper bound for the uncompressed JSON. UTF-16 uses ~2 bytes per character; a wallet with
-     * 100k transactions is roughly 120 MB, so this leaves headroom while still bounding memory.
+     * Upper bound for the uncompressed JSON, and for the uncompressed size of all ZIP entries
+     * together. UTF-16 uses ~2 bytes per character; a wallet with 100k transactions is roughly
+     * 120 MB, so this leaves headroom while still bounding memory and decompression time.
      */
     const val MAX_JSON_BYTES: Long = 256L * 1024 * 1024
     private const val MAX_ENTRIES = 32
@@ -63,20 +64,29 @@ object BackupArchive {
         }
     }
 
-    private fun readSingleJsonEntry(input: InputStream, maxJsonBytes: Long): ByteArray = try {
+    // maxBytes bounds the uncompressed size of the whole archive, not of each entry: other
+    // entries are decompressed (and discarded) too, so they count against the same budget.
+    private fun readSingleJsonEntry(input: InputStream, maxBytes: Long): ByteArray = try {
         val zip = ZipInputStream(input)
-        val jsonEntries = mutableListOf<ByteArray>()
+        var json: ByteArray? = null
+        var remaining = maxBytes
         var entryCount = 0
         var entry = zip.nextEntry
         while (entry != null) {
             entryCount++
-            if (!entry.isDirectory && entry.name.endsWith(".json", ignoreCase = true)) {
-                jsonEntries += zip.readLimited(maxJsonBytes)
+            if (entryCount > MAX_ENTRIES) notABackup()
+            val isJson = !entry.isDirectory && entry.name.endsWith(".json", ignoreCase = true)
+            // A second JSON file is refused before it is decompressed.
+            if (isJson && json != null) notABackup()
+            if (isJson) {
+                json = zip.readLimited(remaining)
+                remaining -= json.size
+            } else {
+                remaining -= zip.discardLimited(remaining)
             }
-            if (entryCount > MAX_ENTRIES || jsonEntries.size > 1) notABackup()
             entry = zip.nextEntry
         }
-        jsonEntries.singleOrNull() ?: notABackup()
+        json ?: notABackup()
     } catch (e: IOException) {
         // Includes ZipException: a damaged or truncated archive.
         throw BackupImportException(ImportFailure.CORRUPTED, e)
@@ -122,6 +132,18 @@ object BackupArchive {
             out.write(buffer, 0, read)
         }
         return out.toByteArray()
+    }
+
+    private fun InputStream.discardLimited(maxBytes: Long): Long {
+        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        var total = 0L
+        while (true) {
+            val read = read(buffer)
+            if (read < 0) break
+            total += read
+            if (total > maxBytes) throw BackupImportException(ImportFailure.TOO_LARGE)
+        }
+        return total
     }
 
     private fun InputStream.readNBytesCompat(target: ByteArray): Int {
