@@ -34,20 +34,20 @@ class RepositoryMemo<T : Identifiable<TID>, TID : UniqueId> internal constructor
     private val _memo = mutableMapOf<TID, T>()
     val items: Map<TID, T>
         get() {
-            dropIfAllDataChanged()
+            clearIfBulkWriteHappened()
             return _memo
         }
     var findAllMemoized = false
         private set
         get() {
-            dropIfAllDataChanged()
+            clearIfBulkWriteHappened()
             return field
         }
 
     private var seenGeneration = dataObserver.allDataChangeGeneration
 
-    /** Bulk writes (backup import, data wipe) bypass the repositories; forget everything then. */
-    private fun dropIfAllDataChanged() {
+    // Bulk writes (backup import, data wipe) bypass the repositories; forget everything then.
+    private fun clearIfBulkWriteHappened() {
         val generation = dataObserver.allDataChangeGeneration
         if (generation != seenGeneration) {
             _memo.clear()
@@ -60,7 +60,7 @@ class RepositoryMemo<T : Identifiable<TID>, TID : UniqueId> internal constructor
         findAllOperation: suspend () -> List<T>,
         sortMemo: Collection<T>.() -> List<T>,
     ): List<T> {
-        dropIfAllDataChanged()
+        clearIfBulkWriteHappened()
         return if (findAllMemoized) {
             sortMemo(_memo.values)
         } else {
@@ -77,7 +77,7 @@ class RepositoryMemo<T : Identifiable<TID>, TID : UniqueId> internal constructor
         id: TID,
         findByIdOperation: suspend (TID) -> T?
     ): T? {
-        dropIfAllDataChanged()
+        clearIfBulkWriteHappened()
         return _memo[id] ?: withContext(dispatchers.io) {
             findByIdOperation(id)?.also(::memoize)
         }

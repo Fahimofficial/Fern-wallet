@@ -27,7 +27,9 @@ class PreRestoreSnapshotsTest {
 
     @Test
     fun `keeps only the most recent copies`() {
-        (1..5).forEach { snapshots.save("""{"n":$it}""", timestampMillis = it * 1_000L) }
+        for (n in 1..5) {
+            snapshots.save("""{"n":$n}""", timestampMillis = n * 1_000L)
+        }
 
         val files = tempFolder.root.resolve("pre-restore").listFiles()!!.map { it.name }.sorted()
         files.size shouldBe PreRestoreSnapshots.KEEP
