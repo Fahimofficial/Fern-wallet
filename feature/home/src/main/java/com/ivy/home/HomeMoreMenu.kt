@@ -225,7 +225,7 @@ fun BoxWithConstraintsScope.MoreMenu(
     }
 }
 
-/** Own restart scope: only this button recomposes as its background color animates. */
+// Own restart scope: only this button recomposes as its background color animates.
 @Composable
 private fun MoreMenuButton(
     progress: () -> Float,

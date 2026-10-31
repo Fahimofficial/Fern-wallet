@@ -36,7 +36,7 @@ class Navigation @Inject constructor() {
   val currentScreen: Screen?
     get() = currentEntry?.screen
 
-  /** Bumped whenever something that decides how back behaves changes (read by [handlesBack]). */
+  // Bumped whenever something that decides how back behaves changes (read by [handlesBack]).
   private var backStateVersion by mutableIntStateOf(0)
 
   @Deprecated("Legacy code. Don't use it, please.")

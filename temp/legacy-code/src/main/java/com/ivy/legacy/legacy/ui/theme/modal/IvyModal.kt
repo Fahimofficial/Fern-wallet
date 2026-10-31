@@ -83,7 +83,7 @@ import kotlin.math.roundToInt
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 const val DURATION_MODAL_ANIM = 200
 
-/** Pull the sheet (or flick it so it would travel) this far down and releasing dismisses it. */
+// Pull the sheet (or flick it so it would travel) this far down and releasing dismisses it.
 private val DismissDistance = 160.dp
 private val GrabberWidth = 32.dp
 private val GrabberHeight = 4.dp
@@ -153,7 +153,6 @@ fun BoxScope.IvyModal(
                 .zIndex(1000f)
         )
 
-        var actionsRowHeight by remember { mutableIntStateOf(0) }
         val grabberColor = UI.colors.gray
 
         Column(
@@ -200,7 +199,7 @@ fun BoxScope.IvyModal(
 
             // Bottom padding: room for the actions row (and the navigation bar under it)...
             if (includeActionsRowPadding) {
-                Spacer(Modifier.height(densityScope { actionsRowHeight.toDp() }))
+                Spacer(Modifier.height(densityScope { sheet.actionsRowHeightPx.toDp() }))
                 Spacer(Modifier.bottomInsetHeight(navBarsOutsideKeyboard))
             }
 
@@ -213,9 +212,6 @@ fun BoxScope.IvyModal(
         ModalActionsRow(
             sheet = sheet,
             bottomInsets = ime.union(WindowInsets.navigationBars),
-            onHeightChanged = {
-                actionsRowHeight = it
-            },
             onClose = {
                 hideKeyboard(rootView)
                 dismiss()
@@ -238,6 +234,9 @@ private class SheetMotion(initiallyVisible: Boolean, private val scope: Coroutin
     var dragPx by mutableFloatStateOf(0f)
         private set
     var sheetHeightPx by mutableIntStateOf(0)
+
+    // Height of the actions row without the keyboard/nav-bar inset: the sheet reserves it at its bottom.
+    var actionsRowHeightPx by mutableIntStateOf(0)
     var dismissDistancePx = 0f
     var isVisible: () -> Boolean = { initiallyVisible }
     var onDismiss: () -> Unit = {}
@@ -387,14 +386,12 @@ private fun removeLastBackHandlerSafe(nav: Navigation) {
     }
 }
 
-/** The close/primary actions row. It belongs to the sheet, so it moves with the sheet's offset. */
+// The close/primary actions row. It belongs to the sheet, so it moves with the sheet's offset.
 @Suppress("ParameterNaming")
 @Composable
 private fun ModalActionsRow(
     sheet: SheetMotion,
     bottomInsets: WindowInsets,
-
-    onHeightChanged: (Int) -> Unit,
 
     onClose: () -> Unit,
     SecondaryActions: (@Composable () -> Unit)? = null,
@@ -405,8 +402,7 @@ private fun ModalActionsRow(
     ActionsRow(
         modifier = Modifier
             .onSizeChanged {
-                // Height without the keyboard/nav-bar inset: the sheet adds those separately.
-                onHeightChanged(it.height - bottomInsets.getBottom(density))
+                sheet.actionsRowHeightPx = it.height - bottomInsets.getBottom(density)
             }
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)

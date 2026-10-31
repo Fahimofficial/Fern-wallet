@@ -390,16 +390,14 @@ private fun LazyListScope.scrollHackSpacer(
     }
 }
 
-/** Groups an item's sibling nodes so the lazy list can animate them as one. */
+// Groups an item's sibling nodes so the lazy list can animate them as one.
 @Composable
 private fun AnimatedItem(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Column(modifier) { content() }
 }
 
-/**
- * Upcoming/overdue rows appear and disappear as their section expands or collapses: they fade,
- * and the rows below glide to their new place instead of jumping.
- */
+// Upcoming/overdue rows appear and disappear as their section expands or collapses: they fade,
+// and the rows below glide to their new place instead of jumping.
 private fun Modifier.animateSectionItem(scope: LazyItemScope): Modifier = with(scope) {
     animateItem(
         fadeInSpec = IvyMotion.standard(IvyMotion.Duration.Medium),
@@ -408,11 +406,9 @@ private fun Modifier.animateSectionItem(scope: LazyItemScope): Modifier = with(s
     )
 }
 
-/**
- * History rows: a new transaction fades in and the others make room smoothly; a deleted one
- * leaves at once (no ghost overlapping the rows that slide up). Rows already on screen when the
- * list first appears, or scrolled into view, don't animate.
- */
+// History rows: a new transaction fades in and the others make room smoothly; a deleted one
+// leaves at once (no ghost overlapping the rows that slide up). Rows already on screen when the
+// list first appears, or scrolled into view, don't animate.
 private fun Modifier.animateHistoryItem(scope: LazyItemScope): Modifier = with(scope) {
     animateItem(
         fadeInSpec = IvyMotion.standard(IvyMotion.Duration.Medium),

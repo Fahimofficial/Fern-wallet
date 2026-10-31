@@ -70,7 +70,7 @@ import com.ivy.design.system.motion.IvyHaptics
 import com.ivy.design.system.motion.pressScale
 import androidx.compose.ui.semantics.Role
 
-/** Larger surfaces shrink less, so a pressed card reads as pressed, not as moving. */
+// Larger surfaces shrink less, so a pressed card reads as pressed, not as moving.
 private const val CardPressedScale = 0.98f
 
 @ExperimentalAnimationApi

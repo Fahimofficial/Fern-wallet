@@ -59,7 +59,7 @@ import kotlin.math.abs
 
 private const val VisibleMillis = 5_000L
 
-/** Clears the bottom bar and its FAB on the main screen. */
+// Clears the bottom bar and its FAB on the main screen.
 private val BottomClearance = 96.dp
 
 private val Raleway = FontFamily(
@@ -124,52 +124,18 @@ private fun UndoSnackbar(
     onSwipedAway: () -> Unit,
     onUndo: () -> Unit,
 ) {
-    val accessibility = LocalAccessibilityManager.current
-    val timeout = remember(accessibility) {
-        accessibility?.calculateRecommendedTimeoutMillis(
-            originalTimeoutMillis = VisibleMillis,
-            containsIcons = false,
-            containsText = true,
-            containsControls = true,
-        ) ?: VisibleMillis
-    }
+    val timeout = rememberAccessibleTimeout()
     LaunchedEffect(message.id) {
         delay(timeout)
         onTimeout()
     }
 
-    val scope = rememberCoroutineScope()
-    val offsetX = remember { Animatable(0f) }
-    val width = remember { floatArrayOf(0f) }
     val colors = MaterialTheme.colorScheme
-
     Row(
         modifier = Modifier
             .widthIn(max = 560.dp)
             .fillMaxWidth()
-            .onSizeChanged { width[0] = it.width.toFloat() }
-            .graphicsLayer {
-                translationX = offsetX.value
-                // Fades as it is pushed away, so the dismissal reads before it's complete.
-                val travelled = if (width[0] > 0f) abs(offsetX.value) / width[0] else 0f
-                alpha = (1f - travelled).coerceIn(0f, 1f)
-            }
-            .draggable(
-                orientation = Orientation.Horizontal,
-                state = rememberDraggableState { delta ->
-                    scope.launch { offsetX.snapTo(offsetX.value + delta) }
-                },
-                onDragStopped = { velocity ->
-                    val projected = offsetX.value + IvyMotion.projectedDistance(velocity)
-                    if (abs(projected) > width[0] / 2f && width[0] > 0f) {
-                        val direction = if (projected > 0f) 1f else -1f
-                        offsetX.animateTo(direction * width[0], IvyMotion.Springs.surface(), velocity)
-                        onSwipedAway()
-                    } else {
-                        offsetX.animateTo(0f, IvyMotion.Springs.surface(), velocity)
-                    }
-                },
-            )
+            .swipeToDismiss(onSwipedAway)
             .clip(RoundedCornerShape(16.dp))
             .background(colors.inverseSurface)
             .semantics { liveRegion = LiveRegionMode.Polite }
@@ -190,31 +156,84 @@ private fun UndoSnackbar(
 
         Spacer(Modifier.width(12.dp))
 
-        val interactionSource = remember { MutableInteractionSource() }
-        Box(
-            modifier = Modifier
-                .pressScale(interactionSource)
-                .clip(CircleShape)
-                .background(colors.primary)
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = LocalIndication.current,
-                    role = Role.Button,
-                    onClick = onUndo,
-                )
-                .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-                .padding(horizontal = 20.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = stringResource(message.actionLabel),
-                style = TextStyle(
-                    fontFamily = Raleway,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 16.sp,
-                    color = colors.onPrimary,
-                ),
-            )
+        UndoButton(label = stringResource(message.actionLabel), onClick = onUndo)
+    }
+}
+
+// How long the message stays; accessibility services may ask for longer.
+@Composable
+private fun rememberAccessibleTimeout(): Long {
+    val accessibility = LocalAccessibilityManager.current
+    return remember(accessibility) {
+        accessibility?.calculateRecommendedTimeoutMillis(
+            originalTimeoutMillis = VisibleMillis,
+            containsIcons = false,
+            containsText = true,
+            containsControls = true,
+        ) ?: VisibleMillis
+    }
+}
+
+// Follows a horizontal drag 1:1 and fades as it travels. On release the flick's projected
+// landing point decides: past half the width it leaves (keeping the finger's velocity) and
+// [onDismissed] runs; otherwise it springs back.
+@Composable
+private fun Modifier.swipeToDismiss(onDismissed: () -> Unit): Modifier {
+    val scope = rememberCoroutineScope()
+    val offsetX = remember { Animatable(0f) }
+    val width = remember { floatArrayOf(0f) }
+    return this
+        .onSizeChanged { width[0] = it.width.toFloat() }
+        .graphicsLayer {
+            translationX = offsetX.value
+            val travelled = if (width[0] > 0f) abs(offsetX.value) / width[0] else 0f
+            alpha = (1f - travelled).coerceIn(0f, 1f)
         }
+        .draggable(
+            orientation = Orientation.Horizontal,
+            state = rememberDraggableState { delta ->
+                scope.launch { offsetX.snapTo(offsetX.value + delta) }
+            },
+            onDragStopped = { velocity ->
+                val projected = offsetX.value + IvyMotion.projectedDistance(velocity)
+                if (width[0] > 0f && abs(projected) > width[0] / 2f) {
+                    val direction = if (projected > 0f) 1f else -1f
+                    offsetX.animateTo(direction * width[0], IvyMotion.Springs.surface(), velocity)
+                    onDismissed()
+                } else {
+                    offsetX.animateTo(0f, IvyMotion.Springs.surface(), velocity)
+                }
+            },
+        )
+}
+
+@Composable
+private fun UndoButton(label: String, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val interactionSource = remember { MutableInteractionSource() }
+    Box(
+        modifier = Modifier
+            .pressScale(interactionSource)
+            .clip(CircleShape)
+            .background(colors.primary)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+            .padding(horizontal = 20.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = TextStyle(
+                fontFamily = Raleway,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 16.sp,
+                color = colors.onPrimary,
+            ),
+        )
     }
 }

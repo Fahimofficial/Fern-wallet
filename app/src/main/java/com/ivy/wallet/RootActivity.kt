@@ -376,12 +376,10 @@ class RootActivity : AppCompatActivity(), RootScreen {
         biometricPrompt.authenticate(promptInfo)
     }
 
-    /**
-     * Back that a screen declined with nowhere left to go: leave the app like the system would
-     * (Android 12+ keeps the task's root activity alive in the background).
-     * In-app back is handled by [NavigationRoot] through the predictive back dispatcher; while the
-     * app is locked no handler is registered, so the system handles back itself.
-     */
+    // Back that a screen declined with nowhere left to go: leave the app like the system would
+    // (Android 12+ keeps the task's root activity alive in the background).
+    // In-app back is handled by [NavigationRoot] through the predictive back dispatcher; while the
+    // app is locked no handler is registered, so the system handles back itself.
     private fun leaveApp() {
         if (isTaskRoot && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             moveTaskToBack(false)
@@ -568,7 +566,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
     }
 }
 
-/** Above every screen, so "Transaction deleted · Undo" stays after its screen closes. */
+// Above every screen, so "Transaction deleted · Undo" stays after its screen closes.
 @Composable
 @Suppress("FunctionNaming") // composable
 private fun UndoOverlay(controller: UndoController) {

@@ -88,17 +88,15 @@ import kotlinx.coroutines.launch
 
 private const val MenuVisibleThreshold = 0.01f
 
-/** What the FAB does right now, for screen readers. */
+// What the FAB does right now, for screen readers.
 private fun fabLabel(tab: MainTab, expanded: Boolean): Int = when {
     tab == MainTab.ACCOUNTS -> R.string.add_account
     expanded -> R.string.close
     else -> R.string.add_transaction
 }
 
-/**
- * Apple's rubber-band curve: the further past the rest position, the less the element follows,
- * so a pull reads as "responsive, but tethered" instead of stopping hard.
- */
+// Apple's rubber-band curve: the further past the rest position, the less the element follows,
+// so a pull reads as "responsive, but tethered" instead of stopping hard.
 private fun rubberBand(distance: Float, range: Float, constant: Float = 0.55f): Float =
     distance * range * constant / (range + constant * abs(distance))
 

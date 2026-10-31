@@ -121,7 +121,7 @@ class TransactionsViewModel @Inject constructor(
 
     private val period = mutableStateOf(ivyContext.selectedPeriod)
 
-    /** The screen [start] last loaded, to reload it when its transactions change elsewhere. */
+    // The screen [start] last loaded, to reload it when its transactions change elsewhere.
     private var startedFor: TransactionsScreen? = null
     private val categories = mutableStateOf<ImmutableList<Category>>(persistentListOf())
     private val accounts = mutableStateOf<ImmutableList<LegacyAccount>>(persistentListOf())

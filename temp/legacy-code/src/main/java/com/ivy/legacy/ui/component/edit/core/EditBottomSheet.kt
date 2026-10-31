@@ -101,7 +101,7 @@ import androidx.compose.ui.semantics.Role
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 const val SWIPE_UP_EXPANDED_THRESHOLD = 200
 
-/** Drag distance for a full expand/collapse until the accounts header has been measured. */
+// Drag distance for a full expand/collapse until the accounts header has been measured.
 private val FallbackDragRange = 200.dp
 private const val HalfExpanded = 0.5f
 private const val CollapsedArrowRotation = -180f
