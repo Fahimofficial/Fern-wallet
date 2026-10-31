@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Fail if Android lint reported Error or Fatal issues, listing each with its location.
+"""
+Fail if Android lint reported Error or Fatal issues, listing each with its location.
 
 app/build.gradle.kts sets lint abortOnError=false so that one report covers every module;
 this script is the gate. Issues already in app/lint-baseline.xml are not in the report.

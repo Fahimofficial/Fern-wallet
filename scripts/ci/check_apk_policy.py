@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Check a built APK against the security/privacy policy in .github/apk-policy.json.
+"""
+Check a built APK against the security/privacy policy in .github/apk-policy.json.
 
 It reads the manifest that actually ships (after library manifests are merged) with
 `aapt2 dump`, so a dependency that silently adds a permission or an exported component

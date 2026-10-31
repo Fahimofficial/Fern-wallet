@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Release version checks used by .github/workflows/release.yml.
+"""
+Release version checks used by .github/workflows/release.yml.
 
 validate      Check the tag format (v<YYYY.MM.DD>[-suffix]) and that it matches version-name in
               gradle/libs.versions.toml. Prints the outputs and appends them to $GITHUB_OUTPUT.

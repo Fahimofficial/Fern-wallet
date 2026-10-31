@@ -1,4 +1,5 @@
-"""Tests for scripts/ci.
+"""
+Tests for scripts/ci.
 
 Run with: python3 -m unittest discover -s scripts/ci/tests -t scripts/ci
 """

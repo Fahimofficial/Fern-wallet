@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Apply the vulnerability severity policy to an osv-scanner JSON report.
+"""
+Apply the vulnerability severity policy to an osv-scanner JSON report.
 
 Policy (see docs/SECURITY.md):
   Critical (CVSS >= 9.0) and High (>= 7.0) -> blocking
