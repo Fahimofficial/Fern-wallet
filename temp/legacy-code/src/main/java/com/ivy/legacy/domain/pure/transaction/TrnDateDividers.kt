@@ -53,7 +53,7 @@ suspend fun List<Transaction>.withDateDividers(
                 fromCurrency = data.fromCurrency.getOrNull() ?: "",
                 toCurrency = data.toCurrency,
                 amount = amount.toDouble()
-            ).toBigDecimal().toOption()
+            )?.toBigDecimal().toOption()
         }
     )
 }
@@ -130,7 +130,7 @@ object LegacyTrnDateDividers {
                     fromCurrency = data.fromCurrency.getOrNull() ?: "",
                     toCurrency = data.toCurrency,
                     amount = amount.toDouble()
-                ).toBigDecimal().toOption()
+                )?.toBigDecimal().toOption()
             },
             timeConverter = timeConverter,
         )

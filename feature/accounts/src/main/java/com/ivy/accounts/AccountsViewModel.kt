@@ -222,7 +222,7 @@ class AccountsViewModel @Inject constructor(
                 amount = item.overview.outstanding.toDouble(),
                 fromCurrency = item.account.asset.code,
                 toCurrency = baseCurrencyCode,
-            )
+            ) ?: 0.0 // no exchange rate: left out, like the balance totals
         }
 
         baseCurrency = baseCurrencyCode

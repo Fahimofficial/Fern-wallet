@@ -10,6 +10,15 @@ import com.ivy.legacy.datamodel.temp.toLegacyDomain
 import java.util.UUID
 import javax.inject.Inject
 
+/**
+ * Currency conversion for the legacy screens.
+ *
+ * When a needed exchange rate is missing (e.g. never downloaded because the app was offline):
+ * - [amountBaseCurrency] leaves the amount out (returns 0), like the wallet balance does, instead
+ *   of silently treating 1 unit of the foreign currency as 1 unit of the base currency.
+ *   `MissingExchangeRatesUseCase` tells the user which currencies are affected.
+ * - [convertAmount] returns null, so each caller decides what to show.
+ */
 @Deprecated("Use FP style, look into `domain.fp` package")
 class ExchangeRatesLogic @Inject constructor(
     private val exchangeRatesDao: ExchangeRatesDao
@@ -77,26 +86,23 @@ class ExchangeRatesLogic @Inject constructor(
         amountCurrency: String,
         baseCurrency: String
     ): Double {
-        return if (amountCurrency != baseCurrency) {
-            // convert to base currency
-            amount / exchangeRate(baseCurrency = baseCurrency, currency = amountCurrency)
-        } else {
-            // no conversion needed, return amount
-            amount
-        }
+        // No rate: left out of totals (see the class docs).
+        val rate = exchangeRate(baseCurrency = baseCurrency, currency = amountCurrency) ?: return 0.0
+        return amount / rate
     }
 
+    /** Converts [amount], or returns null if a needed exchange rate is missing. */
     suspend fun convertAmount(
         baseCurrency: String,
         amount: Double,
         fromCurrency: String,
         toCurrency: String
-    ): Double {
+    ): Double? {
         if (fromCurrency == toCurrency) return amount
 
-        val amountBaseCurrency =
-            amount / exchangeRate(baseCurrency = baseCurrency, currency = fromCurrency)
-        return amountBaseCurrency * exchangeRate(baseCurrency = baseCurrency, currency = toCurrency)
+        val fromRate = exchangeRate(baseCurrency = baseCurrency, currency = fromCurrency)
+        val toRate = exchangeRate(baseCurrency = baseCurrency, currency = toCurrency)
+        return if (fromRate != null && toRate != null) amount / fromRate * toRate else null
     }
 
     /**
@@ -105,15 +111,12 @@ class ExchangeRatesLogic @Inject constructor(
     private suspend fun exchangeRate(
         baseCurrency: String,
         currency: String
-    ): Double {
-        val rate = exchangeRatesDao.findByBaseCurrencyAndCurrency(
+    ): Double? {
+        if (currency == baseCurrency) return 1.0
+        return exchangeRatesDao.findByBaseCurrencyAndCurrency(
             baseCurrency = baseCurrency,
             currency = currency
-        )?.rate ?: return 1.0
-        if (rate <= 0) {
-            return 1.0
-        }
-        return rate
+        )?.rate?.takeIf { it > 0 && it.isFinite() }
     }
 }
 

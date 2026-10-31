@@ -891,7 +891,7 @@ class EditTransactionViewModel @Inject constructor(
                         amount = 1.0,
                         fromCurrency = fromAccCurrencyCode,
                         toCurrency = toAccCurrencyCode
-                    )
+                    ) ?: MISSING_RATE_PLACEHOLDER
                 }
 
             val amount = amt ?: amount
@@ -909,6 +909,14 @@ class EditTransactionViewModel @Inject constructor(
                 saveIfEditMode()
             }
         }
+    }
+
+    private companion object {
+        /**
+         * Shown in the editable exchange-rate card of a transfer when no rate is known for the
+         * two currencies; the card is always visible for such transfers, so the user sees it.
+         */
+        const val MISSING_RATE_PLACEHOLDER = 1.0
     }
 
     private fun isCustomExchangeRateCurrencyCodeMatchingWithSourceAndDestinationAccountCurrencyCode(
