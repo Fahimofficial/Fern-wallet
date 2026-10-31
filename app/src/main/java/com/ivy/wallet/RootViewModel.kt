@@ -60,6 +60,7 @@ class RootViewModel @Inject constructor(
     val appLocked = _appLocked.readOnly()
 
     private var started = false
+    private var initialNavigation: Job? = null
 
     /**
      * Called whenever the activity's content is (re)composed, including when the system dark mode
@@ -80,7 +81,7 @@ class RootViewModel @Inject constructor(
         if (started) return
         started = true
 
-        viewModelScope.launch {
+        initialNavigation = viewModelScope.launch {
             TestIdlingResource.increment()
 
             ioThread {
@@ -113,9 +114,14 @@ class RootViewModel @Inject constructor(
         }
     }
 
-    /** A new intent for the running activity, e.g. an "add expense" shortcut. */
+    /**
+     * A new intent for the running activity, e.g. an "add expense" shortcut. Handled after the
+     * initial navigation, which resets the back stack and would otherwise drop the new screen.
+     */
     fun handleNewIntent(intent: Intent) {
+        val pendingStart = initialNavigation
         viewModelScope.launch {
+            pendingStart?.join()
             ioThread {
                 if (isOnboardingCompleted()) handleSpecialStart(intent)
             }
