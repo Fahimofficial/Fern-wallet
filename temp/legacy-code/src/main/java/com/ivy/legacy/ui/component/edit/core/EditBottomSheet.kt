@@ -2,7 +2,7 @@ package com.ivy.wallet.ui.edit.core
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import com.ivy.design.system.FernMotion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -129,13 +129,13 @@ fun BoxWithConstraintsScope.EditBottomSheet(
         targetValue = densityScope {
             if (keyboardShown) keyboardOnlyWindowInsets().bottom.toDp() else 0.dp
         },
-        animationSpec = tween(DURATION_MODAL_ANIM)
+        animationSpec = FernMotion.tween(DURATION_MODAL_ANIM)
     )
     val navBarPadding by animateDpAsState(
         targetValue = densityScope {
             if (keyboardShown) 0.dp else navigationBarInsets().bottom.toDp()
         },
-        animationSpec = tween(DURATION_MODAL_ANIM)
+        animationSpec = FernMotion.tween(DURATION_MODAL_ANIM)
     )
 
     var bottomBarHeight by remember { mutableIntStateOf(0) }

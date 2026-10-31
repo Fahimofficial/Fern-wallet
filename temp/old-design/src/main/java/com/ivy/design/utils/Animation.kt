@@ -1,11 +1,10 @@
 package com.ivy.design.utils
 
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.SpringSpec
+import com.ivy.design.system.FernMotion
 
-@Deprecated("Old design system. Use `:ivy-design` and Material3")
+/** Same motion as the rest of the app (it used a bouncier spring before); see [FernMotion]. */
+@Deprecated("Old design system. Use FernMotion")
 fun <T> springBounce(
-    stiffness: Float = 500f,
-) = spring<T>(
-    dampingRatio = 0.75f,
-    stiffness = stiffness,
-)
+    stiffness: Float = FernMotion.Stiffness.Default,
+): SpringSpec<T> = FernMotion.spring(stiffness)

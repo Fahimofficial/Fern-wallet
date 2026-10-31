@@ -79,6 +79,12 @@ First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 - Release builds are signed only from CI secrets; the release workflow refuses debug-signed builds.
 
 ### Design
+- Material 3 screens now use the app's own fonts (Raleway headings, Open Sans text) and corner
+  radii instead of Material defaults, so they match the rest of the app. New Fern tokens for
+  typography, shapes, spacing and motion (`docs/Design-System.md`); the app-locked screen is the
+  first screen fully moved to them.
+- One motion system for the whole app: the old design's bouncier spring and the bottom-sheet
+  animations now follow the same timing, and all of them respect "Remove animations".
 - Calmer, higher-contrast summary cards (no gradients or colored glow), compact transaction cards,
   dedicated transfer color, accessible income-green for text, one primary color for the FAB on every tab.
 - Less spring overshoot, and animations become near-instant when "Remove animations" is enabled.
