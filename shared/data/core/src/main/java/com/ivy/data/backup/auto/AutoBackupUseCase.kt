@@ -3,11 +3,12 @@ package com.ivy.data.backup.auto
 import com.ivy.base.threading.DispatchersProvider
 import com.ivy.base.time.TimeProvider
 import com.ivy.data.backup.BackupCrypto
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.IOException
 import java.io.OutputStream
+import java.security.GeneralSecurityException
+import java.security.ProviderException
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -71,40 +72,76 @@ class AutoBackupUseCase @Inject constructor(
 
     fun isPasswordProtected(): Boolean = preferences.key != null
 
+    // The file being written is recorded until it is complete, so a run that fails, is cancelled
+    // or is killed with the process never leaves a partial backup that pruning would count as the
+    // newest. (SAF has no portable atomic rename, so the file can't be written under a temporary
+    // name and promoted.)
     @Suppress("ReturnCount")
     private suspend fun runBackup(): AutoBackupFailure? {
         val folder = preferences.folderUri?.let(folderAccess::open)
             ?: return AutoBackupFailure.FOLDER_UNAVAILABLE
+        preferences.unfinishedFile?.let { leftover ->
+            if (deleteIfPresent(folder, leftover)) preferences.unfinishedFile = null
+        }
         val key = preferences.key?.let { stored ->
             loadKey(stored) ?: return AutoBackupFailure.KEY_UNAVAILABLE
         }
         val name = fileName(encrypted = key != null)
         val mimeType = if (key != null) MIME_ENCRYPTED else MIME_ZIP
+        preferences.unfinishedFile = name
+        var complete = false
         return try {
             val output = folder.create(name, mimeType) ?: return AutoBackupFailure.FOLDER_UNAVAILABLE
             output.use { backupWriter.writeBackup(it, key) }
+            complete = true
+            preferences.unfinishedFile = null
             prune(folder)
             null
-        } catch (e: CancellationException) {
-            throw e
         } catch (e: IOException) {
             Timber.e(e, "Automatic backup failed")
-            folder.files().firstOrNull { it.name == name }?.let(folder::delete)
             AutoBackupFailure.WRITE_FAILED
         } catch (e: SecurityException) {
             Timber.e(e, "Lost access to the backup folder")
             AutoBackupFailure.FOLDER_UNAVAILABLE
+        } finally {
+            // Also on cancellation. Blocking calls only, so cancellation can't interrupt this.
+            if (!complete && deleteIfPresent(folder, name)) preferences.unfinishedFile = null
         }
     }
 
+    // False if the folder couldn't be read or the file couldn't be deleted.
+    private fun deleteIfPresent(folder: BackupFolder, name: String): Boolean = try {
+        val file = folder.files().firstOrNull { it.name == name }
+        file == null || folder.delete(file)
+    } catch (e: SecurityException) {
+        Timber.e(e, "Couldn't remove the unfinished backup $name")
+        false
+    }
+
+    // Returns null when the stored key can't be used anymore (keystore entry gone or
+    // invalidated, wrapped bytes damaged); the user then has to set the password again.
     private fun loadKey(stored: StoredBackupKey): BackupCrypto.Key? = try {
         BackupCrypto.keyFromRaw(stored.salt, stored.iterations, keyWrapper.unwrap(stored.wrappedKey))
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        // Keystore errors come as many exception types; any of them means the key is gone.
+    } catch (e: GeneralSecurityException) {
+        // Keystore entry invalidated, wrong tag (AEADBadTagException), unusable key...
+        keyUnavailable(e)
+    } catch (e: ProviderException) {
+        // Android Keystore reports some hardware/keystore failures this way.
+        keyUnavailable(e)
+    } catch (e: IOException) {
+        // KeyStore.load
+        keyUnavailable(e)
+    } catch (e: IllegalStateException) {
+        // The keystore entry is missing.
+        keyUnavailable(e)
+    } catch (e: IllegalArgumentException) {
+        // Stored bytes too short or empty.
+        keyUnavailable(e)
+    }
+
+    private fun keyUnavailable(e: Exception): BackupCrypto.Key? {
         Timber.e(e, "Couldn't unwrap the automatic backup key")
-        null
+        return null
     }
 
     private fun prune(folder: BackupFolder) {

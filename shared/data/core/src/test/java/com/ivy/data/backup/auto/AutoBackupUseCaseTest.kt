@@ -5,12 +5,14 @@ import com.ivy.base.legacy.SharedPrefs
 import com.ivy.base.time.TimeProvider
 import com.ivy.data.backup.BackupArchive
 import com.ivy.data.backup.BackupCrypto
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldEndWith
 import io.kotest.matchers.string.shouldStartWith
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.io.ByteArrayOutputStream
@@ -23,7 +25,24 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 
+private fun inMemoryPrefs(): SharedPrefs {
+    val values = mutableMapOf<String, Any?>()
+    return mockk(relaxed = true) {
+        every { putString(any(), any()) } answers { values[firstArg()] = secondArg<String?>() }
+        every { getString(any(), any()) } answers { values[firstArg()] as String? ?: secondArg() }
+        every { putLong(any(), any()) } answers { values[firstArg()] = secondArg<Long>() }
+        every { getLong(any(), any()) } answers { values[firstArg()] as Long? ?: secondArg() }
+        every { putInt(any(), any()) } answers { values[firstArg()] = secondArg<Int>() }
+        every { getInt(any(), any()) } answers { values[firstArg()] as Int? ?: secondArg() }
+    }
+}
+
 class AutoBackupUseCaseTest {
+    private companion object {
+        const val FOLDER = "content://tree/backups"
+        const val PASSWORD = "s3cret"
+    }
+
     private val json = """{"accounts":[]}"""
 
     private class FakeFolder : BackupFolder {
@@ -64,31 +83,24 @@ class AutoBackupUseCaseTest {
         override fun localTimeNow(): LocalTime = localNow().toLocalTime()
     }
 
-    private fun inMemoryPrefs(): SharedPrefs {
-        val values = mutableMapOf<String, Any?>()
-        return mockk(relaxed = true) {
-            every { putString(any(), any()) } answers { values[firstArg()] = secondArg<String?>() }
-            every { getString(any(), any()) } answers { values[firstArg()] as String? ?: secondArg() }
-            every { putLong(any(), any()) } answers { values[firstArg()] = secondArg<Long>() }
-            every { getLong(any(), any()) } answers { values[firstArg()] as Long? ?: secondArg() }
-            every { putInt(any(), any()) } answers { values[firstArg()] = secondArg<Int>() }
-            every { getInt(any(), any()) } answers { values[firstArg()] as Int? ?: secondArg() }
-        }
-    }
-
     private val folder = FakeFolder()
     private val clock = Clock(Instant.parse("2026-10-30T20:15:00Z"))
     private val wrapper = FakeWrapper()
     private val preferences = AutoBackupPreferences(inMemoryPrefs())
 
-    private fun useCase(access: BackupFolderAccess = FakeAccess(folder)) = AutoBackupUseCase(
+    private val jsonWriter = object : BackupWriter {
+        override suspend fun writeBackup(output: OutputStream, key: BackupCrypto.Key?) =
+            BackupArchive.writeBackup(output, json, key)
+    }
+
+    private fun useCase(
+        access: BackupFolderAccess = FakeAccess(folder),
+        writer: BackupWriter = jsonWriter,
+    ) = AutoBackupUseCase(
         preferences = preferences,
         folderAccess = access,
         keyWrapper = wrapper,
-        backupWriter = object : BackupWriter {
-            override suspend fun writeBackup(output: OutputStream, key: BackupCrypto.Key?) =
-                BackupArchive.writeBackup(output, json, key)
-        },
+        backupWriter = writer,
         timeProvider = clock,
         dispatchers = TestDispatchersProvider,
     )
@@ -104,7 +116,7 @@ class AutoBackupUseCaseTest {
     @Test
     fun `writes a readable, timestamped backup`() = runTest {
         val useCase = useCase()
-        useCase.setFolder("content://tree/backups")
+        useCase.setFolder(FOLDER)
 
         useCase.backUpNow() shouldBe null
 
@@ -118,22 +130,22 @@ class AutoBackupUseCaseTest {
     @Test
     fun `with a password the backup is encrypted and opens with that password`() = runTest {
         val useCase = useCase()
-        useCase.setFolder("content://tree/backups")
-        useCase.setPassword("s3cret".toCharArray())
+        useCase.setFolder(FOLDER)
+        useCase.setPassword(PASSWORD.toCharArray())
 
         useCase.backUpNow() shouldBe null
 
         val (name, bytes) = folder.files.entries.single()
         name shouldEndWith ".fernbackup"
-        BackupArchive.readJson(bytes.toByteArray().inputStream(), password = "s3cret".toCharArray()) shouldBe json
+        BackupArchive.readJson(bytes.toByteArray().inputStream(), password = PASSWORD.toCharArray()) shouldBe json
         useCase.isPasswordProtected() shouldBe true
     }
 
     @Test
     fun `a key that can't be unwrapped stops the backup`() = runTest {
         val useCase = useCase()
-        useCase.setFolder("content://tree/backups")
-        useCase.setPassword("s3cret".toCharArray())
+        useCase.setFolder(FOLDER)
+        useCase.setPassword(PASSWORD.toCharArray())
         wrapper.broken = true
 
         useCase.backUpNow() shouldBe AutoBackupFailure.KEY_UNAVAILABLE
@@ -143,7 +155,7 @@ class AutoBackupUseCaseTest {
     @Test
     fun `keeps only the newest backups and never touches other files`() = runTest {
         val useCase = useCase()
-        useCase.setFolder("content://tree/backups")
+        useCase.setFolder(FOLDER)
         folder.files["my-notes.txt"] = ByteArrayOutputStream()
 
         repeat(AutoBackupUseCase.KEEP + 3) { day ->
@@ -160,7 +172,7 @@ class AutoBackupUseCaseTest {
     @Test
     fun `a failed write is reported and leaves no partial file`() = runTest {
         val useCase = useCase()
-        useCase.setFolder("content://tree/backups")
+        useCase.setFolder(FOLDER)
         folder.failWrites = true
 
         useCase.backUpNow() shouldBe AutoBackupFailure.WRITE_FAILED
@@ -168,10 +180,32 @@ class AutoBackupUseCaseTest {
     }
 
     @Test
+    fun `a cancelled run leaves no partial file, and one left by a killed run is removed`() = runTest {
+        // given: a run that was killed while writing (only the unfinished-file record survived)
+        folder.files["FernWallet-auto-2026-10-29_201500Z.zip"] = ByteArrayOutputStream()
+        preferences.unfinishedFile = "FernWallet-auto-2026-10-29_201500Z.zip"
+        val cancelling = object : BackupWriter {
+            override suspend fun writeBackup(output: OutputStream, key: BackupCrypto.Key?) {
+                output.write(1)
+                throw CancellationException("worker stopped")
+            }
+        }
+        val useCase = useCase(writer = cancelling)
+        useCase.setFolder(FOLDER)
+
+        // when: this run is cancelled mid-write
+        shouldThrow<CancellationException> { useCase.backUpNow() }
+
+        // then: neither partial file is left, and nothing is pending
+        folder.files.size shouldBe 0
+        preferences.unfinishedFile shouldBe null
+    }
+
+    @Test
     fun `removing the password makes later backups unencrypted`() = runTest {
         val useCase = useCase()
-        useCase.setFolder("content://tree/backups")
-        useCase.setPassword("s3cret".toCharArray())
+        useCase.setFolder(FOLDER)
+        useCase.setPassword(PASSWORD.toCharArray())
         useCase.setPassword(null)
 
         useCase.backUpNow() shouldBe null

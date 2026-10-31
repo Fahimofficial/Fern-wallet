@@ -44,6 +44,11 @@ class AutoBackupPreferences @Inject constructor(
             ?.let { name -> AutoBackupFailure.entries.firstOrNull { it.name == name } }
         set(value) = sharedPrefs.putString(LAST_FAILURE, value?.name)
 
+    /** Name of the backup file being written; set until the file is complete. */
+    var unfinishedFile: String?
+        get() = sharedPrefs.getString(UNFINISHED_FILE, null)
+        set(value) = sharedPrefs.putString(UNFINISHED_FILE, value)
+
     var key: StoredBackupKey?
         get() {
             val salt = sharedPrefs.getString(KEY_SALT, null) ?: return null
@@ -68,6 +73,7 @@ class AutoBackupPreferences @Inject constructor(
         const val FREQUENCY = "auto_backup_frequency"
         const val LAST_SUCCESS = "auto_backup_last_success"
         const val LAST_FAILURE = "auto_backup_last_failure"
+        const val UNFINISHED_FILE = "auto_backup_unfinished_file"
         const val KEY_SALT = "auto_backup_key_salt"
         const val KEY_ITERATIONS = "auto_backup_key_iterations"
         const val KEY_WRAPPED = "auto_backup_key_wrapped"
