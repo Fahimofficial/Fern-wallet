@@ -5,8 +5,6 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -59,18 +57,8 @@ class AutoBackupScheduler @Inject constructor(
         workManager.enqueueUniquePeriodicWork(PERIODIC_WORK, ExistingPeriodicWorkPolicy.UPDATE, request)
     }
 
-    /** One backup right away (Settings → Back up now). */
-    fun runNow() {
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            ONE_TIME_WORK,
-            ExistingWorkPolicy.KEEP,
-            OneTimeWorkRequestBuilder<AutoBackupWorker>().build()
-        )
-    }
-
     private companion object {
         const val PERIODIC_WORK = "fern_auto_backup"
-        const val ONE_TIME_WORK = "fern_auto_backup_now"
         const val DAYS_IN_WEEK = 7L
     }
 }
