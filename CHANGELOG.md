@@ -7,6 +7,14 @@ Release notes for published builds are generated on the
 
 First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 
+### Support my work
+- New **Settings → Support my work** screen: Ko-fi, UPI (`SimplyFahim@sbi`) with a QR code
+  generated on the device, Copy UPI ID, Open UPI app (chooser when several are installed, clear
+  message when none is), and Share/Save QR. No amount is pre-filled and no payment is ever
+  reported as made.
+- Project links are kept separate from payment options: Fern Wallet's own GitHub repository,
+  the developer's website and GitHub profile. The old QuantumMPV links are gone.
+
 ### Backups
 - Importing a backup is now all-or-nothing: the file is checked first, then every row is saved in
   one database transaction, so a failure part-way can no longer leave a half-imported wallet.

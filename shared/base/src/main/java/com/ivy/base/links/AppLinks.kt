@@ -31,33 +31,46 @@ object UpstreamLinks {
 }
 
 /**
- * Support destinations for the developer (Fahim), as published in the QuantumMPV README:
- * https://github.com/Fahimofficial/QuantumMPV
+ * "Support my work" configuration: the developer's own payment and contact details.
  *
- * These belong to the QuantumMPV project, not to Fern Wallet. They are presented in the
- * Support section of Settings with that ownership stated explicitly.
+ * This is the only place these values live. The Support screen, its QR code and the Settings
+ * entry all read from here, so updating a link is a one-line change.
+ *
+ * Nothing here is sent anywhere by the app: links open in apps the user picks, and the UPI QR
+ * code is generated on the device.
  */
 object SupportDestinations {
-    const val PROJECT_NAME = "QuantumMPV"
     const val DEVELOPER_NAME = "SimplyFahim"
 
-    const val WEBSITE = "https://quantummpv.vercel.app/"
-    const val REPOSITORY = "https://github.com/Fahimofficial/QuantumMPV"
-    const val ISSUES = "https://github.com/Fahimofficial/QuantumMPV/issues"
+    /** Ko-fi profile (account "SimplyFahim"). */
+    const val KOFI_URL = "https://ko-fi.com/simplyfahim"
 
-    /** Public UPI ID (VPA) documented in the QuantumMPV README. */
-    const val UPI_ID = "SimplyFahim@Sbi"
+    /** The developer's personal website. Not a project page. */
+    const val WEBSITE = "https://SimplyFahim.pages.dev"
+
+    /** The developer's GitHub profile, listing all public projects. */
+    const val GITHUB_PROFILE = "https://github.com/Fahimofficial/"
+
+    /** This app's own repository. */
+    const val APP_REPOSITORY = FernLinks.REPOSITORY
+
+    /** Public UPI ID (VPA) and the payee name UPI apps show before the user confirms. */
+    const val UPI_ID = "SimplyFahim@sbi"
+    const val UPI_PAYEE_NAME = "SimplyFahim"
     const val UPI_CURRENCY = "INR"
 
     /**
-     * Builds a standard UPI deep link (`upi://pay`) that only pre-fills the payee.
-     * No amount is set: the user chooses it and confirms in their own UPI app.
-     * Matches the link published in the QuantumMPV README:
-     * `upi://pay?pa=SimplyFahim%40Sbi&pn=SimplyFahim&cu=INR`
+     * Builds a standard UPI payment link that only identifies the payee:
+     * `upi://pay?pa=SimplyFahim@sbi&pn=SimplyFahim&cu=INR`.
+     *
+     * No amount (`am`) is ever set: the user enters it and confirms in their own UPI app.
+     * The same string is used for the "Open UPI app" intent and as the QR code payload.
+     * `@` is kept literal (it is valid in a URI query and is what bank-issued UPI QR codes use);
+     * any other character outside the RFC 3986 unreserved set is percent-encoded.
      */
     fun upiPaymentUri(
         upiId: String = UPI_ID,
-        payeeName: String = DEVELOPER_NAME,
+        payeeName: String = UPI_PAYEE_NAME,
         currency: String = UPI_CURRENCY,
     ): String = buildString {
         append("upi://pay?pa=")
@@ -68,6 +81,16 @@ object SupportDestinations {
         append(encodeQueryValue(currency))
     }
 
-    private fun encodeQueryValue(value: String): String =
-        java.net.URLEncoder.encode(value, Charsets.UTF_8.name()).replace("+", "%20")
+    /** RFC 3986 unreserved characters, plus `@`. Everything else is percent-encoded. */
+    private val KEPT_AS_IS: Set<Char> =
+        (('A'..'Z') + ('a'..'z') + ('0'..'9') + listOf('-', '.', '_', '~', '@')).toSet()
+    private const val BYTE_MASK = 0xFF
+
+    private fun encodeQueryValue(value: String): String = buildString {
+        value.toByteArray(Charsets.UTF_8).forEach { byte ->
+            val unsigned = byte.toInt() and BYTE_MASK
+            val c = unsigned.toChar()
+            if (c in KEPT_AS_IS) append(c) else append("%%%02X".format(unsigned))
+        }
+    }
 }

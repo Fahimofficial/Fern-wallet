@@ -23,7 +23,8 @@ The app makes these HTTPS requests (cleartext HTTP is disabled):
 
 There is currently no setting to turn off the automatic exchange-rate download.
 
-Links you tap (GitHub, website, UPI) open in other apps you choose; Fern Wallet does not see what happens there.
+Links you tap (GitHub, website, Ko-fi, UPI) open in other apps you choose; Fern Wallet does not see what happens there.
+The Support screen's UPI QR code is generated on the device; nothing about it is sent anywhere.
 If you choose to rate the app from the home screen card, Google Play's in-app review dialog is shown by the
 Google Play app on your device (Google's privacy policy applies to it).
 
