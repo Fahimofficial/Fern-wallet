@@ -733,4 +733,38 @@
     <!-- Transaction input feedback -->
     <string name="msg_enter_amount">Enter an amount first.</string>
     <string name="msg_add_account_first">Add an account first (Accounts tab), then add transactions to it.</string>
+    <!-- Automatic and password-protected backups -->
+    <string name="auto_backup">Automatic backup</string>
+    <string name="auto_backup_description">Saves a backup to a folder you choose: on this phone, an SD card, or a synced cloud folder. The newest %1$d automatic backups are kept.</string>
+    <string name="auto_backup_folder">Backup folder</string>
+    <string name="auto_backup_folder_not_set">Not chosen yet</string>
+    <string name="auto_backup_frequency">How often</string>
+    <string name="auto_backup_off">Off</string>
+    <string name="auto_backup_daily">Every day</string>
+    <string name="auto_backup_weekly">Every week</string>
+    <string name="auto_backup_password">Password</string>
+    <string name="auto_backup_password_on">Automatic backups are encrypted</string>
+    <string name="auto_backup_password_off">No password: automatic backups aren\'t encrypted</string>
+    <string name="auto_backup_password_title">Password for automatic backups</string>
+    <string name="auto_backup_password_text">Automatic backups will be encrypted with this password, and you need it to restore them, also on a new phone. If you forget it, they can\'t be restored. Leave it empty to turn encryption off.</string>
+    <string name="auto_backup_password_save">Save</string>
+    <string name="auto_backup_now">Back up now</string>
+    <string name="auto_backup_running">Backing up…</string>
+    <string name="auto_backup_last">Last automatic backup: %1$s</string>
+    <string name="auto_backup_never">No automatic backup yet.</string>
+    <string name="auto_backup_failed_folder">The last backup failed: the folder can\'t be reached anymore. Choose it again.</string>
+    <string name="auto_backup_failed_key">The last backup failed: the backup password can\'t be used on this phone anymore. Set it again.</string>
+    <string name="auto_backup_failed_write">The last backup failed: the file couldn\'t be written (is the storage full?).</string>
+    <string name="auto_backup_choose_folder_first">Choose a backup folder first.</string>
+    <string name="auto_backup_done">Backup saved.</string>
+    <string name="backup_password_title">Protect the backup with a password?</string>
+    <string name="backup_password_text">With a password, the backup is encrypted and only that password can restore it. If you forget it, the backup can\'t be restored. Leave it empty for an unencrypted backup.</string>
+    <string name="backup_password_confirm">Back up</string>
+    <string name="password_hint">Password</string>
+    <string name="password_repeat_hint">Repeat password</string>
+    <string name="password_mismatch">The passwords don\'t match.</string>
+    <string name="password_too_short">Use at least 8 characters.</string>
+    <string name="backup_error_password_required">This backup is protected with a password. Enter it to import the backup.</string>
+    <string name="backup_error_wrong_password">Wrong password, or the file was changed. Nothing was imported.</string>
+    <string name="import_with_password">Import</string>
 </resources>

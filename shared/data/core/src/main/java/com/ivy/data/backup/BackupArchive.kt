@@ -11,7 +11,8 @@ import java.util.zip.ZipOutputStream
 
 /**
  * Reads and writes the backup file format: a ZIP with exactly one `.json` entry (UTF-16), or,
- * for very old backups, the bare JSON file.
+ * for very old backups, the bare JSON file. Password-protected backups are that ZIP encrypted
+ * with [BackupCrypto].
  *
  * Reading happens fully in memory: entries are never extracted to disk, so entry names (e.g.
  * `../../shared_prefs/x.xml`) can't write anywhere. Sizes are capped so a crafted or corrupted
@@ -31,27 +32,50 @@ object BackupArchive {
     private val ZIP_MAGIC = byteArrayOf(0x50, 0x4B, 0x03, 0x04)
 
     /**
-     * Returns the backup JSON contained in [input], or throws [BackupImportException].
+     * Returns the backup JSON contained in [input], or throws [BackupImportException]
+     * (PASSWORD_REQUIRED when the file is password-protected and [password] is null).
      * The stream is not closed.
      */
-    fun readJson(input: InputStream, maxJsonBytes: Long = MAX_JSON_BYTES): String {
+    fun readJson(
+        input: InputStream,
+        maxJsonBytes: Long = MAX_JSON_BYTES,
+        password: CharArray? = null,
+    ): String {
         val buffered = BufferedInputStream(input)
-        buffered.mark(ZIP_MAGIC.size)
-        val header = ByteArray(ZIP_MAGIC.size)
+        val headerLength = maxOf(ZIP_MAGIC.size, BackupCrypto.MAGIC_BYTES)
+        buffered.mark(headerLength)
+        val header = ByteArray(headerLength)
         val headerSize = buffered.readNBytesCompat(header)
         buffered.reset()
 
-        if (headerSize == 0) throw BackupImportException(ImportFailure.NOT_A_BACKUP)
+        if (headerSize == 0) notABackup()
 
-        val bytes = if (headerSize == ZIP_MAGIC.size && header.contentEquals(ZIP_MAGIC)) {
+        if (BackupCrypto.isEncrypted(header.copyOf(headerSize))) {
+            val encrypted = buffered.readLimited(maxJsonBytes)
+            val zip = BackupCrypto.decrypt(encrypted, password ?: passwordRequired())
+            // The decrypted content is a regular (unencrypted) backup.
+            return readJson(zip.inputStream(), maxJsonBytes, password = null)
+        }
+
+        val bytes = if (headerSize >= ZIP_MAGIC.size && header.copyOf(ZIP_MAGIC.size).contentEquals(ZIP_MAGIC)) {
             readSingleJsonEntry(buffered, maxJsonBytes)
         } else {
             // Legacy: a bare JSON file (no ZIP).
             buffered.readLimited(maxJsonBytes)
         }
         val json = decode(bytes)
-        if (!json.trimStart().startsWith("{")) throw BackupImportException(ImportFailure.NOT_A_BACKUP)
+        if (!json.trimStart().startsWith("{")) notABackup()
         return json
+    }
+
+    /** Writes a backup to [output]: a ZIP, encrypted with [key] when given. */
+    fun writeBackup(output: OutputStream, json: String, key: BackupCrypto.Key?) {
+        if (key == null) {
+            writeZip(output, json)
+        } else {
+            val zip = ByteArrayOutputStream().also { writeZip(it, json) }.toByteArray()
+            output.write(BackupCrypto.encrypt(zip, key))
+        }
     }
 
     /** Writes [json] as a backup ZIP (one UTF-16 `data.json` entry) to [output]. */
@@ -83,6 +107,8 @@ object BackupArchive {
     }
 
     private fun notABackup(): Nothing = throw BackupImportException(ImportFailure.NOT_A_BACKUP)
+
+    private fun passwordRequired(): Nothing = throw BackupImportException(ImportFailure.PASSWORD_REQUIRED)
 
     /**
      * Backups are written as UTF-16 with a byte-order mark. Files without a BOM that look like
@@ -151,6 +177,12 @@ enum class ImportFailure {
 
     /** Reading was fine but saving failed; the database was left unchanged. */
     SAVE_FAILED,
+
+    /** The backup is password-protected; ask for the password and try again. */
+    PASSWORD_REQUIRED,
+
+    /** The password doesn't match (or the protected file was modified). */
+    WRONG_PASSWORD,
 }
 
 class BackupImportException(

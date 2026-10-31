@@ -8,6 +8,10 @@ Release notes for published builds are generated on the
 First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 
 ### Backups
+- **Automatic backup** (Settings): daily or weekly backups to a folder you choose (phone storage, SD
+  card, or a synced cloud folder), keeping the newest 10, with the last result shown in Settings.
+- Backups can be **protected with a password** (AES-256-GCM). Importing a protected backup asks for
+  the password. Unprotected backups work as before.
 - Importing a backup is now all-or-nothing: the file is checked first, then every row is saved in
   one database transaction, so a failure part-way can no longer leave a half-imported wallet.
 - Before an import, a copy of the current wallet is saved; **Undo import** on the result screen

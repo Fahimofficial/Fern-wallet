@@ -10,7 +10,15 @@ in an app-private SQLite database and preferences. Android backup is disabled (`
 this data is not copied to Google Drive by the system. Backups are only created when you choose
 **Settings → Backup data**, and saved wherever you pick.
 
-> Backup ZIP and CSV export files are **not encrypted**. Store and share them carefully.
+> Backups are **not encrypted unless you set a password** (when backing up, or for automatic
+> backups in **Settings → Automatic backup**). Password-protected backups use AES-256-GCM with a key
+> derived from the password (PBKDF2-HMAC-SHA256); if you forget the password, they can't be restored.
+> CSV exports are never encrypted. Store and share unprotected files carefully.
+
+Automatic backups are written only to the folder you choose. If that folder is synced to a cloud
+service, the service's own privacy terms apply; Fern Wallet itself uploads nothing. For automatic
+backups with a password, the derived key is kept on the device, wrapped by a non-exportable
+Android Keystore key.
 
 ## Network requests
 

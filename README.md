@@ -48,7 +48,8 @@ contributors, which is no longer maintained upstream. Fern Wallet continues deve
 - Planned (one-time and recurring) payments, budgets, loans, savings goal ("left to spend")
 - Reports, pie-chart statistics, search
 - Exchange rates (fetched over HTTPS from a public currency API) and manual overrides
-- Backup/restore to a ZIP file, CSV import from several apps
+- Backup/restore to a ZIP file (optionally password-protected), automatic backups to a folder you
+  choose, undo for the last import, CSV import from several apps
 - Home-screen widgets, app shortcuts and a Quick Settings tile
 - App lock (biometric / device credential), hide balance/income
 - Light, dark and AMOLED-black themes, and four app icons (Fern, Mono, Graphite, Midnight)

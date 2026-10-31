@@ -20,4 +20,4 @@ financial data, backups or credentials.
 
 - `debug.jks` in the repository is a **public** debug key used only for `debug`/`demo` builds. Builds signed with
   it must never be distributed. Official releases are signed with a private key held in GitHub Actions secrets.
-- Backup ZIP and CSV export files are not encrypted by design; protecting exported files is the user's responsibility.
+- Backups are unencrypted unless the user sets a password (AES-256-GCM, PBKDF2-HMAC-SHA256 with 600,000 iterations, header authenticated). CSV exports are never encrypted; protecting unprotected files is the user's responsibility.
