@@ -40,9 +40,13 @@ val FernShapes = Shapes(
     extraLarge = RoundedCornerShape(32.dp),
 )
 
-/** Raleway for headings and labels, Open Sans for body text and numbers: the app's two fonts. */
+/**
+ * Raleway for headings and labels, Open Sans for body text and numbers: the app's two fonts.
+ * The only definition of their weight mapping; the legacy design system uses it too.
+ */
 object FernFonts {
     val Raleway = FontFamily(
+        Font(R.font.raleway_light, FontWeight.Light),
         Font(R.font.raleway_regular, FontWeight.Normal),
         Font(R.font.raleway_medium, FontWeight.Medium),
         Font(R.font.raleway_semibold, FontWeight.SemiBold),
@@ -50,12 +54,16 @@ object FernFonts {
         Font(R.font.raleway_extrabold, FontWeight.ExtraBold),
         Font(R.font.raleway_black, FontWeight.Black),
     )
+
+    // Open Sans has no Medium or Black files: Medium uses Regular and Black uses Bold, as the
+    // legacy design always did.
     val OpenSans = FontFamily(
         Font(R.font.opensans_regular, FontWeight.Normal),
         Font(R.font.opensans_regular, FontWeight.Medium),
         Font(R.font.opensans_semibold, FontWeight.SemiBold),
         Font(R.font.opensans_bold, FontWeight.Bold),
         Font(R.font.opensans_extrabold, FontWeight.ExtraBold),
+        Font(R.font.opensans_bold, FontWeight.Black),
     )
 }
 
