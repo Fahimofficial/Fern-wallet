@@ -91,8 +91,8 @@ object BackupCrypto {
 
         val key = deriveKey(password, salt, iterations)
         return try {
-            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
             // Decrypts with the IV stored in the file; IV reuse only matters when encrypting.
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding") // nosemgrep
             cipher.init(Cipher.DECRYPT_MODE, key.secret, GCMParameterSpec(TAG_BITS, iv)) // nosemgrep
             cipher.updateAAD(data, 0, HEADER_BYTES)
             cipher.doFinal(data, HEADER_BYTES, data.size - HEADER_BYTES)

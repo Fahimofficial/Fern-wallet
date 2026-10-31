@@ -84,7 +84,7 @@ class AutoBackupUseCase @Inject constructor(
             if (deleteIfPresent(folder, leftover)) preferences.unfinishedFile = null
         }
         val key = preferences.key?.let { stored ->
-            loadKey(stored) ?: return AutoBackupFailure.KEY_UNAVAILABLE
+            keyWrapper.unwrapOrNull(stored) ?: return AutoBackupFailure.KEY_UNAVAILABLE
         }
         val name = fileName(encrypted = key != null)
         val mimeType = if (key != null) MIME_ENCRYPTED else MIME_ZIP
@@ -118,32 +118,6 @@ class AutoBackupUseCase @Inject constructor(
         false
     }
 
-    // Returns null when the stored key can't be used anymore (keystore entry gone or
-    // invalidated, wrapped bytes damaged); the user then has to set the password again.
-    private fun loadKey(stored: StoredBackupKey): BackupCrypto.Key? = try {
-        BackupCrypto.keyFromRaw(stored.salt, stored.iterations, keyWrapper.unwrap(stored.wrappedKey))
-    } catch (e: GeneralSecurityException) {
-        // Keystore entry invalidated, wrong tag (AEADBadTagException), unusable key...
-        keyUnavailable(e)
-    } catch (e: ProviderException) {
-        // Android Keystore reports some hardware/keystore failures this way.
-        keyUnavailable(e)
-    } catch (e: IOException) {
-        // KeyStore.load
-        keyUnavailable(e)
-    } catch (e: IllegalStateException) {
-        // The keystore entry is missing.
-        keyUnavailable(e)
-    } catch (e: IllegalArgumentException) {
-        // Stored bytes too short or empty.
-        keyUnavailable(e)
-    }
-
-    private fun keyUnavailable(e: Exception): BackupCrypto.Key? {
-        Timber.e(e, "Couldn't unwrap the automatic backup key")
-        return null
-    }
-
     private fun prune(folder: BackupFolder) {
         folder.files()
             .filter { it.name.startsWith(PREFIX) }
@@ -169,4 +143,30 @@ class AutoBackupUseCase @Inject constructor(
         // UTC and sortable, so the newest file has the greatest name.
         private val FILE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss'Z'")
     }
+}
+
+// Null when the stored key can't be used anymore (keystore entry gone or invalidated, wrapped
+// bytes damaged); the user then has to set the password again. Other exceptions propagate.
+private fun BackupKeyWrapper.unwrapOrNull(stored: StoredBackupKey): BackupCrypto.Key? = try {
+    BackupCrypto.keyFromRaw(stored.salt, stored.iterations, unwrap(stored.wrappedKey))
+} catch (e: GeneralSecurityException) {
+    // Keystore entry invalidated, wrong tag (AEADBadTagException), unusable key...
+    keyUnavailable(e)
+} catch (e: ProviderException) {
+    // Android Keystore reports some hardware/keystore failures this way.
+    keyUnavailable(e)
+} catch (e: IOException) {
+    // KeyStore.load
+    keyUnavailable(e)
+} catch (e: IllegalStateException) {
+    // The keystore entry is missing.
+    keyUnavailable(e)
+} catch (e: IllegalArgumentException) {
+    // Stored bytes too short or empty.
+    keyUnavailable(e)
+}
+
+private fun keyUnavailable(e: Exception): BackupCrypto.Key? {
+    Timber.e(e, "Couldn't unwrap the automatic backup key")
+    return null
 }
