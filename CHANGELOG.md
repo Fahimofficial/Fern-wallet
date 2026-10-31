@@ -56,6 +56,13 @@ First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 - Opening links no longer crashes when no browser is installed.
 
 ### Privacy & security
+- App lock can no longer be silently skipped: it can only be turned on when the phone has a screen
+  lock, and if the screen lock is removed later the app stays locked and explains how to unlock.
+- Network requests time out (10 s to connect, 30 s in total) instead of hanging on a bad
+  connection; HTTP logging is limited to headers in debug builds.
+- Removed the unused Google Play libraries (in-app review, app update, Play Services tasks, the
+  coroutines Play Services adapter) and the unused security-crypto library. The app no longer
+  contains proprietary Google code, a step towards F-Droid.
 - Removed Firebase Crashlytics and the Firestore poll (they sent data to upstream's Firebase project).
 - Removed unused permissions: location, storage, `SET_ALARM`, `DISABLE_KEYGUARD`. Cleartext HTTP disabled.
 - Release builds are signed only from CI secrets; the release workflow refuses debug-signed builds.

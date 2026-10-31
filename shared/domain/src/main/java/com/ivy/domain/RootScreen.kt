@@ -19,8 +19,6 @@ interface RootScreen {
      */
     val buildVersionCode: Int
 
-    fun reviewIvyWallet(dismissReviewCard: Boolean)
-
     fun shareIvyWallet()
 
     /**

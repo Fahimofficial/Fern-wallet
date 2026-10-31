@@ -1,7 +1,6 @@
 package com.ivy.wallet.ui.applocked
 
 import android.annotation.SuppressLint
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
@@ -17,7 +16,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -29,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
 import com.ivy.legacy.IvyWalletPreview
@@ -43,8 +46,12 @@ import com.ivy.wallet.ui.theme.components.IvyButton
 @Suppress("LongMethod", "FunctionNaming")
 fun BoxWithConstraintsScope.AppLockedScreen(
     onShowOSBiometricsModal: () -> Unit,
-    onContinueWithoutAuthentication: () -> Unit
+    onOpenSecuritySettings: () -> Unit
 ) {
+    val context = LocalContext.current
+    // Without a screen lock there is nothing to authenticate with. Never unlock in that case:
+    // ask the user to set one (re-checked every time this screen is shown or Unlock is tapped).
+    var deviceSecure by remember { mutableStateOf(hasLockScreen(context)) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,32 +79,33 @@ fun BoxWithConstraintsScope.AppLockedScreen(
             painter = painterResource(id = R.drawable.ic_fingerprint),
             colorFilter = ColorFilter.tint(UI.colors.medium),
             contentScale = ContentScale.FillBounds,
-            contentDescription = "unlock icon"
+            contentDescription = null
         )
 
         Spacer(Modifier.weight(1f))
 
         Text(
-            text = stringResource(R.string.authenticate_text),
+            modifier = Modifier.padding(horizontal = 32.dp),
+            text = stringResource(
+                if (deviceSecure) R.string.authenticate_text else R.string.app_lock_no_screen_lock
+            ),
             style = UI.typo.b2.style(
                 fontWeight = FontWeight.SemiBold,
-                color = Gray
+                color = Gray,
+                textAlign = TextAlign.Center
             )
         )
 
         Spacer(Modifier.height(24.dp))
 
-        val latestOnContinueWithoutAuthentication by rememberUpdatedState(
-            newValue = onContinueWithoutAuthentication
-        )
+        val latestOnOpenSecuritySettings by rememberUpdatedState(onOpenSecuritySettings)
         val latestOnShowOSBiometricsModal by rememberUpdatedState(onShowOSBiometricsModal)
 
-        val context = LocalContext.current
         IvyButton(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            text = stringResource(R.string.unlock),
+            text = stringResource(if (deviceSecure) R.string.unlock else R.string.app_lock_open_settings),
             textStyle = UI.typo.b2.style(
                 color = White,
                 fontWeight = FontWeight.Bold,
@@ -105,34 +113,21 @@ fun BoxWithConstraintsScope.AppLockedScreen(
             ),
             wrapContentMode = false
         ) {
-            osAuthentication(
-                context = context,
-                onShowOSBiometricsModal = latestOnShowOSBiometricsModal,
-                onContinueWithoutAuthentication = latestOnContinueWithoutAuthentication
-            )
+            deviceSecure = hasLockScreen(context)
+            if (deviceSecure) latestOnShowOSBiometricsModal() else latestOnOpenSecuritySettings()
         }
         Spacer(Modifier.height(24.dp))
 
-        // To automatically launch the biometric screen on load of this composable
-        LaunchedEffect(true) {
-            osAuthentication(
-                context = context,
-                onShowOSBiometricsModal = latestOnShowOSBiometricsModal,
-                onContinueWithoutAuthentication = latestOnContinueWithoutAuthentication
-            )
+        // Show the system prompt as soon as the screen appears.
+        LaunchedEffect(Unit) {
+            if (deviceSecure) latestOnShowOSBiometricsModal()
         }
-    }
-}
-
-private fun osAuthentication(
-    context: Context,
-    onShowOSBiometricsModal: () -> Unit,
-    onContinueWithoutAuthentication: () -> Unit
-) {
-    if (hasLockScreen(context)) {
-        onShowOSBiometricsModal()
-    } else {
-        onContinueWithoutAuthentication()
+        // Re-check after returning from the phone's settings. Doesn't prompt by itself: the
+        // device-credential screen also pauses this activity, and cancelling it must not loop.
+        LifecycleResumeEffect(Unit) {
+            deviceSecure = hasLockScreen(context)
+            onPauseOrDispose { }
+        }
     }
 }
 
@@ -142,7 +137,7 @@ private fun osAuthentication(
 private fun Preview_Locked() {
     IvyWalletPreview {
         AppLockedScreen(
-            onContinueWithoutAuthentication = {},
+            onOpenSecuritySettings = {},
             onShowOSBiometricsModal = {}
         )
     }
