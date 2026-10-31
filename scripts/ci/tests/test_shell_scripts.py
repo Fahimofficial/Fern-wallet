@@ -135,5 +135,43 @@ class RunAndroidTestsTest(ShellScriptTestCase):
         self.assertEqual(self.run_script("run_android_tests.sh", "t.log", ":m:x").returncode, 3)
 
 
+class SmokeTestApkTest(ShellScriptTestCase):
+    PKG = "com.fernwallet.app"
+
+    def fake_adb(self, installed: bool) -> None:
+        # Records install/uninstall calls; answers the shell queries the script makes.
+        listed = f"package:{self.PKG}" if installed else ""
+        self.fake("adb", f'''case "$1" in
+  install|uninstall) echo "$@" >> "$ADB_LOG" ;;
+  logcat) ;;
+  shell)
+    case "$2 $3" in
+      "pm list") echo "{listed}" ;;
+      "cmd package") echo "{self.PKG}/com.ivy.wallet.RootActivity" ;;
+      "am start") echo "Status: ok" ;;
+      "pidof "*) echo 1234 ;;
+    esac ;;
+esac
+''')
+        self.fake("sleep", "exit 0\n")
+        os.environ["ADB_LOG"] = os.path.join(self.tmp, "adb.log")
+
+    def adb_calls(self) -> list[str]:
+        with open(os.environ["ADB_LOG"], encoding="utf-8") as f:
+            return f.read().split("\n")[:-1]
+
+    def test_removes_previous_install_before_installing(self):
+        self.fake_adb(installed=True)
+        result = self.run_script("smoke_test_apk.sh", "app.apk", self.PKG, "out")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.adb_calls(), [f"uninstall {self.PKG}", "install app.apk"])
+
+    def test_fresh_emulator_installs_without_uninstall(self):
+        self.fake_adb(installed=False)
+        result = self.run_script("smoke_test_apk.sh", "app.apk", self.PKG, "out")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.adb_calls(), ["install app.apk"])
+
+
 if __name__ == "__main__":
     unittest.main()

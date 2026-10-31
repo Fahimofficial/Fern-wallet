@@ -207,16 +207,18 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      # Restore only; the cache is saved right after the snapshot is created (next steps), never
+      # at the end of the job. A post-job save stored the AVD after APKs had been installed into
+      # it: v1 contained debug-signed test APKs and v2 a release APK signed with a per-run
+      # throwaway key, so later installs failed with INSTALL_FAILED_UPDATE_INCOMPATIBLE.
       - name: AVD cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: avd-cache
         with:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          # v2: the v1 snapshot was saved after a test run and contained test APKs signed with
-          # another runner's debug key, so installs failed (INSTALL_FAILED_UPDATE_INCOMPATIBLE).
-          key: avd-34-google_apis-x86_64-v2
+          key: avd-34-google_apis-x86_64-v3
 
       - name: Create AVD snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -229,6 +231,15 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
+
+      - name: Save clean AVD snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-34-google_apis-x86_64-v3
 
       - name: Build androidTest APKs
         run: >-
@@ -293,16 +304,16 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      # Restore only: this job installs a release APK into the AVD, so it must never save it.
+      # The integration-tests job saves the clean snapshot.
       - name: AVD cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: avd-cache
         with:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          # v2: the v1 snapshot was saved after a test run and contained test APKs signed with
-          # another runner's debug key, so installs failed (INSTALL_FAILED_UPDATE_INCOMPATIBLE).
-          key: avd-34-google_apis-x86_64-v2
+          key: avd-34-google_apis-x86_64-v3
 
       - name: Install, launch and check for crashes
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0

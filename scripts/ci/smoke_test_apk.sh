@@ -11,8 +11,15 @@ pkg="$2"
 out="${3:-build/smoke-test}"
 mkdir -p "$out"
 
+# Test a fresh install. A copy left in a reused emulator snapshot is signed with another run's
+# throwaway key, and `adb install -r` over it fails with INSTALL_FAILED_UPDATE_INCOMPATIBLE.
+if adb shell pm list packages "$pkg" 2>/dev/null | tr -d '\r' | grep -qx "package:$pkg"; then
+  echo "Removing previously installed $pkg"
+  adb uninstall "$pkg" > /dev/null || true
+fi
+
 echo "Installing $apk"
-adb install -r "$apk"
+adb install "$apk"
 
 adb logcat -c || true
 activity="$(adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN \
