@@ -97,27 +97,29 @@ class BackupDataUseCase @Inject constructor(
 
     suspend fun generateJsonBackup(): String {
         return withContext(dispatchersProvider.io) {
-            // One read transaction, so the backup is a consistent snapshot of the wallet.
-            val completeData = transactionRunner.run {
-                IvyWalletCompleteData(
-                    formatVersion = IvyWalletCompleteData.CURRENT_FORMAT_VERSION,
-                    accounts = accountDao.findAll(),
-                    budgets = budgetDao.findAll(),
-                    categories = categoryDao.findAll(),
-                    loanRecords = loanRecordDao.findAll(),
-                    loans = loanDao.findAll(),
-                    plannedPaymentRules = plannedPaymentRuleDao.findAll(),
-                    settings = settingsDao.findAll(),
-                    transactions = transactionDao.findAll(),
-                    sharedPrefs = getSharedPrefsData(),
-                    tags = tagsReader.findAll(),
-                    tagAssociations = tagAssociationReader.findAll(),
-                    creditCards = creditCardDao.findAll(),
-                    creditCardStatements = creditCardDao.findAllStatements(),
-                )
-            }
+            json.encodeToString(readCompleteData())
+        }
+    }
 
-            json.encodeToString(completeData)
+    private suspend fun readCompleteData(): IvyWalletCompleteData {
+        // One read transaction, so the backup is a consistent snapshot of the wallet.
+        return transactionRunner.run {
+            IvyWalletCompleteData(
+                formatVersion = IvyWalletCompleteData.CURRENT_FORMAT_VERSION,
+                accounts = accountDao.findAll(),
+                budgets = budgetDao.findAll(),
+                categories = categoryDao.findAll(),
+                loanRecords = loanRecordDao.findAll(),
+                loans = loanDao.findAll(),
+                plannedPaymentRules = plannedPaymentRuleDao.findAll(),
+                settings = settingsDao.findAll(),
+                transactions = transactionDao.findAll(),
+                sharedPrefs = getSharedPrefsData(),
+                tags = tagsReader.findAll(),
+                tagAssociations = tagAssociationReader.findAll(),
+                creditCards = creditCardDao.findAll(),
+                creditCardStatements = creditCardDao.findAllStatements(),
+            )
         }
     }
 
@@ -178,10 +180,10 @@ class BackupDataUseCase @Inject constructor(
         }
         onProgress(PROGRESS_PARSED)
 
-        val completeData = withExistingAccountsAndCategories(jsonString, parsed)
+        val completeData = mergeAccountsAndCategoriesByName(jsonString, parsed)
 
         val snapshot = try {
-            savePreRestoreSnapshot()
+            savePreRestoreCopyUnlessWalletIsEmpty()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -260,20 +262,26 @@ class BackupDataUseCase @Inject constructor(
         return data
     }
 
-    /** Returns the file of the copy, or null if the wallet is empty (nothing to protect). */
-    private suspend fun savePreRestoreSnapshot(): java.io.File? {
-        val hasData = accountDao.findAll().isNotEmpty() || categoryDao.findAll().isNotEmpty()
-        if (!hasData) return null
-        preRestoreSnapshots.save(generateJsonBackup(), System.currentTimeMillis())
+    private suspend fun savePreRestoreCopyUnlessWalletIsEmpty(): java.io.File? {
+        val current = readCompleteData()
+        if (!current.hasRestorableRows()) return null
+        preRestoreSnapshots.save(json.encodeToString(current), System.currentTimeMillis())
         return preRestoreSnapshots.latest()
     }
 
-    /**
-     * Accounts and categories in the backup that have the same name as an existing one are
-     * merged into it, so importing doesn't create duplicates. Their ids are replaced everywhere
-     * in the backup (transactions, budgets' serialized id lists, planned payments, loans, cards...).
-     */
-    private suspend fun withExistingAccountsAndCategories(
+    // Any row the import can overwrite counts, not just accounts and categories: a wallet with
+    // only tags, loans, budgets or settings must be restorable too. Shared preferences are not
+    // considered: they always have values (defaults on a fresh install), so they'd make every
+    // wallet look non-empty; they're still included in the copy whenever one is saved.
+    private fun IvyWalletCompleteData.hasRestorableRows(): Boolean = listOf(
+        accounts, budgets, categories, loanRecords, loans, plannedPaymentRules, settings,
+        transactions, tags, tagAssociations, creditCards, creditCardStatements,
+    ).any { it.isNotEmpty() }
+
+    // Accounts and categories in the backup that have the same name as an existing one are
+    // merged into it, so importing doesn't create duplicates. Their ids are replaced everywhere
+    // in the backup (transactions, budgets' serialized id lists, planned payments, loans, cards...).
+    private suspend fun mergeAccountsAndCategoriesByName(
         jsonString: String,
         parsed: IvyWalletCompleteData,
     ): IvyWalletCompleteData {

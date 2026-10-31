@@ -22,6 +22,7 @@ import com.ivy.data.db.entity.AccountTypeCreditCard
 import com.ivy.data.db.entity.CreditCardEntity
 import com.ivy.data.db.entity.CreditCardStatementEntity
 import com.ivy.data.db.entity.SettingsEntity
+import com.ivy.data.db.entity.TagEntity
 import com.ivy.data.db.entity.TransactionEntity
 import com.ivy.data.db.DbTransactionRunner
 import com.ivy.data.db.dao.fake.FakeDbTransactionRunner
@@ -41,6 +42,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.time.Instant
 import java.util.UUID
 
 class BackupDataUseCaseTest {
@@ -146,10 +148,8 @@ class BackupDataUseCaseTest {
         val sharedPrefs = mockk<SharedPrefs>(relaxed = true)
         every { sharedPrefs.getBoolean(SharedPrefs.APP_LOCK_ENABLED, any()) } returns true
         val useCase = newBackupDataUseCase(sharedPrefs = sharedPrefs)
-        val backupJsonData = testResource("backups/450-150.json").readText(Charsets.UTF_16)
-
         // when
-        useCase.importJson(backupJsonData, onProgress = {})
+        useCase.importJson(backupJson(), onProgress = {})
 
         // then
         verify { sharedPrefs.putBoolean(SharedPrefs.APP_LOCK_ENABLED, true) }
@@ -161,10 +161,10 @@ class BackupDataUseCaseTest {
         val accountDao = FakeAccountDao()
         val creditCardDao = FakeCreditCardDao()
         val useCase = newBackupDataUseCase(accountDao = accountDao, creditCardDao = creditCardDao)
-        val backupJson = testResource("backups/450-150.json").readText(Charsets.UTF_16)
-        backupJson.contains("creditCards") shouldBe false
+        val json = backupJson()
+        json.contains("creditCards") shouldBe false
 
-        useCase.importJson(backupJson, onProgress = {})
+        useCase.importJson(json, onProgress = {})
 
         accountDao.findAll().shouldNotBeEmpty()
         accountDao.findAll().all { it.type == AccountTypeAsset } shouldBe true
@@ -341,6 +341,32 @@ class BackupDataUseCaseTest {
         useCase.undoLastImport() shouldBe true
         useCase.generateJsonBackup() shouldBe before
         useCase.canUndoLastImport() shouldBe false
+    }
+
+    @Test
+    fun `a wallet with only tags (no accounts or categories) can be restored after an import`() = runTest {
+        val tagDao = FakeTagDao()
+        val useCase = newBackupDataUseCase(tagDao = tagDao)
+        tagDao.save(
+            TagEntity(
+                id = UUID.randomUUID(),
+                name = "Work",
+                description = null,
+                color = 0,
+                icon = null,
+                orderNum = 0.0,
+                dateTime = Instant.EPOCH,
+                isDeleted = false,
+                lastSyncedTime = Instant.EPOCH,
+            )
+        )
+        val before = useCase.generateJsonBackup()
+
+        val result = useCase.importJson(backupJson())
+
+        result.canUndo shouldBe true
+        useCase.undoLastImport() shouldBe true
+        useCase.generateJsonBackup() shouldBe before
     }
 
     @Test
