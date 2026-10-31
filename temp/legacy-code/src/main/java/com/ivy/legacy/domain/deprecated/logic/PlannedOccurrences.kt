@@ -48,24 +48,43 @@ object PlannedOccurrences {
         collect(schedule, firstIndex = paidCount.toLong(), alreadyUpcoming = 0, now = now)
 
     /**
-     * Due dates to add after the latest existing upcoming instance, so the window reaches
-     * [HORIZON_YEARS] from [now] again. Returns nothing when the window is already full.
+     * Due dates to add so the window reaches [HORIZON_YEARS] from [now] again: after the latest
+     * existing upcoming instance, or after the [paidCount] paid ones when there is none. Returns
+     * nothing when the window is already full.
+     *
+     * This runs automatically (app start), so it only adds due dates from today on. Past
+     * occurrences without an instance were skipped by the user (skipping deletes the instance)
+     * or fell outside an earlier window; recreating them would add overdue payments nobody asked for.
      */
-    fun extend(schedule: Schedule, upcomingDueDates: List<Instant>, now: Instant): List<Instant> {
-        val last = upcomingDueDates.maxOrNull() ?: return regenerate(schedule, paidCount = 0, now = now)
+    fun extend(
+        schedule: Schedule,
+        upcomingDueDates: List<Instant>,
+        paidCount: Int,
+        now: Instant,
+    ): List<Instant> {
+        val afterExisting = upcomingDueDates.maxOrNull()?.let { firstIndexAfter(schedule, it) }
+            ?: paidCount.toLong()
         return collect(
             schedule = schedule,
-            firstIndex = firstIndexAfter(schedule, last),
+            firstIndex = maxOf(afterExisting, firstIndexFrom(schedule, now)),
             alreadyUpcoming = upcomingDueDates.size,
             now = now
         )
     }
 
-    private fun firstIndexAfter(schedule: Schedule, last: Instant): Long {
+    private fun firstIndexAfter(schedule: Schedule, last: Instant): Long = firstIndexWhere(schedule) {
+        it.isAfter(last) && !inSameCalendarPeriod(schedule.intervalType, it, last)
+    }
+
+    // Due today counts as upcoming, whatever the time of day.
+    private fun firstIndexFrom(schedule: Schedule, now: Instant): Long {
+        val today = now.truncatedTo(ChronoUnit.DAYS)
+        return firstIndexWhere(schedule) { !it.isBefore(today) }
+    }
+
+    private inline fun firstIndexWhere(schedule: Schedule, predicate: (Instant) -> Boolean): Long {
         var index = 0L
-        while (index < MAX_ITERATIONS) {
-            val date = occurrence(schedule, index)
-            if (date.isAfter(last) && !samePeriod(schedule.intervalType, date, last)) break
+        while (index < MAX_ITERATIONS && !predicate(occurrence(schedule, index))) {
             index++
         }
         return index
@@ -90,12 +109,10 @@ object PlannedOccurrences {
         return result
     }
 
-    /**
-     * Instances created before occurrences were computed from the start date could drift (31 Jan,
-     * 28 Feb, 28 Mar...). An instance in the same month (or year) as an existing one is treated as
-     * that one, so topping up never creates a second payment for the same month.
-     */
-    private fun samePeriod(type: IntervalType, a: Instant, b: Instant): Boolean = when (type) {
+    // Instances created before occurrences were computed from the start date could drift (31 Jan,
+    // 28 Feb, 28 Mar...). An instance in the same month (or year) as an existing one is treated as
+    // that one, so topping up never creates a second payment for the same month.
+    private fun inSameCalendarPeriod(type: IntervalType, a: Instant, b: Instant): Boolean = when (type) {
         IntervalType.DAY, IntervalType.WEEK -> false
         IntervalType.MONTH -> YearMonth.from(a.atZone(ZoneOffset.UTC)) == YearMonth.from(b.atZone(ZoneOffset.UTC))
         IntervalType.YEAR -> a.atZone(ZoneOffset.UTC).year == b.atZone(ZoneOffset.UTC).year
