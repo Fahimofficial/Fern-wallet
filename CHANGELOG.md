@@ -39,6 +39,13 @@ First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 - Database 130 → 131 is an additive migration; backups include card data, and older backups still import.
 
 ### Fixes
+- A missing exchange rate no longer converts 1:1 (e.g. US dollars counted as rupees). Amounts in a
+  currency without a rate are left out of totals, and Home shows an **Exchange rate missing** card
+  that opens the exchange-rates screen. A transfer between such currencies shows a placeholder
+  rate of 1 in its editable rate field.
+- Recurring planned payments no longer stop 3 years after their start date: upcoming payments are
+  kept generated up to 3 years ahead of today (at most 72 per rule), topped up on every app start.
+- Monthly payments on the 29th–31st no longer drift to the 28th after February.
 - Amount shortening: `999,999` showed `1000.00k` (now `1m`), small amounts showed `500.0`/scientific notation,
   the decimal separator ignored the locale.
 - Monthly period with a start day of 29–31 picked the wrong month in shorter months (e.g. start day 31 on Feb 28),

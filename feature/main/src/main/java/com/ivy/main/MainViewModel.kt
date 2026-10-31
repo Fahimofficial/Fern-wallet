@@ -17,6 +17,9 @@ import com.ivy.navigation.Navigation
 import com.ivy.wallet.domain.deprecated.logic.model.CreateAccountData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import com.ivy.wallet.domain.deprecated.logic.PlannedPaymentsGenerator
+import kotlinx.coroutines.CancellationException
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,6 +30,7 @@ class MainViewModel @Inject constructor(
     private val accountCreator: AccountCreator,
     private val sharedPrefs: SharedPrefs,
     private val currencyRepository: CurrencyRepository,
+    private val plannedPaymentsGenerator: PlannedPaymentsGenerator,
 ) : ViewModel() {
 
     private val _currency = MutableLiveData<String>()
@@ -51,6 +55,17 @@ class MainViewModel @Inject constructor(
 
             ivyContext.dataBackupCompleted =
                 sharedPrefs.getBoolean(SharedPrefs.DATA_BACKUP_COMPLETED, false)
+
+            ioThread {
+                // Keep recurring planned payments generated ahead of today.
+                try {
+                    plannedPaymentsGenerator.extendAll()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e, "Couldn't extend planned payments")
+                }
+            }
 
             ioThread {
                 // Sync exchange rates

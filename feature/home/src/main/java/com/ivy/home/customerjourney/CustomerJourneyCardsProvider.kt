@@ -14,7 +14,9 @@ import com.ivy.design.l0_system.Orange
 import com.ivy.design.l0_system.Red
 import com.ivy.legacy.IvyWalletCtx
 import com.ivy.legacy.data.model.MainTab
+import com.ivy.domain.usecase.exchange.MissingExchangeRatesUseCase
 import com.ivy.navigation.EditPlannedScreen
+import com.ivy.navigation.ExchangeRatesScreen
 import com.ivy.navigation.PieChartStatisticScreen
 import com.ivy.ui.R
 import com.ivy.widget.transaction.AddTransactionWidgetCompact
@@ -27,6 +29,7 @@ class CustomerJourneyCardsProvider @Inject constructor(
   private val sharedPrefs: SharedPrefs,
   private val ivyContext: IvyWalletCtx,
   private val timeProvider: TimeProvider,
+  private val missingExchangeRatesUseCase: MissingExchangeRatesUseCase,
 ) {
 
   suspend fun loadCards(): List<CustomerJourneyCardModel> {
@@ -36,7 +39,12 @@ class CustomerJourneyCardsProvider @Inject constructor(
       timeProvider = timeProvider,
     )
 
-    return ACTIVE_CARDS
+    val missingRates = missingExchangeRatesUseCase.missingCurrencies()
+    val warnings = listOfNotNull(
+      missingRates.takeIf { it.isNotEmpty() }?.let(::missingExchangeRatesCard)
+    )
+
+    return warnings + ACTIVE_CARDS
       .filter {
         it.condition(
           trnCount,
@@ -60,6 +68,24 @@ class CustomerJourneyCardsProvider @Inject constructor(
   }
 
   companion object {
+    /** Not dismissible: it disappears once every account currency has a rate. */
+    fun missingExchangeRatesCard(currencies: List<String>): CustomerJourneyCardModel = CustomerJourneyCardModel(
+      id = "missing_exchange_rates",
+      condition = { _, _, _, _ -> true },
+      title = stringRes(R.string.missing_exchange_rates_title),
+      description = stringRes(
+        R.string.missing_exchange_rates_description,
+        currencies.joinToString(separator = ", ")
+      ),
+      cta = stringRes(R.string.missing_exchange_rates_cta),
+      ctaIcon = R.drawable.ic_currency,
+      background = Gradient.solid(Orange),
+      hasDismiss = false,
+      onAction = { navigation, _, _ ->
+        navigation.navigateTo(ExchangeRatesScreen)
+      }
+    )
+
     val ACTIVE_CARDS = listOf(
       adjustBalanceCard(),
       addPlannedPaymentCard(),
