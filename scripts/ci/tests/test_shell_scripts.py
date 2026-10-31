@@ -156,7 +156,8 @@ esac
         self.fake("sleep", "exit 0\n")
         os.environ["ADB_LOG"] = os.path.join(self.tmp, "adb.log")
 
-    def adb_calls(self) -> list[str]:
+    @staticmethod
+    def adb_calls() -> list[str]:
         with open(os.environ["ADB_LOG"], encoding="utf-8") as f:
             return f.read().split("\n")[:-1]
 
