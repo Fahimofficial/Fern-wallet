@@ -7,7 +7,6 @@ import com.ivy.base.time.TimeProvider
 import com.ivy.data.db.dao.read.PlannedPaymentRuleDao
 import com.ivy.data.repository.TransactionRepository
 import com.ivy.design.l0_system.Gradient
-import com.ivy.design.l0_system.Green
 import com.ivy.design.l0_system.GreenLight
 import com.ivy.design.l0_system.Ivy
 import com.ivy.design.l0_system.Orange
@@ -159,22 +158,6 @@ class CustomerJourneyCardsProvider @Inject constructor(
       hasDismiss = true,
       onAction = { navigation, _, _ ->
         navigation.navigateTo(PieChartStatisticScreen(type = TransactionType.EXPENSE))
-      }
-    )
-
-    fun rateUsCard() = CustomerJourneyCardModel(
-      id = "rate_us",
-      condition = { trnCount, _, _, _ ->
-        trnCount >= 10
-      },
-      title = stringRes(R.string.review_ivy_wallet),
-      description = stringRes(R.string.review_ivy_wallet_description),
-      cta = stringRes(R.string.rate_us_on_google_play),
-      ctaIcon = R.drawable.ic_custom_star_s,
-      background = Gradient.solid(Green),
-      hasDismiss = true,
-      onAction = { _, _, ivyActivity ->
-        ivyActivity.reviewIvyWallet(dismissReviewCard = true)
       }
     )
   }

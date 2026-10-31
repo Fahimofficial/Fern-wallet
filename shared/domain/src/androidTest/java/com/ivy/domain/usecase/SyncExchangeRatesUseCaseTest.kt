@@ -41,7 +41,10 @@ class SyncExchangeRatesUseCaseTest {
             mapper = ExchangeRateMapper(),
             remoteExchangeRatesDataSource = RemoteExchangeRatesDataSourceImpl(
                 ktorClient = {
-                    KtorClientModule.provideKtorClient(KotlinxSerializationModule.provideJson())
+                    KtorClientModule.provideKtorClient(
+                        json = KotlinxSerializationModule.provideJson(),
+                        context = ApplicationProvider.getApplicationContext<Context>(),
+                    )
                 },
             ),
             dispatchers = TestDispatchersProvider,

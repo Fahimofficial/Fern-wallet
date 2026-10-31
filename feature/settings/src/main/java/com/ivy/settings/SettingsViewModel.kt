@@ -39,6 +39,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.ivy.base.Toaster
+import com.ivy.legacy.utils.hasLockScreen
 import javax.inject.Inject
 
 @Stable
@@ -57,7 +59,8 @@ class SettingsViewModel @Inject constructor(
     private val updateSettingsAct: UpdateSettingsAct,
     private val settingsWriter: WriteSettingsDao,
     private val exportCsvUseCase: ExportCsvUseCase,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val toaster: Toaster,
 ) : ComposeViewModel<SettingsState, SettingsEvent>() {
 
     private val currencyCode = mutableStateOf("")
@@ -319,6 +322,11 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun setLockApp(lock: Boolean) {
+        if (lock && !hasLockScreen(context)) {
+            // App lock uses the device's screen lock; without one it couldn't protect anything.
+            viewModelScope.launch { toaster.show(com.ivy.ui.R.string.app_lock_needs_screen_lock) }
+            return
+        }
         lockApp.value = lock
 
         viewModelScope.launch {
