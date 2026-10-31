@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
     id("io.gitlab.arturbosch.detekt")
+    alias(libs.plugins.cyclonedx)
 }
 
 android {
@@ -114,6 +115,18 @@ android {
 
     lint {
         disable += "ComposeViewModelInjection"
+        // Security checks are errors, so the CI lint gate blocks a new occurrence anywhere in the
+        // app or its modules (checkDependencies). None of these is reported or baselined today.
+        error += setOf(
+            "AddJavascriptInterface", "SetJavaScriptEnabled", "TrustAllX509TrustManager",
+            "BadHostnameVerifier", "AllowAllHostnameVerifier", "SSLCertificateSocketFactoryGetInsecure",
+            "SSLCertificateSocketFactoryCreateSocket", "InsecureBaseConfiguration", "AcceptsUserCertificates",
+            "UnsafeIntentLaunch", "UnsafeImplicitIntentLaunch", "MutableImplicitPendingIntent",
+            "UnspecifiedRegisterReceiverFlag", "ExportedContentProvider", "WorldReadableFiles",
+            "WorldWriteableFiles", "SetWorldReadable", "SetWorldWritable", "HardcodedDebugMode",
+            "PackagedPrivateKey", "SecureRandom", "GetInstance", "UnsafeDynamicallyLoadedCode",
+            "UnsafeNativeCodeLocation", "UseCheckPermission", "SignatureOrSystemPermissions",
+        )
         checkDependencies = true
         abortOnError = false
         checkReleaseBuilds = false
@@ -129,6 +142,14 @@ kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(libs.versions.jvm.target.get()))
     }
+}
+
+// SBOM of exactly what ships in the release APK/AAB: `./gradlew :app:cyclonedxDirectBom`
+// writes app/build/reports/cyclonedx-direct/bom.json. Used by .github/workflows/security.yml
+// (vulnerability scan) and release.yml (attached to the GitHub release).
+tasks.named<org.cyclonedx.gradle.CyclonedxDirectTask>("cyclonedxDirectBom") {
+    includeConfigs = listOf("releaseRuntimeClasspath")
+    projectType = org.cyclonedx.model.Component.Type.APPLICATION
 }
 
 // Keep Hilt's Kotlin metadata reader in sync with our Kotlin compiler (see ivy.hilt.gradle.kts).

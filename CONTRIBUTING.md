@@ -27,7 +27,13 @@ Run the same checks as CI:
 
 ```sh
 ./gradlew testDebugUnitTest verifyPaparazziDebug detekt lintRelease
+python3 scripts/ci/lint_gate.py build/reports/lint/lint.xml   # fails on lint errors, like CI
 ```
+
+CI also builds the minified release APK, checks its permissions and exported components against
+`.github/apk-policy.json`, runs emulator tests, and scans for secrets and vulnerable dependencies
+([docs/CI_CD.md](docs/CI_CD.md)). If you add a permission or an exported component, update
+`.github/apk-policy.json` and `PRIVACY.md` in the same PR and explain why.
 
 - Changes to financial calculations, date ranges or data import/export **must** include regression tests.
 - Never add a destructive database migration; add a Room migration and a migration test instead.

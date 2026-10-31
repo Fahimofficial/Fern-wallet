@@ -108,9 +108,22 @@ node_modules/*
 /.idea/runConfigurations.xml
 .idea
 
-# Release signing material & store credentials (never commit)
+# Release signing material & store credentials (never commit).
+# debug.jks is the public debug key and is tracked on purpose (see SECURITY.md).
 sign.jks
+*.jks
+!/debug.jks
 *.keystore
+*.p12
+*.pfx
+*.pem
 release-keystore.*
+keystore.properties
+signing.properties
+google-services.json
 google-play-console-user.json
 play_config.json*
+
+# Python bytecode (scripts/ci)
+__pycache__/
+*.pyc

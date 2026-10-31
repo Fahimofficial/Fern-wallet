@@ -16,17 +16,28 @@ this data is not copied to Google Drive by the system. Backups are only created 
 
 The app makes these HTTPS requests (cleartext HTTP is disabled):
 
-| Purpose | Destination | Data sent |
-|---|---|---|
-| Exchange rates | `currency-api.pages.dev`, `cdn.jsdelivr.net` | none beyond a normal HTTP request |
-| Releases / Contributors screens | `api.github.com` (Fern Wallet repository) | none beyond a normal HTTP request; only when you open those screens |
+| Purpose | Destination | When | Data sent |
+|---|---|---|---|
+| Exchange rates | `currency-api.pages.dev`, `cdn.jsdelivr.net` | automatically each time the main screen opens, and when you change the base currency or open Exchange rates | none beyond a normal HTTP request (your IP address and app user agent); the app always downloads EUR-based rates, so your currency isn't revealed |
+| Releases / Contributors screens | `api.github.com` (Fern Wallet repository); contributor avatars from GitHub's image servers | only when you open those screens | none beyond a normal HTTP request |
+
+There is currently no setting to turn off the automatic exchange-rate download.
 
 Links you tap (GitHub, website, UPI) open in other apps you choose; Fern Wallet does not see what happens there.
+If you choose to rate the app from the home screen card, Google Play's in-app review dialog is shown by the
+Google Play app on your device (Google's privacy policy applies to it).
 
 ## No analytics, ads or tracking
 
 Fern Wallet contains no analytics, advertising, crash-reporting or tracking SDKs. (The upstream Ivy Wallet
 Firebase Crashlytics and Firestore integrations were removed.)
+
+## What can be visible outside the app
+
+- **Notifications:** credit-card due reminders include the card name and the amount due. Whether they show on
+  the lock screen depends on your Android notification settings.
+- **Balance widget:** shows your balance, income and expense on the home screen unless the app lock is on.
+- Screenshots and screen recording of the app are allowed.
 
 ## Permissions
 

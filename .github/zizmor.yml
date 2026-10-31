@@ -1,0 +1,9 @@
+# zizmor configuration (used by .github/workflows/workflow-audit.yml).
+# Every exception needs a reason. Prefer an inline `# zizmor: ignore[<audit>]` comment
+# with a justification on the exact line over disabling an audit.
+rules:
+  # GitHub's `uses: $/...` self-repository syntax (July 2026) is not understood by actionlint
+  # 1.7.12, which we also run. The `./` references here are only used right after checking out
+  # this repository and resolve to the same commit. Re-enable when actionlint supports `$/`.
+  self-repository:
+    disable: true

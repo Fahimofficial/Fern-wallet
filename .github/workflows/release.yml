@@ -1,56 +1,99 @@
 name: Release
 
-# Builds, signs, verifies and drafts a GitHub release when a version tag is pushed.
+# Builds, signs, verifies and drafts a GitHub release when a version tag is pushed
+# (v<version-name>[-suffix], e.g. v2026.10.27 or v2026.10.27-rc.1). A human publishes the
+# draft. Full procedure, required secrets and verification: docs/RELEASE.md.
 #
-#   Stable:     v2026.10.27        (tag == "v" + version-name)
-#   Prerelease: v2026.10.27-rc.1   (any "-suffix" marks a prerelease)
-#
-# The release is created as a DRAFT. A maintainer reviews the notes and artifacts and
-# publishes it manually. See docs/Releasing.md.
+# Trust boundaries:
+#   validate  - no secrets; checks the tag, the version and that CI + Security passed on main
+#   build     - the ONLY job with signing secrets (environment "release"); no write token
+#   smoke     - installs the signed APK on an emulator; no secrets
+#   publish   - contents/attestations write; never runs repository code (no checkout)
+
 on:
   push:
     tags:
       - 'v*'
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  OSV_SCANNER_VERSION: 2.7.0
+  OSV_SCANNER_SHA256: 160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b
+
 jobs:
-  release:
-    name: Build & draft release
+  validate:
+    name: Validate tag, version and required checks
     runs-on: ubuntu-latest
-    environment: release # optional: add required reviewers for this environment in repo settings
+    timeout-minutes: 60
     permissions:
-      contents: write # create the draft release & upload assets
+      contents: read
+      actions: read # read CI/Security run results for the tagged commit
+    outputs:
+      version_name: ${{ steps.version.outputs.version_name }}
+      version_code: ${{ steps.version.outputs.version_code }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+      artifact_base: ${{ steps.version.outputs.artifact_base }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Validate tag against version catalog
+      # Strict tag charset (the tag ends up in file names, titles and commands) and tag/catalog match.
+      # Tested in scripts/ci/tests/test_release_version.py.
+      - name: Validate tag against the version catalog
         id: version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: python3 scripts/ci/release_version.py validate --tag "$TAG" --catalog gradle/libs.versions.toml
+
+      - name: Tagged commit must be on main
         run: |
-          TAG="${GITHUB_REF_NAME}"
-          VERSION_NAME=$(grep -E '^version-name *=' gradle/libs.versions.toml | sed -E 's/.*"(.*)".*/\1/')
-          VERSION_CODE=$(grep -E '^version-code *=' gradle/libs.versions.toml | sed -E 's/.*"(.*)".*/\1/')
-          BASE="${TAG#v}"; BASE="${BASE%%-*}"
-          if [ "$BASE" != "$VERSION_NAME" ]; then
-            echo "::error::Tag $TAG does not match version-name $VERSION_NAME in gradle/libs.versions.toml"
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error title=Not on main::$GITHUB_SHA is not on main. Only merged, reviewed commits can be released."
             exit 1
           fi
-          PRERELEASE=false
-          case "$TAG" in *-*) PRERELEASE=true ;; esac
-          {
-            echo "tag=$TAG"
-            echo "version_name=$VERSION_NAME"
-            echo "version_code=$VERSION_CODE"
-            echo "prerelease=$PRERELEASE"
-            echo "artifact_base=FernWallet-${TAG#v}-$VERSION_CODE"
-          } >> "$GITHUB_OUTPUT"
+
+      - name: version-code must increase
+        env:
+          TAG: ${{ github.ref_name }}
+          VERSION_CODE: ${{ steps.version.outputs.version_code }}
+        run: |
+          PREV_TAG="$(git tag --list 'v*' --sort=-creatordate --merged "$GITHUB_SHA" | grep -vxF "$TAG" | head -n 1 || true)"
+          if [ -z "$PREV_TAG" ]; then echo "No earlier release tag; skipping."; exit 0; fi
+          git show "$PREV_TAG:gradle/libs.versions.toml" > "$RUNNER_TEMP/previous-catalog.toml"
+          python3 scripts/ci/release_version.py compare-code --current "$VERSION_CODE" \
+            --previous-catalog "$RUNNER_TEMP/previous-catalog.toml" --previous-tag "$PREV_TAG"
+
+      - name: Wait for CI and Security on this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/ci/wait_for_workflows.sh "$GITHUB_SHA" ci.yml security.yml
+
+  build:
+    name: Build, sign and verify
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # Signing secrets should be environment secrets of "release", restricted to v* tags and
+    # (optionally) gated by required reviewers. See docs/RELEASE.md → One-time setup.
+    environment: release
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # No caches in release builds: nothing restored from earlier runs can influence the artifacts.
+      - uses: ./.github/actions/setup-build
+        with:
+          cache: disabled
 
       - name: Check signing secrets are configured
         env:
@@ -60,88 +103,222 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
           missing=""
-          for v in SIGNING_KEYSTORE SIGNING_STORE_PASSWORD SIGNING_KEY_ALIAS SIGNING_KEY_PASSWORD; do
-            [ -n "${!v}" ] || missing="$missing $v"
+          for name in SIGNING_KEYSTORE SIGNING_STORE_PASSWORD SIGNING_KEY_ALIAS SIGNING_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then missing="$missing $name"; fi
           done
           if [ -n "$missing" ]; then
-            echo "::error::Missing repository secrets:$missing. Refusing to publish an unsigned or debug-signed build."
+            echo "::error title=Signing not configured::Missing secrets:$missing. Nothing is built or published unsigned. See docs/RELEASE.md."
             exit 1
           fi
-
-      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
-        with:
-          distribution: temurin
-          java-version: '21'
-      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-        with:
-          cache-read-only: true
-
-      - name: Unit tests
-        run: ./gradlew testDebugUnitTest
 
       - name: Decode keystore
         env:
           SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
         run: |
-          KEYSTORE="$RUNNER_TEMP/release.jks"
-          echo "$SIGNING_KEYSTORE" | base64 -d > "$KEYSTORE"
-          echo "SIGNING_STORE_FILE=$KEYSTORE" >> "$GITHUB_ENV"
+          umask 077
+          printf '%s' "$SIGNING_KEYSTORE" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "SIGNING_STORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
-      - name: Build signed release APK & AAB
+      # --no-configuration-cache: signing values are read at configuration time and must not
+      # be written to .gradle/configuration-cache. --no-daemon: nothing outlives this step.
+      - name: Build signed release APK and AAB, and the SBOM
         env:
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: ./gradlew :app:assembleRelease :app:bundleRelease
+        run: >-
+          ./gradlew --no-daemon --no-configuration-cache --no-build-cache
+          :app:assembleRelease :app:bundleRelease :app:cyclonedxDirectBom
 
       - name: Remove keystore
         if: always()
         run: rm -f "$RUNNER_TEMP/release.jks"
 
-      - name: Verify artifacts
+      - name: Verify signatures
+        env:
+          # Optional repository variable (not a secret): SHA-256 of the release certificate,
+          # lowercase hex without colons. When set, any other signing key is rejected.
+          EXPECTED_CERT_SHA256: ${{ vars.RELEASE_CERT_SHA256 }}
         run: |
-          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          BT="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
           APK=app/build/outputs/apk/release/app-release.apk
-          "$BT/apksigner" verify --verbose "$APK"
-          CERT=$("$BT/apksigner" verify --print-certs "$APK" | grep "certificate DN")
-          echo "$CERT"
-          if echo "$CERT" | grep -qi "CN=Android Debug"; then
-            echo "::error::Release APK is signed with a debug certificate"; exit 1
+          AAB=app/build/outputs/bundle/release/app-release.aab
+          "$BT/apksigner" verify --verbose "$APK" | grep -E "Verified using v[23] scheme.*true" \
+            || { echo "::error::APK is not signed with APK signature scheme v2/v3"; exit 1; }
+          CERTS="$("$BT/apksigner" verify --print-certs "$APK")"
+          echo "$CERTS" | grep -E "certificate DN|certificate SHA-256"
+          APK_SHA="$(echo "$CERTS" | sed -n 's/.*certificate SHA-256 digest: //p' | head -1)"
+          if echo "$CERTS" | grep -qE "CN=Android Debug|CN=Fern Wallet CI throwaway|O=Ivy Apps"; then
+            echo "::error::APK is signed with a debug/CI key, not the release key"; exit 1
           fi
-          BADGING=$("$BT/aapt2" dump badging "$APK")
-          echo "$BADGING" | grep -q "package: name='com.fernwallet.app' versionCode='${{ steps.version.outputs.version_code }}' versionName='${{ steps.version.outputs.version_name }}'" \
-            || { echo "::error::APK identity/version mismatch"; echo "$BADGING" | head -1; exit 1; }
-          echo "$BADGING" | grep -q "application-label:'Fern Wallet'" \
-            || { echo "::error::Unexpected app label"; exit 1; }
+          # Public debug.jks committed to this repository.
+          if [ "$APK_SHA" = "154de0ff87e2a7e671caeb37ca626ad0f48e948a325ce1f42d7e4d723ff5c03c" ]; then
+            echo "::error::APK is signed with the public debug.jks"; exit 1
+          fi
+          if [ -n "$EXPECTED_CERT_SHA256" ] && [ "$APK_SHA" != "$EXPECTED_CERT_SHA256" ]; then
+            echo "::error::APK certificate $APK_SHA does not match RELEASE_CERT_SHA256"; exit 1
+          fi
+          jarsigner -verify "$AAB" | grep -q "jar verified." || { echo "::error::AAB signature does not verify"; exit 1; }
+          AAB_SHA="$(keytool -printcert -jarfile "$AAB" | sed -n 's/^[[:space:]]*SHA256: //p' | head -1 | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+          if [ "$AAB_SHA" != "$APK_SHA" ]; then
+            echo "::error::AAB is signed with a different certificate ($AAB_SHA) than the APK ($APK_SHA)"; exit 1
+          fi
+          echo "APK and AAB signed with certificate SHA-256 $APK_SHA"
 
-      - name: Collect artifacts & checksums
+      - name: APK policy (identity, version, permissions, exported components, flags)
+        env:
+          VERSION_NAME: ${{ needs.validate.outputs.version_name }}
+          VERSION_CODE: ${{ needs.validate.outputs.version_code }}
         run: |
-          mkdir -p dist
-          BASE="${{ steps.version.outputs.artifact_base }}"
+          AAPT2="$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -1)"
+          python3 scripts/ci/check_apk_policy.py --apk app/build/outputs/apk/release/app-release.apk \
+            --aapt2 "$AAPT2" --policy .github/apk-policy.json --package com.fernwallet.app --label "Fern Wallet" \
+            --version-code "$VERSION_CODE" --version-name "$VERSION_NAME"
+
+      - name: Install osv-scanner (checksum-verified)
+        run: |
+          curl -fsSLo "$RUNNER_TEMP/osv-scanner" "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
+          echo "${OSV_SCANNER_SHA256}  $RUNNER_TEMP/osv-scanner" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/osv-scanner"
+
+      - name: Block on High/Critical vulnerabilities in shipped dependencies
+        run: |
+          set +e
+          "$RUNNER_TEMP/osv-scanner" scan source --config osv-scanner.toml \
+            -L app/build/reports/cyclonedx-direct/bom.json --format json --output-file "$RUNNER_TEMP/osv.json"
+          status=$?
+          set -e
+          if [ "$status" -gt 1 ]; then echo "::error::osv-scanner failed (exit $status)"; exit "$status"; fi
+          python3 scripts/ci/osv_gate.py "$RUNNER_TEMP/osv.json" --title "Release dependencies"
+
+      - name: Collect artifacts and checksums
+        env:
+          BASE: ${{ needs.validate.outputs.artifact_base }}
+        run: |
+          mkdir -p dist mapping
           cp app/build/outputs/apk/release/app-release.apk "dist/$BASE.apk"
           cp app/build/outputs/bundle/release/app-release.aab "dist/$BASE.aab"
-          cp app/build/outputs/mapping/release/mapping.txt "dist/$BASE-mapping.txt"
-          (cd dist && sha256sum "$BASE.apk" "$BASE.aab" > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          cp app/build/reports/cyclonedx-direct/bom.json "dist/$BASE-sbom.cdx.json"
+          cp app/build/outputs/mapping/release/mapping.txt "mapping/$BASE-mapping.txt"
+          (cd dist && sha256sum -- *.apk *.aab *.cdx.json > SHA256SUMS.txt && cat SHA256SUMS.txt)
 
-      - name: Upload workflow artifacts
+      - name: Upload release artifacts
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: ${{ steps.version.outputs.artifact_base }}
+          name: release-dist
           path: dist/
-          retention-days: 30
+          if-no-files-found: error
+          retention-days: 7
+
+      # Needed to deobfuscate crash stack traces; not attached to the public release.
+      - name: Upload R8 mapping
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-mapping
+          path: mapping/
+          if-no-files-found: error
+          retention-days: 90
+
+  smoke-test:
+    name: Install and launch the signed APK
+    needs: [validate, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-dist
+          path: dist
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # Fresh AVD (no cache), so nothing from earlier runs can affect the result.
+      - name: Install, launch and check for crashes
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          BASE: ${{ needs.validate.outputs.artifact_base }}
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          emulator-options: -no-snapshot -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: scripts/ci/smoke_test_apk.sh "dist/$BASE.apk" com.fernwallet.app build/smoke-test
+
+      - name: Upload smoke test logs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-smoke-test-logs
+          path: build/smoke-test/
+          retention-days: 14
+
+  publish:
+    name: Attest provenance and create draft release
+    needs: [validate, build, smoke-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # create the draft release and upload assets
+      id-token: write # Sigstore signing identity for the provenance attestation
+      attestations: write # store the attestation
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-dist
+          path: dist
+
+      - name: Verify checksums
+        working-directory: dist
+        run: sha256sum -c SHA256SUMS.txt
+
+      - name: Attest build provenance (Sigstore)
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            dist/*.apk
+            dist/*.aab
+            dist/*.cdx.json
 
       - name: Create draft GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          BASE: ${{ needs.validate.outputs.artifact_base }}
+          VERSION_NAME: ${{ needs.validate.outputs.version_name }}
+          VERSION_CODE: ${{ needs.validate.outputs.version_code }}
+          PRERELEASE: ${{ needs.validate.outputs.prerelease }}
         run: |
-          BASE="${{ steps.version.outputs.artifact_base }}"
-          FLAGS="--draft --verify-tag --generate-notes"
-          if [ "${{ steps.version.outputs.prerelease }}" = "true" ]; then FLAGS="$FLAGS --prerelease"; fi
-          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
-            echo "::error::Release $GITHUB_REF_NAME already exists. Delete it (and the tag) to rebuild."
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::error::Release $TAG already exists. Delete the draft in the GitHub UI, then re-run this workflow."
             exit 1
           fi
-          gh release create "$GITHUB_REF_NAME" $FLAGS \
-            --title "Fern Wallet ${GITHUB_REF_NAME#v}" \
-            "dist/$BASE.apk" "dist/$BASE.aab" "dist/SHA256SUMS.txt"
-          # mapping.txt is kept as a workflow artifact only (needed to deobfuscate crash traces).
+          {
+            echo "**Fern Wallet $VERSION_NAME** (version code $VERSION_CODE)"
+            echo
+            echo "Install \`$BASE.apk\`. \`$BASE.aab\` is the Play bundle; \`$BASE-sbom.cdx.json\` lists every bundled dependency (CycloneDX)."
+            echo
+            echo "Verify your download:"
+            echo '```sh'
+            echo "sha256sum -c SHA256SUMS.txt --ignore-missing"
+            echo "gh attestation verify $BASE.apk --repo $GITHUB_REPOSITORY"
+            echo '```'
+            echo
+          } > "$RUNNER_TEMP/notes.md"
+          FLAGS=(--draft --verify-tag --generate-notes --notes-file "$RUNNER_TEMP/notes.md" --title "Fern Wallet $VERSION_NAME")
+          if [ "$PRERELEASE" = "true" ]; then FLAGS+=(--prerelease); fi
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" "${FLAGS[@]}" \
+            "dist/$BASE.apk" "dist/$BASE.aab" "dist/$BASE-sbom.cdx.json" dist/SHA256SUMS.txt
+          echo "Draft release created. Review the notes and publish it: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases"

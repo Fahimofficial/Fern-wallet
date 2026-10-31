@@ -56,10 +56,11 @@ contributors, which is no longer maintained upstream. Fern Wallet continues deve
 ## Download
 
 Signed APKs and AABs are published on the [Releases page](https://github.com/Fahimofficial/Fern-wallet/releases),
-each with a `SHA256SUMS.txt`. Verify a download with:
+each with a `SHA256SUMS.txt`, a Software Bill of Materials (SBOM) and a build-provenance attestation. Verify a download with:
 
 ```sh
 sha256sum -c SHA256SUMS.txt --ignore-missing
+gh attestation verify FernWallet-<version>.apk --repo Fahimofficial/Fern-wallet   # built by this repo's release workflow
 ```
 
 > **Coming from Ivy Wallet?** Fern Wallet has its own application ID (`com.fernwallet.app`), so it installs
@@ -98,8 +99,11 @@ export SIGNING_STORE_PASSWORD=... SIGNING_KEY_ALIAS=... SIGNING_KEY_PASSWORD=...
 ./gradlew verifyPaparazziDebug   # compare screenshots with recorded golden images
 ./gradlew recordPaparazziDebug   # re-record golden images after intentional UI changes
 ./gradlew detekt                 # static analysis & formatting (ktlint rules)
-./gradlew lintRelease            # Android lint
+./gradlew lintRelease            # Android lint (security checks are errors)
+./gradlew :app:cyclonedxDirectBom  # SBOM of the release dependencies (app/build/reports/cyclonedx-direct/)
 ```
+
+What CI runs, required checks and repository settings: [docs/CI_CD.md](docs/CI_CD.md).
 
 ### Troubleshooting
 
@@ -110,8 +114,9 @@ export SIGNING_STORE_PASSWORD=... SIGNING_KEY_ALIAS=... SIGNING_KEY_PASSWORD=...
 
 ## Releasing
 
-See [docs/Releasing.md](docs/Releasing.md). In short: run the **Prepare release** workflow, merge its PR,
-push the tag `v<version-name>`; CI builds, signs, verifies and drafts the GitHub release for review.
+See [docs/RELEASE.md](docs/RELEASE.md). In short: run the **Prepare release** workflow, validate and merge its PR,
+push the tag `v<version-name>`; the release workflow checks that CI and Security passed on that commit, then builds,
+signs, verifies, smoke-tests and drafts the GitHub release for review.
 
 ## Contributing & support
 

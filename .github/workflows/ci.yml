@@ -1,124 +1,25 @@
 name: CI
 
-# Runs on every pull request and on pushes to main.
-# Untrusted PR code only ever gets a read-only token and no secrets.
+# Main-branch validation: the same checks as PR validation, run on the integrated result
+# of every merge. Only these runs write the Gradle and AVD caches that PR runs read.
+# release.yml refuses to build a tag unless this workflow passed for the tagged commit.
+
 on:
   push:
     branches:
       - main
-  pull_request:
+  workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
-env:
-  # JDK that runs Gradle. Paparazzi 2 needs 21+; the app's bytecode level is `jvm-target` in gradle/libs.versions.toml.
-  JAVA_VERSION: '21'
+  group: ci-${{ github.ref }}
+  # Every main commit gets a complete result (releases depend on it), so never cancel.
+  cancel-in-progress: false
 
 jobs:
-  wrapper-validation:
-    name: Gradle wrapper validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: gradle/actions/wrapper-validation@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-
-  build:
-    name: Build debug APK
-    needs: wrapper-validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-
-      - name: Assemble debug
-        run: ./gradlew :app:assembleDebug
-
-      - name: Verify package identity
-        run: |
-          AAPT2=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
-          BADGING=$("$AAPT2" dump badging app/build/outputs/apk/debug/app-debug.apk)
-          echo "$BADGING" | grep -E "^package|application-label:"
-          echo "$BADGING" | grep -q "package: name='com.fernwallet.app.debug'" \
-            || { echo "::error::Unexpected applicationId"; exit 1; }
-          echo "$BADGING" | grep -q "application-label:'Fern Wallet Debug'" \
-            || { echo "::error::Unexpected app label"; exit 1; }
-
-      - name: Upload debug APK
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: FernWallet-debug-${{ github.sha }}
-          path: app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 14
-
-  unit-tests:
-    name: Unit & screenshot tests
-    needs: wrapper-validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-
-      - name: Unit tests
-        run: ./gradlew testDebugUnitTest --continue
-
-      - name: Paparazzi screenshot verification
-        run: ./gradlew verifyPaparazziDebug
-
-      - name: Upload test reports
-        if: failure()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: test-reports
-          path: |
-            **/build/reports/tests/
-            **/build/paparazzi/failures/
-          retention-days: 7
-
-  static-analysis:
-    name: Detekt & Android lint
-    needs: wrapper-validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
-        with:
-          distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
-      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-
-      - name: Detekt (static analysis + ktlint formatting rules)
-        run: ./gradlew detekt
-
-      - name: Android lint (release)
-        run: ./gradlew lintRelease
-
-      - name: Fail on lint errors
-        run: |
-          if grep -qE 'severity="(Error|Fatal)"' build/reports/lint/lint.xml; then
-            echo "::error::Android lint reported errors. See the lint-report artifact."
-            grep -B1 -A4 -E 'severity="(Error|Fatal)"' build/reports/lint/lint.xml | grep -E 'id=|message=|file=' || true
-            exit 1
-          fi
-
-      - name: Upload reports
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: static-analysis-reports
-          path: |
-            build/reports/lint/
-            build/reports/detekt/
-          retention-days: 7
+  android:
+    name: Android checks
+    uses: ./.github/workflows/android-checks.yml
+    permissions:
+      contents: read

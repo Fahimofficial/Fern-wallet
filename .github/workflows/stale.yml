@@ -5,13 +5,20 @@ on:
   schedule:
     - cron: '0 8 * * 1'
 
-permissions:
-  issues: write
-  pull-requests: write
+permissions: {}
+
+concurrency:
+  group: stale
+  cancel-in-progress: false
 
 jobs:
   stale:
+    name: Mark and close stale issues and PRs
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      issues: write # label and close stale issues
+      pull-requests: write # label and close stale PRs
     steps:
       - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93 # v11.0.0
         with:
@@ -19,5 +26,5 @@ jobs:
           days-before-issue-close: 7
           days-before-pr-stale: 30
           days-before-pr-close: 14
-          exempt-issue-labels: keep,P0,bug
-          exempt-pr-labels: keep,P0
+          exempt-issue-labels: keep,P0,bug,security
+          exempt-pr-labels: keep,P0,security

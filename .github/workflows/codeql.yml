@@ -1,0 +1,76 @@
+name: CodeQL
+
+# Static application security testing. Results go to Security → Code scanning.
+# `actions` analyses the workflows themselves; `java-kotlin` traces a real compile of the app.
+# CodeQL's Kotlin extractor lags new Kotlin releases; if this fails with
+# "KotlinVersionTooRecent" after a Kotlin bump, see docs/CI_CD.md → Troubleshooting.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '41 3 * * 2'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: codeql-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  analyze:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      security-events: write # upload results to code scanning
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+          - language: java-kotlin
+            build-mode: manual
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - if: matrix.language == 'java-kotlin'
+        uses: ./.github/actions/setup-build
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          queries: security-extended
+
+      # CodeQL must observe real compiler invocations: no build cache, no configuration cache,
+      # no long-lived daemons, Kotlin compiled in-process.
+      - name: Compile the app for CodeQL
+        if: matrix.build-mode == 'manual'
+        run: >-
+          ./gradlew --no-daemon --no-build-cache --no-configuration-cache
+          -Pkotlin.compiler.execution.strategy=in-process
+          :app:assembleDebug
+
+      - name: Analyze
+        id: analyze
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: /language:${{ matrix.language }}
+
+      # The Kotlin extractor lags new Kotlin releases and can skip files instead of failing the
+      # build, which would leave Kotlin unanalysed behind a green check. Require that the
+      # database really contains the app's Kotlin sources.
+      - name: Check the app's Kotlin sources were analysed
+        if: matrix.language == 'java-kotlin'
+        env:
+          DB_LOCATIONS: ${{ steps.analyze.outputs.db-locations }}
+        run: python3 scripts/ci/check_codeql_coverage.py --db-locations "$DB_LOCATIONS" --min-ratio 0.9

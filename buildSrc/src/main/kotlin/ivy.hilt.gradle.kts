@@ -20,4 +20,14 @@ configurations.configureEach {
 dependencies {
     implementation(libs.bundles.hilt)
     ksp(catalog.library("hilt-compiler"))
+
+    // hilt-work 1.4.0 depends on work-runtime 2.3.4. Modules that don't add WorkManager
+    // themselves (e.g. shared:data:core) would otherwise get 2.3.4 in their test APKs, and its
+    // ForceStopRunnable crashes on API 31+ because it creates a PendingIntent without
+    // FLAG_IMMUTABLE/FLAG_MUTABLE. The app already resolves the catalog version.
+    constraints {
+        implementation("androidx.work:work-runtime:${catalog.version("androidx-work")}") {
+            because("work-runtime < 2.7 crashes on Android 12+ (PendingIntent mutability flags)")
+        }
+    }
 }

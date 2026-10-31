@@ -1,0 +1,11 @@
+# osv-scanner configuration: accepted vulnerability risks.
+#
+# Used by .github/workflows/security.yml and release.yml (scripts/ci/osv_gate.py applies the
+# severity policy afterwards). Every entry needs a reason a reviewer can check and an
+# ignoreUntil date so it is re-evaluated. Never add an entry just to get a green check.
+#
+# Example:
+# [[IgnoredVulns]]
+# id = "GHSA-xxxx-xxxx-xxxx"
+# ignoreUntil = 2027-01-31
+# reason = "Only reachable through <API>, which Fern Wallet does not call (checked in <file>)."

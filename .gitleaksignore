@@ -1,0 +1,18 @@
+# Accepted gitleaks findings. Each line is an exact fingerprint (commit:file:rule:line), so it
+# covers only that one historical occurrence. Any new secret, or the same value in another
+# commit or file, is still reported. Never add broad path or regex allowlists here.
+#
+# All seven are in upstream Ivy Wallet history (author: Iliyan Germanov, 2021-2022), inherited by
+# this fork. They cannot be removed without rewriting public history, and deleting them from the
+# tree does not invalidate them. Status and required owner actions: docs/SECURITY.md, "Secrets in git history".
+#
+# Upstream Ivy Wallet Firebase config (google-services.json). Firebase API key, project com.ivy.wallet.
+# The file was removed from the tree in a6d35bc3d (2026-10-27); Fern Wallet does not use Firebase.
+ad0622d28f4b3d90ecdaf97153eba33462dcfda4:app/google-services.json:gcp-api-key:32
+ad0622d28f4b3d90ecdaf97153eba33462dcfda4:app/google-services.json:gcp-api-key:69
+d16abaf03c821a7870255fbd87b7b2f1db95ab18:google-services.json:gcp-api-key:32
+d16abaf03c821a7870255fbd87b7b2f1db95ab18:google-services.json:gcp-api-key:69
+# Upstream GitHub service-account token (split into two parts) used by the removed "Request a feature" code, 2021-11-05.
+ceb0e765086d71e7759a3d6e0b2434c3685fb669:app/src/main/java/com/ivy/wallet/network/service/GithubService.kt:github-pat:15
+102665fb1e0b7f0d3b62e61aec7839f1f1b03185:app/src/main/java/com/ivy/wallet/network/service/GithubService.kt:generic-api-key:18
+102665fb1e0b7f0d3b62e61aec7839f1f1b03185:app/src/main/java/com/ivy/wallet/network/service/GithubService.kt:generic-api-key:19

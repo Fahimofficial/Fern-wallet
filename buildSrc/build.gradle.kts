@@ -9,7 +9,6 @@ tasks.withType<Test>().configureEach {
 repositories {
     google()
     mavenCentral()
-    maven(url = "https://jitpack.io")
     gradlePluginPortal()
 }
 
