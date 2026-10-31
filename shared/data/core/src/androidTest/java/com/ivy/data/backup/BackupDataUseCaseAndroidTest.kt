@@ -12,13 +12,14 @@ import com.ivy.base.di.KotlinxSerializationModule
 import com.ivy.base.legacy.SharedPrefs
 import com.ivy.data.DataObserver
 import com.ivy.data.db.IvyRoomDatabase
-import com.ivy.data.file.FileSystem
-import com.ivy.data.repository.AccountRepository
+import com.ivy.data.db.RoomDbTransactionRunner
+import com.ivy.data.db.dao.write.WriteLoanDao
+import com.ivy.data.db.entity.LoanEntity
 import com.ivy.data.repository.CurrencyRepository
-import com.ivy.data.repository.fake.fakeRepositoryMemoFactory
 import com.ivy.data.repository.mapper.AccountMapper
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.ints.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -34,9 +35,19 @@ class BackupDataUseCaseAndroidTest {
 
     @Before
     fun createDb() {
+        InstrumentationRegistry.getInstrumentation().targetContext.cacheDir
+            .resolve("test-pre-restore").deleteRecursively()
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, IvyRoomDatabase::class.java).build()
+        useCase = newUseCase()
+    }
+
+    private fun newUseCase(
+        loanWriter: WriteLoanDao = db.writeLoanDao,
+    ): BackupDataUseCase {
         val appContext = InstrumentationRegistry.getInstrumentation().context
+        val targetContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val snapshots = File(targetContext.cacheDir, "test-pre-restore").also { snapshotDir = it }
         val accountMapper = AccountMapper(
             currencyRepository = CurrencyRepository(
                 settingsDao = db.settingsDao,
@@ -44,7 +55,7 @@ class BackupDataUseCaseAndroidTest {
                 dispatchersProvider = TestDispatchersProvider,
             )
         )
-        useCase = BackupDataUseCase(
+        return BackupDataUseCase(
             accountDao = db.accountDao,
             budgetDao = db.budgetDao,
             categoryDao = db.categoryDao,
@@ -55,24 +66,17 @@ class BackupDataUseCaseAndroidTest {
             transactionDao = db.transactionDao,
             transactionWriter = db.writeTransactionDao,
             sharedPrefs = SharedPrefs(appContext),
-            accountRepository = AccountRepository(
-                accountDao = db.accountDao,
-                writeAccountDao = db.writeAccountDao,
-                mapper = accountMapper,
-                dispatchersProvider = TestDispatchersProvider,
-                memoFactory = fakeRepositoryMemoFactory(),
-            ),
+            accountWriter = db.writeAccountDao,
             accountMapper = accountMapper,
             categoryWriter = db.writeCategoryDao,
             settingsWriter = db.writeSettingsDao,
             budgetWriter = db.writeBudgetDao,
-            loanWriter = db.writeLoanDao,
+            loanWriter = loanWriter,
             loanRecordWriter = db.writeLoanRecordDao,
             plannedPaymentRuleWriter = db.writePlannedPaymentRuleDao,
-            context = appContext,
+            context = targetContext,
             json = KotlinxSerializationModule.provideJson(),
             dispatchersProvider = TestDispatchersProvider,
-            fileSystem = FileSystem(appContext),
             dataObserver = DataObserver(),
             tagsReader = db.tagDao,
             tagAssociationReader = db.tagAssociationDao,
@@ -80,12 +84,58 @@ class BackupDataUseCaseAndroidTest {
             tagAssociationWriter = db.writeTagAssociationDao,
             creditCardDao = db.creditCardDao,
             creditCardWriter = db.writeCreditCardDao,
+            transactionRunner = RoomDbTransactionRunner(db),
+            preRestoreSnapshots = PreRestoreSnapshots { snapshots },
         )
     }
+
+    private var snapshotDir: File? = null
 
     @After
     fun closeDb() {
         db.close()
+        snapshotDir?.deleteRecursively()
+    }
+
+    @Test
+    fun aFailureWhileSavingRollsBackEveryWrite() = runBlocking<Unit> {
+        // given: loans are written after transactions, accounts and categories
+        val failingLoans = object : WriteLoanDao by db.writeLoanDao {
+            override suspend fun saveMany(value: List<LoanEntity>) {
+                error("Simulated failure")
+            }
+        }
+        val failingUseCase = newUseCase(loanWriter = failingLoans)
+        val json = InstrumentationRegistry.getInstrumentation().targetContext.assets
+            .open("backups/450-150.json").use { BackupArchive.readJson(it) }
+
+        // when
+        val res = failingUseCase.importJson(json)
+
+        // then: nothing was written
+        res.failure shouldBe ImportFailure.SAVE_FAILED
+        db.transactionDao.findAll().shouldBeEmpty()
+        db.accountDao.findAll().shouldBeEmpty()
+        db.categoryDao.findAll().shouldBeEmpty()
+    }
+
+    @Test
+    fun undoRestoresTheWalletAsItWasBeforeTheImport() = runBlocking<Unit> {
+        // given: a wallet with data
+        useCase.importBackupFile(copyTestResourceToInternalStorage("backups/450-150.zip"), onProgress = {})
+            .shouldBeSuccessful()
+        val before = useCase.generateJsonBackup()
+        val exported = tempAndroidFile("exported", ".zip").toUri()
+        useCase.exportToFile(exported)
+
+        // when: a backup is imported on top, then undone
+        val res = useCase.importBackupFile(exported, onProgress = {})
+        res.shouldBeSuccessful()
+        res.canUndo shouldBe true
+
+        // then
+        useCase.undoLastImport() shouldBe true
+        useCase.generateJsonBackup() shouldBe before
     }
 
     @Test
@@ -134,10 +184,8 @@ class BackupDataUseCaseAndroidTest {
 
         // then
         useCase.exportToFile(exportedFileUri)
-        val reImportRes = useCase.importBackupFile(backupUri, onProgress = {})
-
-        // then
-        reImportRes.shouldBeSuccessful()
+        useCase.importBackupFile(backupUri, onProgress = {}).shouldBeSuccessful()
+        useCase.importBackupFile(exportedFileUri, onProgress = {}).shouldBeSuccessful()
     }
 
     private fun copyTestResourceToInternalStorage(resPath: String): Uri {
@@ -157,6 +205,7 @@ class BackupDataUseCaseAndroidTest {
     }
 
     private fun ImportResult.shouldBeSuccessful() {
+        failure shouldBe null
         failedRows.shouldBeEmpty()
         categoriesImported shouldBeGreaterThan 0
         accountsImported shouldBeGreaterThan 0

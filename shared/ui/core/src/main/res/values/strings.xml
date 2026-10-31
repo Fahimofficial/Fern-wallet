@@ -710,4 +710,16 @@
         <item quantity="one">This also deletes its %d transaction and statement notes. Payments you made from other accounts stay in those accounts. Consider closing the card instead to keep its history.</item>
         <item quantity="other">This also deletes its %d transactions and statement notes. Payments you made from other accounts stay in those accounts. Consider closing the card instead to keep its history.</item>
     </plurals>
+    <!-- Backup import -->
+    <string name="backup_error_not_a_backup">This file isn\'t a Fern Wallet or Ivy Wallet backup. Choose the .zip file made with Settings → Backup data. Nothing was imported.</string>
+    <string name="backup_error_corrupted">The backup file is damaged and can\'t be read. Nothing was imported.</string>
+    <string name="backup_error_too_large">The backup is too large to import on this device. Nothing was imported.</string>
+    <string name="backup_error_newer_version">This backup was made by a newer version of Fern Wallet. Update the app, then import it again. Nothing was imported.</string>
+    <string name="backup_error_save_failed">Saving the imported data failed. Your existing data wasn\'t changed.</string>
+    <string name="undo_import">Undo import</string>
+    <string name="undo_import_hint">A copy of your data from before this import was saved. Undo puts everything back exactly as it was.</string>
+    <string name="undo_import_confirm_title">Undo the import?</string>
+    <string name="undo_import_confirm_text">Your wallet will be replaced with the copy saved right before the import. Anything you added since then will be lost.</string>
+    <string name="undo_import_done">Your previous data was restored.</string>
+    <string name="undo_import_failed">Couldn\'t undo the import. Your data wasn\'t changed.</string>
 </resources>
