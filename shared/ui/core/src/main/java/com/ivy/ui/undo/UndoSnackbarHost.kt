@@ -13,7 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -38,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.AccessibilityManager
 import androidx.compose.ui.platform.LocalAccessibilityManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -53,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import com.ivy.design.system.motion.IvyMotion
 import com.ivy.design.system.motion.pressScale
 import com.ivy.ui.R
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -124,18 +127,20 @@ private fun UndoSnackbar(
     onSwipedAway: () -> Unit,
     onUndo: () -> Unit,
 ) {
-    val timeout = rememberAccessibleTimeout()
+    val accessibility = LocalAccessibilityManager.current
     LaunchedEffect(message.id) {
-        delay(timeout)
+        delay(accessibleTimeout(accessibility))
         onTimeout()
     }
 
+    val scope = rememberCoroutineScope()
+    val swipe = remember(scope) { SwipeDismissState(scope) }
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .widthIn(max = 560.dp)
             .fillMaxWidth()
-            .swipeToDismiss(onSwipedAway)
+            .swipeToDismiss(swipe, onSwipedAway)
             .clip(RoundedCornerShape(16.dp))
             .background(colors.inverseSurface)
             .semantics { liveRegion = LiveRegionMode.Polite }
@@ -161,51 +166,53 @@ private fun UndoSnackbar(
 }
 
 // How long the message stays; accessibility services may ask for longer.
-@Composable
-private fun rememberAccessibleTimeout(): Long {
-    val accessibility = LocalAccessibilityManager.current
-    return remember(accessibility) {
-        accessibility?.calculateRecommendedTimeoutMillis(
-            originalTimeoutMillis = VisibleMillis,
-            containsIcons = false,
-            containsText = true,
-            containsControls = true,
-        ) ?: VisibleMillis
+private fun accessibleTimeout(accessibility: AccessibilityManager?): Long =
+    accessibility?.calculateRecommendedTimeoutMillis(
+        originalTimeoutMillis = VisibleMillis,
+        containsIcons = false,
+        containsText = true,
+        containsControls = true,
+    ) ?: VisibleMillis
+
+// Horizontal offset of a swipe-dismissable element and the width it travels to leave.
+@Stable
+private class SwipeDismissState(scope: CoroutineScope) {
+    val offsetX = Animatable(0f)
+    var widthPx = 0f
+    val drag = DraggableState { delta ->
+        scope.launch { offsetX.snapTo(offsetX.value + delta) }
     }
 }
 
 // Follows a horizontal drag 1:1 and fades as it travels. On release the flick's projected
 // landing point decides: past half the width it leaves (keeping the finger's velocity) and
-// [onDismissed] runs; otherwise it springs back.
-@Composable
-private fun Modifier.swipeToDismiss(onDismissed: () -> Unit): Modifier {
-    val scope = rememberCoroutineScope()
-    val offsetX = remember { Animatable(0f) }
-    val width = remember { floatArrayOf(0f) }
-    return this
-        .onSizeChanged { width[0] = it.width.toFloat() }
-        .graphicsLayer {
-            translationX = offsetX.value
-            val travelled = if (width[0] > 0f) abs(offsetX.value) / width[0] else 0f
-            alpha = (1f - travelled).coerceIn(0f, 1f)
-        }
-        .draggable(
-            orientation = Orientation.Horizontal,
-            state = rememberDraggableState { delta ->
-                scope.launch { offsetX.snapTo(offsetX.value + delta) }
-            },
-            onDragStopped = { velocity ->
-                val projected = offsetX.value + IvyMotion.projectedDistance(velocity)
-                if (width[0] > 0f && abs(projected) > width[0] / 2f) {
-                    val direction = if (projected > 0f) 1f else -1f
-                    offsetX.animateTo(direction * width[0], IvyMotion.Springs.surface(), velocity)
-                    onDismissed()
-                } else {
-                    offsetX.animateTo(0f, IvyMotion.Springs.surface(), velocity)
-                }
-            },
-        )
-}
+// onDismissed runs; otherwise it springs back.
+private fun Modifier.swipeToDismiss(
+    state: SwipeDismissState,
+    onDismissed: () -> Unit,
+): Modifier = this
+    .onSizeChanged { state.widthPx = it.width.toFloat() }
+    .graphicsLayer {
+        val width = state.widthPx
+        translationX = state.offsetX.value
+        val travelled = if (width > 0f) abs(state.offsetX.value) / width else 0f
+        alpha = (1f - travelled).coerceIn(0f, 1f)
+    }
+    .draggable(
+        orientation = Orientation.Horizontal,
+        state = state.drag,
+        onDragStopped = { velocity ->
+            val width = state.widthPx
+            val projected = state.offsetX.value + IvyMotion.projectedDistance(velocity)
+            if (width > 0f && abs(projected) > width / 2f) {
+                val direction = if (projected > 0f) 1f else -1f
+                state.offsetX.animateTo(direction * width, IvyMotion.Springs.surface(), velocity)
+                onDismissed()
+            } else {
+                state.offsetX.animateTo(0f, IvyMotion.Springs.surface(), velocity)
+            }
+        },
+    )
 
 @Composable
 private fun UndoButton(label: String, onClick: () -> Unit) {
