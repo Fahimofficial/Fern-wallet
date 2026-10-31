@@ -279,6 +279,27 @@ class TransactionRepository @Inject constructor(
         }
     }
 
+    /**
+     * Deletes the transaction and returns what puts it back: the exact row that was removed, so
+     * every column (including legacy and sync fields) and its tag links are as before.
+     * Null when there was no such transaction.
+     */
+    suspend fun deleteByIdRestorable(id: TransactionId): DeletedTransaction? =
+        withContext(dispatchersProvider.io) {
+            val entity = transactionDao.findById(id.value) ?: return@withContext null
+            writeTransactionDao.deleteById(id.value)
+            DeletedTransaction {
+                withContext(dispatchersProvider.io) {
+                    writeTransactionDao.save(entity)
+                }
+            }
+        }
+
+    /** A transaction removed by [deleteByIdRestorable]. */
+    fun interface DeletedTransaction {
+        suspend fun restore()
+    }
+
     suspend fun deleteAllByAccountId(accountId: AccountId) {
         withContext(dispatchersProvider.io) {
             writeTransactionDao.deleteAllByAccountId(accountId.value)

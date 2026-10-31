@@ -29,11 +29,12 @@ import com.ivy.design.system.motion.pressScale
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
 fun IvyCircleButton(
+    @DrawableRes icon: Int,
     modifier: Modifier = Modifier,
     backgroundPadding: Dp = 0.dp,
     backgroundGradient: Gradient = GradientIvy,
     horizontalGradient: Boolean = true,
-    @DrawableRes icon: Int,
+    contentDescription: String? = null,
     tint: Color = White,
     enabled: Boolean = true,
     hasShadow: Boolean = true,
@@ -74,7 +75,8 @@ fun IvyCircleButton(
             .padding(all = backgroundPadding),
         icon = icon,
         tint = tint,
-        contentDescription = "circle button"
+        // What the button does (it used to announce every icon button as "circle button").
+        contentDescription = contentDescription
     )
 }
 

@@ -83,6 +83,7 @@ import com.ivy.wallet.ui.theme.modal.AddModalBackHandling
 import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
 import java.util.UUID
 import kotlin.math.roundToInt
+import androidx.compose.ui.semantics.Role
 
 private const val SWIPE_UP_THRESHOLD_CLOSE_MORE_MENU = 300
 
@@ -378,7 +379,7 @@ private fun ColumnScope.Buffer(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickableNoIndication(rememberInteractionSource()) {
+            .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                 onBufferClick()
             }
             .testTag("savings_goal_row"),
@@ -584,7 +585,7 @@ private fun MoreMenuButton(
         Text(
             modifier = Modifier
                 .defaultMinSize(minWidth = 92.dp)
-                .clickableNoIndication(rememberInteractionSource()) {
+                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                     onClick()
                 },
             text = label,

@@ -11,6 +11,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.semantics.Role
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
@@ -41,15 +42,20 @@ fun Modifier.thenWhen(
 @Composable
 fun rememberInteractionSource(): MutableInteractionSource = remember { MutableInteractionSource() }
 
+/**
+ * A click without ripple. Pass [role] whenever the element is a real control, so screen readers
+ * announce what it is ("Button", "Checkbox"); leave it null only for click-swallowing backdrops.
+ */
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 fun Modifier.clickableNoIndication(
     interactionSource: MutableInteractionSource,
+    role: Role? = null,
     onClick: () -> Unit
 ): Modifier {
     return this.clickable(
         interactionSource = interactionSource,
         onClick = onClick,
-        role = null,
+        role = role,
         indication = null
     )
 }

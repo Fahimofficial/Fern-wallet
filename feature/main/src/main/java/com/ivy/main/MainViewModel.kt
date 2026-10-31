@@ -12,8 +12,6 @@ import com.ivy.legacy.data.model.MainTab
 import com.ivy.legacy.domain.deprecated.logic.AccountCreator
 import com.ivy.legacy.utils.asLiveData
 import com.ivy.legacy.utils.ioThread
-import com.ivy.navigation.MainScreen
-import com.ivy.navigation.Navigation
 import com.ivy.wallet.domain.deprecated.logic.model.CreateAccountData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -22,7 +20,6 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val ivyContext: IvyWalletCtx,
-    private val nav: Navigation,
     private val syncExchangeRatesUseCase: SyncExchangeRatesUseCase,
     private val accountCreator: AccountCreator,
     private val sharedPrefs: SharedPrefs,
@@ -32,17 +29,7 @@ class MainViewModel @Inject constructor(
     private val _currency = MutableLiveData<String>()
     val currency = _currency.asLiveData()
 
-    fun start(screen: MainScreen) {
-        nav.onBackPressed[screen] = {
-            if (ivyContext.mainTab == MainTab.ACCOUNTS) {
-                ivyContext.selectMainTab(MainTab.HOME)
-                true
-            } else {
-                // Exiting (the backstack will close the app)
-                false
-            }
-        }
-
+    fun start() {
         viewModelScope.launch {
             TestIdlingResource.increment()
 

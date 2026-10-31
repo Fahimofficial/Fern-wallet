@@ -48,10 +48,10 @@ Legend: complexity S/M/L, priority C(ritical)/H/M/L. "Done" means it is implemen
 | A8 | Upcoming/Overdue sections | Rows are added and removed instantly on expand and collapse. Lists jump on insert and delete. | Abrupt layout shift, and the user loses track of where content went. | `Modifier.animateItem()`: fade in, spring placement, fade out only for collapsing sections. | S | H | Done |
 | A9 | Bottom tabs | The selected label pops in and pushes the icon sideways. | Visible layout jump on every tab switch. | `AnimatedVisibility` expand/fade, plus a tint cross-fade. | S | M | Done |
 | A10 | Onboarding | Steps swap with no transition. | Every other navigation in the app slides along the X axis. Onboarding breaks that spatial model. | Reuse `IvyMotion.screenTransform` (forward/back by step order). | S | M | Done |
-| A11 | Navigation | Back is a fixed 300 ms swap. Predictive back is not supported. | Back can't follow the finger and can't be cancelled. | `PredictiveBackHandler` plus `SeekableTransitionState`. The legacy back stack (modal stack, per-screen overrides) needs to move to Compose `BackHandler` first. | L | M | Recommended |
+| A11 | Navigation | Back is a fixed 300 ms swap. Predictive back is not supported. | Back can't follow the finger and can't be cancelled. | `PredictiveBackHandler` plus `SeekableTransitionState`. The legacy back stack (modal stack, per-screen overrides) needs to move to Compose `BackHandler` first. | L | M | Done (follow-up) |
 | A12 | Motion tokens | Two spring families (damping 0.75 vs 0.85) and 200/250/300/400 ms tweens. | Things that look alike move differently. | `IvyMotion.Springs` (response/damping, Apple's parameters) is now the shared vocabulary. Migrate the legacy `springBounce*` call sites. | M | M | Partly done |
-| A13 | `EditBottomSheet` | A separate custom sheet with tween(200) insets. | Inconsistent with the updated `IvyModal`. | Give it the same `SheetMotion`. | M | M | Recommended |
-| A14 | Keyboard insets | tween(200) next to the system IME animation. | The sheet lags or leads the keyboard. | Use `WindowInsets.ime` / `imePadding()` so the sheet tracks the IME frame by frame. | M | M | Recommended |
+| A13 | `EditBottomSheet` | A separate custom sheet with tween(200) insets. | Inconsistent with the updated `IvyModal`. | 1:1 drag between expanded and collapsed, flick projection, velocity handoff; the arrow turns with the sheet. | M | M | Done (follow-up) |
+| A14 | Keyboard insets | tween(200) next to the system IME animation. | The sheet lags or leads the keyboard. | Read IME/nav-bar insets during layout (`InsetsExt.kt`) in `IvyModal` and `EditBottomSheet`. Search and the currency picker still use the old tween. | M | M | Done (follow-up) |
 
 ### Micro-interactions
 
@@ -62,7 +62,7 @@ Legend: complexity S/M/L, priority C(ritical)/H/M/L. "Done" means it is implemen
 | M3 | FAB menu backdrop | Tapping outside the actions did nothing. | Users are trapped (wayfinding). | Tapping the backdrop closes the menu. | S | H | Done |
 | M4 | `IvySwitch` | Plain `clickable` with no role or state. | TalkBack reads "double tap to activate" with no on/off state. No feedback. | `toggleable(role = Switch)` plus toggle haptics. | S | H | Done |
 | M5 | Month swipe on the period button | Changes the month silently. | Easy to swipe twice without noticing. | Haptic tick per step. | S | L | Done |
-| M6 | Deletes | Always a confirmation modal. No undo anywhere. | Apple's guidance is to prefer undo for reversible slips and confirm only irreversible actions. | Snackbar with Undo for transaction delete and skip. It needs repository support for soft delete. | M | M | Recommended |
+| M6 | Deletes | Always a confirmation modal. No undo anywhere. | Apple's guidance is to prefer undo for reversible slips and confirm only irreversible actions. | Transaction delete is now immediate, with a root-level "Transaction deleted · Undo" snackbar that restores the exact row. Skip-all, accounts and categories keep their confirmation (bulk or cascading). | M | M | Done (follow-up) |
 | M7 | Customer-journey cards | Dismissed cards vanish instantly. The cards render in one non-lazy item. | Abrupt. | Give each card its own keyed item with `animateItem()`. | S | L | Recommended |
 
 ### Design
@@ -80,11 +80,15 @@ Legend: complexity S/M/L, priority C(ritical)/H/M/L. "Done" means it is implemen
 ### Accessibility
 
 - `IvySwitch` now has switch semantics (M4, done).
-- Touch targets below 48 dp: `IvySwitch` (40×24), `CircleButton` (about 36 dp), and the tag chips. Enlarge them with
-  `minimumInteractiveComponentSize()`. This changes layout, so it needs screenshot review (recommended).
-- `clickableNoIndication` removes the role and the visual feedback from about 40 controls (tabs, header balance,
-  section headers, FAB labels). Section headers in particular should use `Role.Button` with
-  expanded/collapsed state (recommended).
+- Touch targets: correction to the first pass. Compose hit testing already extends small clickable elements
+  (`IvySwitch` 40×24, `CircleButton` about 36 dp) to the 48 dp minimum touch size, as long as the parent has room,
+  so no layout change was needed.
+- Done (follow-up): `clickableNoIndication` takes a `role`. About 20 real controls now announce as buttons
+  (balances, rows, FAB labels, account chips). Transaction section headers announce expanded/collapsed.
+  Checkbox rows are a single checkbox with state. Icon buttons got real labels instead of "circle button"
+  (FAB: add transaction / close / add account; income, expense, transfer, delete).
+- Still open: the three invisible FAB click areas are unlabeled focus stops, and new strings are English-only
+  until translated.
 - Reduced motion: on Android this is "Remove animations" (animator scale 0). Compose already completes all
   springs and tweens instantly then, and all new motion here uses standard Compose animation APIs,
   so it respects that setting. No per-frame custom loops were added.

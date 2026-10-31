@@ -716,6 +716,12 @@
     <string name="backup_error_too_large">The backup is too large to import on this device. Nothing was imported.</string>
     <string name="backup_error_newer_version">This backup was made by a newer version of Fern Wallet. Update the app, then import it again. Nothing was imported.</string>
     <string name="backup_error_save_failed">Saving the imported data failed. Your existing data wasn\'t changed.</string>
+    <string name="undo">Undo</string>
+    <string name="close">Close</string>
+    <string name="add_transaction">Add transaction</string>
+    <string name="expanded">Expanded</string>
+    <string name="collapsed">Collapsed</string>
+    <string name="transaction_deleted">Transaction deleted</string>
     <string name="undo_import">Undo import</string>
     <string name="undo_import_hint">A copy of your data from before this import was saved. Undo puts everything back exactly as it was.</string>
     <string name="undo_import_confirm_title">Undo the import?</string>

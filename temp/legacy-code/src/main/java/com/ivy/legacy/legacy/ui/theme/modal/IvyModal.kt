@@ -2,8 +2,6 @@ package com.ivy.wallet.ui.theme.modal
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,6 +10,11 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,7 +32,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -50,7 +52,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -60,26 +61,24 @@ import com.ivy.design.utils.rememberInteractionSource
 import com.ivy.design.utils.thenIf
 import com.ivy.legacy.IvyWalletPreview
 import com.ivy.legacy.ivyWalletCtx
-import com.ivy.legacy.utils.addKeyboardListener
+import com.ivy.legacy.utils.bottomInsetHeight
+import com.ivy.legacy.utils.bottomInsetPadding
 import com.ivy.legacy.utils.consumeClicks
 import com.ivy.legacy.utils.densityScope
 import com.ivy.legacy.utils.hideKeyboard
-import com.ivy.legacy.utils.keyboardOnlyWindowInsets
-import com.ivy.legacy.utils.navigationBarInsets
-import com.ivy.legacy.utils.onScreenStart
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.navigation
 import com.ivy.wallet.ui.theme.components.ActionsRow
 import com.ivy.wallet.ui.theme.components.CloseButton
 import com.ivy.wallet.ui.theme.gradientCutBackgroundTop
 import com.ivy.wallet.ui.theme.mediumBlur
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 const val DURATION_MODAL_ANIM = 200
@@ -114,26 +113,10 @@ fun BoxScope.IvyModal(
     Content: @Composable ColumnScope.() -> Unit
 ) {
     val rootView = LocalView.current
-    var keyboardShown by remember { mutableStateOf(false) }
-
-    onScreenStart {
-        rootView.addKeyboardListener {
-            keyboardShown = it
-        }
-    }
-
-    val keyboardShownInsetDp by animateDpAsState(
-        targetValue = densityScope {
-            if (keyboardShown) keyboardOnlyWindowInsets().bottom.toDp() else 0.dp
-        },
-        animationSpec = tween(DURATION_MODAL_ANIM)
-    )
-    val navBarPadding by animateDpAsState(
-        targetValue = densityScope {
-            if (keyboardShown) 0.dp else navigationBarInsets().bottom.toDp()
-        },
-        animationSpec = tween(DURATION_MODAL_ANIM)
-    )
+    // The keyboard and navigation bar are followed frame by frame (read during layout) instead of
+    // being chased with a 200 ms tween after the keyboard has already moved.
+    val ime = WindowInsets.ime
+    val navBarsOutsideKeyboard = WindowInsets.navigationBars.exclude(ime)
 
     val latestVisible by rememberUpdatedState(visible)
     val latestDismiss by rememberUpdatedState(dismiss)
@@ -215,20 +198,21 @@ fun BoxScope.IvyModal(
 
             Content()
 
-            // Bottom padding
+            // Bottom padding: room for the actions row (and the navigation bar under it)...
             if (includeActionsRowPadding) {
                 Spacer(Modifier.height(densityScope { actionsRowHeight.toDp() }))
+                Spacer(Modifier.bottomInsetHeight(navBarsOutsideKeyboard))
             }
 
+            // ...and for the keyboard, so focused fields scroll above it.
             if (shiftIfKeyboardShown) {
-                Spacer(Modifier.height(keyboardShownInsetDp))
+                Spacer(Modifier.bottomInsetHeight(ime))
             }
         }
 
         ModalActionsRow(
             sheet = sheet,
-            keyboardShownInsetDp = keyboardShownInsetDp,
-            navBarPadding = navBarPadding,
+            bottomInsets = ime.union(WindowInsets.navigationBars),
             onHeightChanged = {
                 actionsRowHeight = it
             },
@@ -408,8 +392,7 @@ private fun removeLastBackHandlerSafe(nav: Navigation) {
 @Composable
 private fun ModalActionsRow(
     sheet: SheetMotion,
-    keyboardShownInsetDp: Dp,
-    navBarPadding: Dp,
+    bottomInsets: WindowInsets,
 
     onHeightChanged: (Int) -> Unit,
 
@@ -418,17 +401,19 @@ private fun ModalActionsRow(
     PrimaryAction: @Composable () -> Unit
 ) {
     val ivyContext = ivyWalletCtx()
+    val density = LocalDensity.current
     ActionsRow(
         modifier = Modifier
             .onSizeChanged {
-                onHeightChanged(it.height)
+                // Height without the keyboard/nav-bar inset: the sheet adds those separately.
+                onHeightChanged(it.height - bottomInsets.getBottom(density))
             }
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
 
-                val systemOffsetBottom = keyboardShownInsetDp.toPx()
                 val sheetOffset = sheet.offsetPx(sheet.sheetHeightPx)
-                val y = ivyContext.screenHeight - placeable.height - systemOffsetBottom + sheetOffset
+                // Bottom-aligned; its bottom padding (below) lifts the buttons above the keyboard.
+                val y = ivyContext.screenHeight - placeable.height + sheetOffset
 
                 layout(placeable.width, placeable.height) {
                     placeable.place(
@@ -442,8 +427,8 @@ private fun ModalActionsRow(
                 density = LocalDensity.current,
                 endY = 16.dp
             )
+            .bottomInsetPadding(bottomInsets)
             .padding(top = 8.dp, bottom = 12.dp)
-            .padding(bottom = navBarPadding)
             .zIndex(1100f)
     ) {
         Spacer(Modifier.width(24.dp))

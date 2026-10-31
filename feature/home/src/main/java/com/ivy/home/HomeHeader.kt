@@ -68,6 +68,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
 import com.ivy.design.system.motion.IvyHaptics
 import com.ivy.design.system.motion.pressScale
+import androidx.compose.ui.semantics.Role
 
 /** Larger surfaces shrink less, so a pressed card reads as pressed, not as moving. */
 private const val CardPressedScale = 0.98f
@@ -179,7 +180,7 @@ private fun HeaderStickyRow(
                 BalanceRowMini(
                     modifier = Modifier
                         .graphicsLayer { alpha = 1f - percentExpanded() }
-                        .clickableNoIndication(rememberInteractionSource()) {
+                        .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                             if (hideBalance) {
                                 onHiddenBalanceClick()
                             } else {
@@ -254,7 +255,7 @@ fun CashFlowInfo(
         BalanceRow(
             modifier = Modifier
                 .padding(horizontal = 20.dp)
-                .clickableNoIndication(rememberInteractionSource()) {
+                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                     if (hideBalance) {
                         onHiddenBalanceClick()
                     } else {

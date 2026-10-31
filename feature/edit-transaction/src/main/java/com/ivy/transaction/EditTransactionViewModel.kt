@@ -78,6 +78,9 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.util.UUID
 import javax.inject.Inject
+import com.ivy.data.DataObserver
+import com.ivy.data.DataWriteEvent
+import com.ivy.ui.undo.UndoController
 
 @Suppress("LargeClass")
 @Stable
@@ -110,6 +113,8 @@ class EditTransactionViewModel @Inject constructor(
     private val timeProvider: TimeProvider,
     private val dateTimePicker: DateTimePicker,
     private val creditCardRepository: CreditCardRepository,
+    private val undoController: UndoController,
+    private val dataObserver: DataObserver,
 ) : ComposeViewModel<EditTransactionViewState, EditTransactionViewEvent>() {
 
     private var transactionType by mutableStateOf(TransactionType.EXPENSE)
@@ -624,13 +629,25 @@ class EditTransactionViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Deletes right away and offers Undo (a slip is fixed with one tap) instead of asking first.
+     * The Undo restores the exact row, then tells lists and balances to reload.
+     */
     private fun delete() {
         viewModelScope.launch {
             ioThread {
-                loadedTransaction?.let {
-                    transactionRepo.deleteById(TransactionId(it.id))
+                val deleted = loadedTransaction?.let {
+                    transactionRepo.deleteByIdRestorable(TransactionId(it.id))
                 }
+                refreshWidget(WalletBalanceWidgetReceiver::class.java)
                 closeScreen()
+                if (deleted != null) {
+                    undoController.show(text = R.string.transaction_deleted) {
+                        deleted.restore()
+                        refreshWidget(WalletBalanceWidgetReceiver::class.java)
+                        dataObserver.post(DataWriteEvent.TransactionsChanged)
+                    }
+                }
             }
         }
     }

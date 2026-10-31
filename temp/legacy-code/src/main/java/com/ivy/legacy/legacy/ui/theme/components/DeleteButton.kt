@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.GradientRed
 import com.ivy.wallet.ui.theme.White
+import androidx.compose.ui.res.stringResource
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
@@ -22,6 +23,7 @@ fun DeleteButton(
             .testTag("delete_button"),
         backgroundPadding = 6.dp,
         icon = R.drawable.ic_delete,
+        contentDescription = stringResource(R.string.delete),
         backgroundGradient = GradientRed,
         enabled = true,
         hasShadow = hasShadow,

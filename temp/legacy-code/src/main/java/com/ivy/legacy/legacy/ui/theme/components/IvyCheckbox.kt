@@ -1,6 +1,5 @@
 package com.ivy.wallet.ui.theme.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -21,9 +20,11 @@ import androidx.compose.ui.unit.dp
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
 import com.ivy.legacy.IvyWalletComponentPreview
-import com.ivy.legacy.utils.clickableNoIndication
 import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.ui.R
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.clearAndSetSemantics
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
@@ -36,9 +37,7 @@ fun IvyCheckbox(
         modifier = modifier
             .size(48.dp)
             .clip(CircleShape)
-            .clickable(onClick = {
-                onCheckedChange(!checked)
-            })
+            .toggleable(value = checked, role = Role.Checkbox, onValueChange = onCheckedChange)
             .padding(all = 12.dp),
 
         painter = painterResource(
@@ -59,12 +58,19 @@ fun IvyCheckboxWithText(
 ) {
     Row(
         modifier = modifier
-            .clickableNoIndication(rememberInteractionSource()) {
-                onCheckedChange(!checked)
-            },
+            // The whole row is one checkbox for screen readers, announced with its state.
+            .toggleable(
+                value = checked,
+                interactionSource = rememberInteractionSource(),
+                indication = null,
+                role = Role.Checkbox,
+                onValueChange = onCheckedChange,
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IvyCheckbox(
+            // Part of the row's checkbox: not a second focus stop.
+            modifier = Modifier.clearAndSetSemantics {},
             checked = checked,
             onCheckedChange = onCheckedChange
         )
