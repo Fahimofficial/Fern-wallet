@@ -7,6 +7,19 @@ Release notes for published builds are generated on the
 
 First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 
+### Backups
+- Importing a backup is now all-or-nothing: the file is checked first, then every row is saved in
+  one database transaction, so a failure part-way can no longer leave a half-imported wallet.
+- Before an import, a copy of the current wallet is saved; **Undo import** on the result screen
+  puts everything back exactly as it was.
+- Clear messages when a file isn't a backup, is damaged, is too large, or comes from a newer app
+  version, instead of "0 imported".
+- Backups are read in memory with size limits and never extracted to disk (no path traversal or
+  zip bombs). Backup files now carry a format version; older backups still import.
+- Exporting a backup no longer wipes the app's whole cache folder, and is a consistent snapshot.
+- A backup without settings no longer deletes the current settings (e.g. base currency).
+- Accounts, categories and tags no longer show stale cached data right after an import.
+
 ### Identity
 - Renamed to **Fern Wallet** with the wallet-and-leaf logo, a GitHub wordmark, and four selectable
   app icons (Settings → App icon: Fern, Mono, Graphite, Midnight) with Material You themed-icon support.

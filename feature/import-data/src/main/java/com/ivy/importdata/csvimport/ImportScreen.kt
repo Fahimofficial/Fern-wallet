@@ -55,7 +55,13 @@ fun BoxWithConstraintsScope.ImportCSVScreen(screen: ImportScreen) {
                 screen = screen,
                 onboardingViewModel = onboardingViewModel
             )
-        }
+        },
+        onUndoImport = {
+            viewModel.undoImport(
+                screen = screen,
+                onboardingViewModel = onboardingViewModel
+            )
+        },
     )
 }
 
@@ -73,6 +79,7 @@ private fun BoxWithConstraintsScope.UI(
     onUploadCSVFile: () -> Unit = {},
     onSkip: () -> Unit = {},
     onFinish: () -> Unit = {},
+    onUndoImport: () -> Unit = {},
 ) {
     when (importStep) {
         ImportStep.IMPORT_FROM -> {
@@ -103,6 +110,7 @@ private fun BoxWithConstraintsScope.UI(
             ImportResultUI(
                 result = importResult!!,
                 launchedFromOnboarding = screen.launchedFromOnboarding,
+                onUndoImport = onUndoImport,
             ) {
                 onFinish()
             }

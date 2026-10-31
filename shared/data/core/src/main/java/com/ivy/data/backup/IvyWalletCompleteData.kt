@@ -20,6 +20,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Suppress("DataClassDefaultValues")
 data class IvyWalletCompleteData(
+    /**
+     * Backup format. Missing in backups made before it was added (= [LEGACY_FORMAT_VERSION]).
+     * Bump [CURRENT_FORMAT_VERSION] only for changes older app versions can't read correctly;
+     * they refuse newer formats instead of importing them partially.
+     */
+    @SerialName("formatVersion")
+    val formatVersion: Int = LEGACY_FORMAT_VERSION,
     @SerialName("accounts")
     val accounts: List<AccountEntity> = emptyList(),
     @SerialName("budgets")
@@ -47,4 +54,9 @@ data class IvyWalletCompleteData(
     val creditCards: List<CreditCardEntity> = emptyList(),
     @SerialName("creditCardStatements")
     val creditCardStatements: List<CreditCardStatementEntity> = emptyList(),
-)
+) {
+    companion object {
+        const val LEGACY_FORMAT_VERSION = 1
+        const val CURRENT_FORMAT_VERSION = 2
+    }
+}

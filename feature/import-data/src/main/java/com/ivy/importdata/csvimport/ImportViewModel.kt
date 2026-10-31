@@ -5,7 +5,9 @@ import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ivy.base.Toaster
 import com.ivy.frp.test.TestIdlingResource
+import com.ivy.ui.R
 import com.ivy.legacy.domain.deprecated.logic.csv.CSVImporter
 import com.ivy.legacy.domain.deprecated.logic.csv.model.ImportType
 import com.ivy.data.backup.BackupDataUseCase
@@ -33,7 +35,8 @@ class ImportViewModel @Inject constructor(
     private val csvNormalizer: CSVNormalizer,
     private val csvMapper: CSVMapper,
     private val csvImporter: CSVImporter,
-    private val backupDataUseCase: BackupDataUseCase
+    private val backupDataUseCase: BackupDataUseCase,
+    private val toaster: Toaster,
 ) : ViewModel() {
     private val _importStep = MutableLiveData<ImportStep>()
     val importStep = _importStep.asLiveData()
@@ -191,6 +194,25 @@ class ImportViewModel @Inject constructor(
 
         nav.back()
         resetState()
+    }
+
+    /** Puts the wallet back as it was before the import that was just shown. */
+    fun undoImport(
+        screen: ImportScreen,
+        onboardingViewModel: OnboardingViewModel
+    ) {
+        viewModelScope.launch {
+            _importStep.value = ImportStep.LOADING
+            _importProgressPercent.value = 0
+            val restored = backupDataUseCase.undoLastImport()
+            if (restored) {
+                toaster.show(R.string.undo_import_done)
+                finish(screen, onboardingViewModel)
+            } else {
+                toaster.show(R.string.undo_import_failed)
+                _importStep.value = ImportStep.RESULT
+            }
+        }
     }
 
     private fun resetState() {

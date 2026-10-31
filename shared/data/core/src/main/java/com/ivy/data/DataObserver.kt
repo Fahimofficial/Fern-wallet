@@ -17,7 +17,18 @@ class DataObserver @Inject constructor() {
     private val _writeEvents = MutableSharedFlow<DataWriteEvent>()
     val writeEvents: Flow<DataWriteEvent> = _writeEvents
 
+    /**
+     * Incremented on every [DataWriteEvent.AllDataChange] (backup import, undo, data wipe).
+     * In-memory caches compare it to drop data written behind their back.
+     */
+    @Volatile
+    var allDataChangeGeneration: Int = 0
+        private set
+
     suspend fun post(event: DataWriteEvent) {
+        if (event == DataWriteEvent.AllDataChange) {
+            synchronized(this) { allDataChangeGeneration++ }
+        }
         _writeEvents.emit(event)
     }
 }

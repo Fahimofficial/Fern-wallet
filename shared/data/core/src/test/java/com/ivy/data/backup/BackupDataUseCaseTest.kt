@@ -3,6 +3,7 @@ package com.ivy.data.backup
 import com.ivy.base.TestDispatchersProvider
 import com.ivy.base.di.KotlinxSerializationModule
 import com.ivy.base.legacy.SharedPrefs
+import com.ivy.base.legacy.Theme
 import com.ivy.data.DataObserver
 import com.ivy.data.db.dao.fake.FakeAccountDao
 import com.ivy.data.db.dao.fake.FakeBudgetDao
@@ -20,23 +21,32 @@ import com.ivy.data.db.entity.AccountTypeAsset
 import com.ivy.data.db.entity.AccountTypeCreditCard
 import com.ivy.data.db.entity.CreditCardEntity
 import com.ivy.data.db.entity.CreditCardStatementEntity
-import com.ivy.data.repository.AccountRepository
+import com.ivy.data.db.entity.SettingsEntity
+import com.ivy.data.db.entity.TransactionEntity
+import com.ivy.data.db.DbTransactionRunner
+import com.ivy.data.db.dao.fake.FakeDbTransactionRunner
+import com.ivy.data.db.dao.write.WriteTransactionDao
 import com.ivy.data.repository.CurrencyRepository
-import com.ivy.data.repository.fake.fakeRepositoryMemoFactory
 import com.ivy.data.repository.mapper.AccountMapper
 import com.ivy.data.testResource
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import java.util.UUID
 
 class BackupDataUseCaseTest {
+    @get:Rule
+    val tempFolder = TemporaryFolder()
+
     private fun newBackupDataUseCase(
         accountDao: FakeAccountDao = FakeAccountDao(),
         categoryDao: FakeCategoryDao = FakeCategoryDao(),
@@ -50,6 +60,9 @@ class BackupDataUseCaseTest {
         tagAssociationDao: FakeTagAssociationDao = FakeTagAssociationDao(),
         sharedPrefs: SharedPrefs = mockk(relaxed = true),
         creditCardDao: FakeCreditCardDao = FakeCreditCardDao(),
+        transactionWriter: WriteTransactionDao = transactionDao,
+        transactionRunner: DbTransactionRunner = FakeDbTransactionRunner(),
+        snapshots: PreRestoreSnapshots = PreRestoreSnapshots { tempFolder.root.resolve("pre-restore") },
     ): BackupDataUseCase {
         val accountMapper = AccountMapper(
             CurrencyRepository(
@@ -61,20 +74,14 @@ class BackupDataUseCaseTest {
         return BackupDataUseCase(
             accountDao = accountDao,
             accountMapper = accountMapper,
-            accountRepository = AccountRepository(
-                accountDao = accountDao,
-                writeAccountDao = accountDao,
-                mapper = accountMapper,
-                dispatchersProvider = TestDispatchersProvider,
-                memoFactory = fakeRepositoryMemoFactory(),
-            ),
+            accountWriter = accountDao,
             budgetDao = budgetDao,
             categoryDao = categoryDao,
             loanRecordDao = loanRecordDao,
             loanDao = loanDao,
             plannedPaymentRuleDao = plannedPaymentDao,
             transactionDao = transactionDao,
-            transactionWriter = transactionDao,
+            transactionWriter = transactionWriter,
             settingsDao = settingsDao,
             categoryWriter = categoryDao,
             settingsWriter = settingsDao,
@@ -87,7 +94,6 @@ class BackupDataUseCaseTest {
             sharedPrefs = sharedPrefs,
             json = KotlinxSerializationModule.provideJson(),
             dispatchersProvider = TestDispatchersProvider,
-            fileSystem = mockk(relaxed = true),
             dataObserver = DataObserver(),
             tagsReader = tagDao,
             tagsWriter = tagDao,
@@ -95,6 +101,8 @@ class BackupDataUseCaseTest {
             tagAssociationWriter = tagAssociationDao,
             creditCardDao = creditCardDao,
             creditCardWriter = creditCardDao,
+            transactionRunner = transactionRunner,
+            preRestoreSnapshots = snapshots,
         )
     }
 
@@ -214,5 +222,147 @@ class BackupDataUseCaseTest {
         freshAccounts.findById(cardId)!!.type shouldBe AccountTypeCreditCard
         freshCards.findAll() shouldBe listOf(card)
         freshCards.findAllStatements() shouldBe listOf(statement)
+    }
+
+    private fun backupJson(): String = testResource("backups/450-150.json").readText(Charsets.UTF_16)
+
+    @Test
+    fun `exported backups declare the current format version`() = runTest {
+        val useCase = newBackupDataUseCase()
+        useCase.importJson(backupJson())
+
+        useCase.generateJsonBackup() shouldContain
+            "\"formatVersion\":${IvyWalletCompleteData.CURRENT_FORMAT_VERSION}"
+    }
+
+    @Test
+    fun `a corrupted backup reports CORRUPTED and changes nothing`() = runTest {
+        val accountDao = FakeAccountDao()
+        val sharedPrefs = mockk<SharedPrefs>(relaxed = true)
+        val useCase = newBackupDataUseCase(accountDao = accountDao, sharedPrefs = sharedPrefs)
+
+        val result = useCase.importJson(backupJson().take(5_000))
+
+        result.failure shouldBe ImportFailure.CORRUPTED
+        result.transactionsImported shouldBe 0
+        accountDao.findAll().shouldBeEmpty()
+        verify(exactly = 0) { sharedPrefs.putBoolean(any(), any()) }
+    }
+
+    @Test
+    fun `a backup from a newer format is refused`() = runTest {
+        val accountDao = FakeAccountDao()
+        val useCase = newBackupDataUseCase(accountDao = accountDao)
+        val newer = backupJson().replaceFirst(
+            "{",
+            "{\"formatVersion\":${IvyWalletCompleteData.CURRENT_FORMAT_VERSION + 1},"
+        )
+
+        val result = useCase.importJson(newer)
+
+        result.failure shouldBe ImportFailure.NEWER_VERSION
+        accountDao.findAll().shouldBeEmpty()
+    }
+
+    @Test
+    fun `all writes happen inside one database transaction`() = runTest {
+        val runner = FakeDbTransactionRunner()
+        val transactionDao = FakeTransactionDao()
+        val writes = mutableListOf<Boolean>()
+        val recordingWriter = object : WriteTransactionDao by transactionDao {
+            override suspend fun saveMany(value: List<TransactionEntity>) {
+                writes += runner.inTransaction
+                transactionDao.saveMany(value)
+            }
+        }
+        val useCase = newBackupDataUseCase(
+            transactionDao = transactionDao,
+            transactionWriter = recordingWriter,
+            transactionRunner = runner,
+        )
+
+        useCase.importJson(backupJson()).failure shouldBe null
+
+        writes shouldBe listOf(true)
+    }
+
+    @Test
+    fun `a failure while saving reports SAVE_FAILED, keeps prefs and offers no undo`() = runTest {
+        val accountDao = FakeAccountDao()
+        accountDao.save(AccountEntity(name = "Existing", currency = "EUR", color = 0))
+        val snapshots = PreRestoreSnapshots { tempFolder.root.resolve("pre-restore") }
+        val sharedPrefs = mockk<SharedPrefs>(relaxed = true)
+        val transactionDao = FakeTransactionDao()
+        val failingWriter = object : WriteTransactionDao by transactionDao {
+            override suspend fun saveMany(value: List<TransactionEntity>) {
+                error("disk full")
+            }
+        }
+        val useCase = newBackupDataUseCase(
+            accountDao = accountDao,
+            transactionDao = transactionDao,
+            transactionWriter = failingWriter,
+            sharedPrefs = sharedPrefs,
+            snapshots = snapshots,
+        )
+
+        val result = useCase.importJson(backupJson())
+
+        result.failure shouldBe ImportFailure.SAVE_FAILED
+        result.canUndo shouldBe false
+        snapshots.latest() shouldBe null
+        verify(exactly = 0) { sharedPrefs.putBoolean(any(), any()) }
+    }
+
+    @Test
+    fun `importing into a wallet with data can be undone exactly`() = runTest {
+        // given: a wallet with its own data
+        val accountDao = FakeAccountDao()
+        val categoryDao = FakeCategoryDao()
+        val transactionDao = FakeTransactionDao()
+        val settingsDao = FakeSettingsDao()
+        val useCase = newBackupDataUseCase(
+            accountDao = accountDao,
+            categoryDao = categoryDao,
+            transactionDao = transactionDao,
+            settingsDao = settingsDao,
+        )
+        accountDao.save(AccountEntity(name = "My own account", currency = "INR", color = 1))
+        val before = useCase.generateJsonBackup()
+
+        // when: a backup is imported
+        val result = useCase.importJson(backupJson())
+
+        // then: it can be undone, and undo brings back exactly the previous data
+        result.failure shouldBe null
+        result.canUndo shouldBe true
+        transactionDao.findAll().shouldNotBeEmpty()
+
+        useCase.undoLastImport() shouldBe true
+        useCase.generateJsonBackup() shouldBe before
+        useCase.canUndoLastImport() shouldBe false
+    }
+
+    @Test
+    fun `importing into an empty wallet saves no copy`() = runTest {
+        val useCase = newBackupDataUseCase()
+
+        val result = useCase.importJson(backupJson())
+
+        result.canUndo shouldBe false
+        useCase.canUndoLastImport() shouldBe false
+        useCase.undoLastImport() shouldBe false
+    }
+
+    @Test
+    fun `a backup without settings keeps the current settings`() = runTest {
+        val settingsDao = FakeSettingsDao()
+        val current = SettingsEntity(theme = Theme.DARK, currency = "INR", bufferAmount = 0.0, name = "")
+        settingsDao.save(current)
+        val useCase = newBackupDataUseCase(settingsDao = settingsDao)
+
+        useCase.importJson("{\"accounts\":[]}").failure shouldBe null
+
+        settingsDao.findAll() shouldBe listOf(current)
     }
 }
