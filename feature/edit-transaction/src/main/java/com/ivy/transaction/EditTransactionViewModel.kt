@@ -171,6 +171,7 @@ class EditTransactionViewModel @Inject constructor(
             val eligibleAccounts = eligible(accountsAct(Unit))
             // No usable account (none at all, or only closed cards): never fall back to closed cards.
             if (eligibleAccounts.isEmpty()) {
+                toaster.show(R.string.msg_add_account_first)
                 closeScreen()
                 return@launch
             }
@@ -827,6 +828,9 @@ class EditTransactionViewModel @Inject constructor(
         }
 
         if (amount == 0.0) {
+            viewModelScope.launch {
+                toaster.show(R.string.msg_enter_amount)
+            }
             return false
         }
 

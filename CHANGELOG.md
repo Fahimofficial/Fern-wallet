@@ -39,6 +39,13 @@ First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 - Database 130 → 131 is an additive migration; backups include card data, and older backups still import.
 
 ### Fixes
+- When Android closes the app in the background, reopening it returns to the screen you were on
+  (and the screens behind it) instead of Home.
+- Switching the phone between light and dark mode while the app is open no longer jumps back to
+  Home, adds duplicate screens to the back stack, or locks the app again.
+- An "add transaction" shortcut used while the app is already open now opens the add screen.
+- Saving a transaction with a zero amount now says "Enter an amount first." instead of doing
+  nothing, and opening "add transaction" without any account explains why it closes.
 - A missing exchange rate no longer converts 1:1 (e.g. US dollars counted as rupees). Amounts in a
   currency without a rate are left out of totals, and Home shows an **Exchange rate missing** card
   that opens the exchange-rates screen. A transfer between such currencies shows a placeholder

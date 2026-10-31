@@ -1,9 +1,12 @@
 package com.ivy.navigation
 
+import kotlinx.serialization.Serializable
+
 /**
  * Marks a screen in the Ivy Wallet's navigation graph.
  * Extend it when creating a new screen.
  */
+@Serializable
 sealed interface Screen {
     /**
      * Marks whether a given screen is a legacy Ivy Wallet one.
