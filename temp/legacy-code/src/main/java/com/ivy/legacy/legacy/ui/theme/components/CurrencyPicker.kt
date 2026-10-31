@@ -1,7 +1,7 @@
 package com.ivy.wallet.ui.theme.components
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
+import com.ivy.design.system.FernMotion
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -90,7 +90,7 @@ fun CurrencyPicker(
         targetValue = densityScope {
             if (keyboardShown) keyboardOnlyWindowInsets().bottom.toDp() else 0.dp
         },
-        animationSpec = tween(DURATION_MODAL_ANIM)
+        animationSpec = FernMotion.tween(DURATION_MODAL_ANIM)
     )
 
     Column(

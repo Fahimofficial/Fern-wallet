@@ -2,7 +2,7 @@ package com.ivy.wallet.ui.theme.modal
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import com.ivy.design.system.FernMotion
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -93,22 +93,22 @@ fun BoxScope.IvyModal(
         targetValue = densityScope {
             if (keyboardShown) keyboardOnlyWindowInsets().bottom.toDp() else 0.dp
         },
-        animationSpec = tween(DURATION_MODAL_ANIM)
+        animationSpec = FernMotion.tween(DURATION_MODAL_ANIM)
     )
     val navBarPadding by animateDpAsState(
         targetValue = densityScope {
             if (keyboardShown) 0.dp else navigationBarInsets().bottom.toDp()
         },
-        animationSpec = tween(DURATION_MODAL_ANIM)
+        animationSpec = FernMotion.tween(DURATION_MODAL_ANIM)
     )
     val blurAlpha by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
-        animationSpec = tween(DURATION_BACKGROUND_BLUR_ANIM),
+        animationSpec = FernMotion.tween(DURATION_BACKGROUND_BLUR_ANIM),
         visibilityThreshold = 0.01f
     )
     val modalPercentVisible by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
-        animationSpec = tween(DURATION_MODAL_ANIM),
+        animationSpec = FernMotion.tween(DURATION_MODAL_ANIM),
         visibilityThreshold = 0.01f
     )
 

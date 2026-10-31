@@ -1,7 +1,7 @@
 package com.ivy.search
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
+import com.ivy.design.system.FernMotion
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -115,7 +115,7 @@ private fun SearchUi(
                     targetValue = densityScope {
                         if (keyboardVisible) keyboardOnlyWindowInsets().bottom.toDp() else 0.dp
                     },
-                    animationSpec = tween(DURATION_MODAL_ANIM)
+                    animationSpec = FernMotion.tween(DURATION_MODAL_ANIM)
                 )
 
                 Spacer(Modifier.height(keyboardShownInsetDp))

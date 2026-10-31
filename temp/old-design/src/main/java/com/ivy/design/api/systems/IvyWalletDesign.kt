@@ -2,8 +2,6 @@ package com.ivy.design.api.systems
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.unit.dp
@@ -11,7 +9,7 @@ import androidx.compose.ui.unit.sp
 import com.ivy.base.legacy.Theme
 import com.ivy.design.api.IvyDesign
 import com.ivy.design.l0_system.*
-import com.ivy.ui.R
+import com.ivy.design.system.FernFonts
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 abstract class IvyWalletDesign : IvyDesign {
@@ -22,24 +20,8 @@ abstract class IvyWalletDesign : IvyDesign {
 
     @Deprecated("Old design system. Use `:ivy-design` and Material3")
     override fun typography(): IvyTypography {
-        val openSans = FontFamily(
-            Font(R.font.opensans_regular, FontWeight.Normal),
-            Font(R.font.opensans_regular, FontWeight.Medium),
-            Font(R.font.opensans_bold, FontWeight.Black),
-            Font(R.font.opensans_semibold, FontWeight.SemiBold),
-            Font(R.font.opensans_bold, FontWeight.Bold),
-            Font(R.font.opensans_extrabold, FontWeight.ExtraBold),
-        )
-
-        val raleWay = FontFamily(
-            Font(R.font.raleway_regular, FontWeight.Normal),
-            Font(R.font.raleway_medium, FontWeight.Medium),
-            Font(R.font.raleway_black, FontWeight.Black),
-            Font(R.font.raleway_light, FontWeight.Light),
-            Font(R.font.raleway_semibold, FontWeight.SemiBold),
-            Font(R.font.raleway_bold, FontWeight.Bold),
-            Font(R.font.raleway_extrabold, FontWeight.ExtraBold),
-        )
+        val openSans = FernFonts.OpenSans
+        val raleWay = FernFonts.Raleway
 
         val h1 = 40.sp
         val h2 = 32.sp

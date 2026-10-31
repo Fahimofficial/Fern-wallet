@@ -14,6 +14,8 @@ fun IvyMaterial3Theme(
 ) {
     MaterialTheme(
         colorScheme = if (dark) ivyDarkColorScheme(isTrueBlack) else ivyLightColorScheme(),
+        typography = FernTypography,
+        shapes = FernShapes,
         content = content,
     )
 }
