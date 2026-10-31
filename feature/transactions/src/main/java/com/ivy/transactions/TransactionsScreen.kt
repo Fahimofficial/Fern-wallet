@@ -96,6 +96,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import java.math.BigDecimal
 import java.util.UUID
+import androidx.compose.ui.semantics.Role
 
 @Composable
 fun BoxWithConstraintsScope.TransactionsScreen(screen: TransactionsScreen) {
@@ -109,12 +110,12 @@ fun BoxWithConstraintsScope.TransactionsScreen(screen: TransactionsScreen) {
     LaunchedEffect(Unit) {
         viewModel.start(screen)
 
-        nav.onBackPressed[screen] = {
+        // A side effect only (never consumes back), so this screen keeps the predictive back gesture.
+        nav.beforeBack[screen] = {
             setStatusBarDarkTextCompat(
                 view = view,
                 darkText = ivyContext.theme == Theme.LIGHT
             )
-            false
         }
     }
 
@@ -662,7 +663,7 @@ private fun Header(
             modifier = Modifier
                 .padding(start = 32.dp)
                 .testTag("balance")
-                .clickableNoIndication(rememberInteractionSource()) {
+                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                     onBalanceClick()
                 },
             textColor = contrastColor,
@@ -682,7 +683,7 @@ private fun Header(
             BalanceRowMedium(
                 modifier = Modifier
                     .padding(start = 32.dp)
-                    .clickableNoIndication(rememberInteractionSource()) {
+                    .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                         onBalanceClick()
                     },
                 textColor = itemColor.dynamicContrast(),
@@ -762,7 +763,7 @@ private fun Item(
     Row(
         modifier = Modifier
             .padding(start = 22.dp)
-            .clickableNoIndication(rememberInteractionSource()) {
+            .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                 when {
                     account != null -> {
                         showAccountModal()

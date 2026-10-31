@@ -195,6 +195,7 @@ fun ModalDelete(
             .size(40.dp)
             .testTag(testTag),
         icon = R.drawable.ic_delete,
+        contentDescription = stringResource(R.string.delete),
         backgroundGradient = GradientRed,
         enabled = enabled,
         tint = White,

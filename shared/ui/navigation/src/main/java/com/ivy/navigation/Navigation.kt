@@ -3,6 +3,8 @@ package com.ivy.navigation
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import java.util.Stack
@@ -34,13 +36,23 @@ class Navigation @Inject constructor() {
   val currentScreen: Screen?
     get() = currentEntry?.screen
 
+  /** Bumped whenever something that decides how back behaves changes (read by [handlesBack]). */
+  private var backStateVersion by mutableIntStateOf(0)
+
   @Deprecated("Legacy code. Don't use it, please.")
-  val modalBackHandling: Stack<ModalBackHandler> = Stack()
+  val modalBackHandling: Stack<ModalBackHandler> = ObservableStack { backStateVersion++ }
 
   @Deprecated("Legacy code. Use Compose `BackHandler {}` instead.")
-  val onBackPressed: MutableMap<Screen, () -> Boolean> = mutableMapOf()
+  val onBackPressed: MutableMap<Screen, () -> Boolean> = mutableStateMapOf()
 
-  private val backStack: Stack<NavEntry> = Stack()
+  /**
+   * Side effects to run when the user goes back from a screen (e.g. restore the status bar).
+   * Unlike [onBackPressed] they can't consume back, so the screen keeps the predictive back
+   * gesture.
+   */
+  val beforeBack: MutableMap<Screen, () -> Unit> = mutableMapOf()
+
+  private val backStack: Stack<NavEntry> = ObservableStack { backStateVersion++ }
   private var lastEntry: NavEntry? = null
   private var nextId = 0L
 
@@ -86,10 +98,40 @@ class Navigation @Inject constructor() {
   @Synchronized
   fun back(): Boolean {
     if (!backStack.empty()) {
+      currentScreen?.let { beforeBack[it]?.invoke() }
       switchTo(backStack.pop())
       return true
     }
     return false
+  }
+
+  /**
+   * True when back is handled inside the app (a modal, a screen override or the back stack);
+   * false when it should go to the system (leave the app). Observable from composition.
+   */
+  @Suppress("DEPRECATION")
+  fun handlesBack(): Boolean {
+    backStateVersion // subscribe
+    return modalBackHandling.isNotEmpty() || onBackPressed.containsKey(currentScreen) ||
+      !backStack.empty()
+  }
+
+  /** True while a legacy modal handles back. Observable from composition. */
+  @Suppress("DEPRECATION")
+  fun hasOpenModal(): Boolean {
+    backStateVersion // subscribe
+    return modalBackHandling.isNotEmpty()
+  }
+
+  /**
+   * The entry back would return to, when back simply pops the stack: no modal and no screen
+   * override can intercept it. Only then can the back gesture preview the previous screen.
+   */
+  @Suppress("DEPRECATION")
+  @Synchronized
+  fun predictiveBackTarget(): NavEntry? {
+    if (modalBackHandling.isNotEmpty() || onBackPressed.containsKey(currentScreen)) return null
+    return if (backStack.empty()) null else backStack.peek()
   }
 
   /**
@@ -109,5 +151,26 @@ class Navigation @Inject constructor() {
   fun resetBackStack() {
     backStack.clear()
     lastEntry = null
+  }
+}
+
+/** A [Stack] that reports every change, so back-handling state can be observed. */
+private class ObservableStack<T>(private val onChange: () -> Unit) : Stack<T>() {
+  override fun push(item: T): T = super.push(item).also { onChange() }
+
+  @Synchronized
+  override fun pop(): T = super.pop().also { onChange() }
+
+  @Synchronized
+  override fun add(element: T): Boolean = super.add(element).also { onChange() }
+
+  override fun remove(element: T): Boolean = super.remove(element).also { onChange() }
+
+  @Synchronized
+  override fun removeAt(index: Int): T = super.removeAt(index).also { onChange() }
+
+  override fun clear() {
+    super.clear()
+    onChange()
   }
 }

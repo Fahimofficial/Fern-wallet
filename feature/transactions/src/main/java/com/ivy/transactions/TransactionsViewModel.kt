@@ -70,6 +70,8 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 import com.ivy.legacy.datamodel.Account as LegacyAccount
+import com.ivy.data.DataObserver
+import com.ivy.data.DataWriteEvent
 
 @Stable
 @HiltViewModel
@@ -103,9 +105,24 @@ class TransactionsViewModel @Inject constructor(
     private val creditCardRepository: CreditCardRepository,
     private val creditCardNotifications: CreditCardNotifications,
     private val deleteCreditCardUseCase: DeleteCreditCardUseCase,
+    private val dataObserver: DataObserver,
 ) : ComposeViewModel<TransactionsState, TransactionsEvent>() {
+    init {
+        // e.g. a transaction deleted from this list and restored by Undo.
+        viewModelScope.launch {
+            dataObserver.writeEvents.collect { event ->
+                val screen = startedFor
+                if (event is DataWriteEvent.TransactionsChanged && screen != null) {
+                    start(screen = screen, timePeriod = period.value, reset = false)
+                }
+            }
+        }
+    }
 
     private val period = mutableStateOf(ivyContext.selectedPeriod)
+
+    /** The screen [start] last loaded, to reload it when its transactions change elsewhere. */
+    private var startedFor: TransactionsScreen? = null
     private val categories = mutableStateOf<ImmutableList<Category>>(persistentListOf())
     private val accounts = mutableStateOf<ImmutableList<LegacyAccount>>(persistentListOf())
     private val baseCurrency = mutableStateOf("")
@@ -847,6 +864,7 @@ class TransactionsViewModel @Inject constructor(
         timePeriod: TimePeriod? = ivyContext.selectedPeriod,
         reset: Boolean = true,
     ) {
+        startedFor = screen
         if (reset) {
             reset()
         }

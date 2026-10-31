@@ -89,6 +89,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
+import androidx.compose.ui.semantics.Role
 
 @Composable
 fun BoxWithConstraintsScope.LoanDetailsScreen(screen: LoanDetailsScreen) {
@@ -303,7 +304,7 @@ private fun Header(
             modifier = Modifier
                 .padding(start = 32.dp)
                 .testTag("loan_amount")
-                .clickableNoIndication(rememberInteractionSource()) {
+                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                     onAmountClick()
                 },
             textColor = contrastColor,
@@ -337,7 +338,7 @@ private fun LoanItem(
     Row(
         modifier = Modifier
             .padding(start = 22.dp)
-            .clickableNoIndication(rememberInteractionSource()) {
+            .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                 onClick()
             },
         verticalAlignment = Alignment.CenterVertically

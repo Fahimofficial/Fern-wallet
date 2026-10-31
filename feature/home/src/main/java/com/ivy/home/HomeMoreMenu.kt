@@ -24,15 +24,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
@@ -83,6 +83,7 @@ import com.ivy.wallet.ui.theme.modal.AddModalBackHandling
 import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
 import java.util.UUID
 import kotlin.math.roundToInt
+import androidx.compose.ui.semantics.Role
 
 private const val SWIPE_UP_THRESHOLD_CLOSE_MORE_MENU = 300
 
@@ -103,16 +104,19 @@ fun BoxWithConstraintsScope.MoreMenu(
 ) {
     val ivyContext = ivyWalletCtx()
 
-    val percentExpanded by animateFloatAsState(
+    // Kept as State and read in layout/draw lambdas: the reveal animates without recomposing
+    // the menu on every frame.
+    val percentExpanded = animateFloatAsState(
         targetValue = if (expanded) 1f else 0f,
         animationSpec = springBounce(),
-        label = ""
+        label = "more_menu"
     )
-    val iconRotation by animateFloatAsState(
+    val iconRotation = animateFloatAsState(
         targetValue = if (expanded) -180f else 0f,
         animationSpec = springBounce(),
-        label = ""
+        label = "more_menu_arrow"
     )
+    val onScreen by remember { derivedStateOf { percentExpanded.value > 0.01f } }
 
     val buttonSizePx = 40.dp.toDensityPx()
 
@@ -120,15 +124,9 @@ fun BoxWithConstraintsScope.MoreMenu(
     val yBaseCollapsed = 20.dp.toDensityPx() + statusBarInset()
     val yBaseExpanded = ivyContext.screenHeight - 48.dp.toDensityPx() - navigationBarInset()
 
-    val yButton = lerp(
-        start = yBaseCollapsed,
-        end = yBaseExpanded - buttonSizePx,
-        fraction = percentExpanded
-    )
-
     // Background
     val colorMedium = UI.colors.medium
-    if (percentExpanded > 0.01f) {
+    if (onScreen) {
         Canvas(
             modifier = modifier
                 .fillMaxSize()
@@ -139,12 +137,13 @@ fun BoxWithConstraintsScope.MoreMenu(
         ) {
             val radiusCollapsed = buttonSizePx / 2f
             val radiusExpanded = ivyContext.screenHeight * 1.5f
-            val radius = lerp(radiusCollapsed, radiusExpanded, percentExpanded)
+            val progress = percentExpanded.value
+            val radius = lerp(radiusCollapsed, radiusExpanded, progress)
 
             val yBackground = lerp(
                 start = yBaseCollapsed + radius,
                 end = yBaseExpanded,
-                fraction = percentExpanded
+                fraction = progress
             )
 
             drawCircle(
@@ -158,13 +157,13 @@ fun BoxWithConstraintsScope.MoreMenu(
         }
     }
 
-    if (percentExpanded > 0.01f) {
+    if (onScreen) {
         Column(
             modifier = modifier
                 .statusBarsPadding()
                 .navigationBarsPadding()
                 .fillMaxSize()
-                .alpha(percentExpanded)
+                .graphicsLayer { alpha = percentExpanded.value.coerceIn(0f, 1f) }
                 .verticalScroll(rememberScrollState())
                 .zIndex(510f)
                 .verticalSwipeListener(
@@ -198,10 +197,15 @@ fun BoxWithConstraintsScope.MoreMenu(
         }
     }
 
-    CircleButtonFilled(
+    MoreMenuButton(
         modifier = Modifier
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
+                val yButton = lerp(
+                    start = yBaseCollapsed,
+                    end = yBaseExpanded - buttonSizePx,
+                    fraction = percentExpanded.value
+                )
 
                 layout(placeable.width, placeable.height) {
                     placeable.place(
@@ -210,16 +214,30 @@ fun BoxWithConstraintsScope.MoreMenu(
                     )
                 }
             }
-            .rotate(iconRotation)
+            .graphicsLayer { rotationZ = iconRotation.value }
             .thenIf(expanded) {
                 zIndex(520f)
             }
             .testTag("home_more_menu_arrow"),
-        backgroundColor = colorLerp(UI.colors.medium, UI.colors.pure, percentExpanded),
-        icon = R.drawable.ic_expandarrow
+        progress = { percentExpanded.value },
     ) {
         setExpanded(!expanded)
     }
+}
+
+/** Own restart scope: only this button recomposes as its background color animates. */
+@Composable
+private fun MoreMenuButton(
+    progress: () -> Float,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    CircleButtonFilled(
+        modifier = modifier,
+        backgroundColor = colorLerp(UI.colors.medium, UI.colors.pure, progress()),
+        icon = R.drawable.ic_expandarrow,
+        onClick = onClick,
+    )
 }
 
 @Composable
@@ -361,7 +379,7 @@ private fun ColumnScope.Buffer(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickableNoIndication(rememberInteractionSource()) {
+            .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                 onBufferClick()
             }
             .testTag("savings_goal_row"),
@@ -567,7 +585,7 @@ private fun MoreMenuButton(
         Text(
             modifier = Modifier
                 .defaultMinSize(minWidth = 92.dp)
-                .clickableNoIndication(rememberInteractionSource()) {
+                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                     onClick()
                 },
             text = label,

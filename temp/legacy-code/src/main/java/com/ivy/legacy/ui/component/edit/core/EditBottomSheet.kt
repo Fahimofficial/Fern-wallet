@@ -1,8 +1,5 @@
 package com.ivy.wallet.ui.edit.core
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,7 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
@@ -41,7 +38,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ivy.legacy.datamodel.Account
@@ -56,16 +52,11 @@ import com.ivy.legacy.utils.consumeClicks
 import com.ivy.legacy.utils.densityScope
 import com.ivy.legacy.utils.format
 import com.ivy.legacy.utils.hideKeyboard
-import com.ivy.legacy.utils.keyboardOnlyWindowInsets
 import com.ivy.legacy.utils.lerp
-import com.ivy.legacy.utils.navigationBarInsets
 import com.ivy.legacy.utils.onScreenStart
-import com.ivy.legacy.utils.springBounce
 import com.ivy.design.utils.thenIf
-import com.ivy.legacy.utils.verticalSwipeListener
 import com.ivy.base.model.TransactionType
 import com.ivy.legacy.utils.rememberInteractionSource
-import com.ivy.legacy.utils.rememberSwipeListenerState
 import com.ivy.ui.R
 import com.ivy.wallet.domain.data.IvyCurrency
 import com.ivy.wallet.ui.theme.Gradient
@@ -81,7 +72,6 @@ import com.ivy.wallet.ui.theme.components.ItemIconSDefaultIcon
 import com.ivy.wallet.ui.theme.components.IvyButton
 import com.ivy.wallet.ui.theme.components.IvyIcon
 import com.ivy.wallet.ui.theme.findContrastTextColor
-import com.ivy.wallet.ui.theme.modal.DURATION_MODAL_ANIM
 import com.ivy.wallet.ui.theme.modal.ModalSave
 import com.ivy.wallet.ui.theme.modal.ModalSet
 import com.ivy.wallet.ui.theme.modal.edit.AmountModal
@@ -90,9 +80,86 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.roundToInt
+import androidx.compose.animation.core.animate
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalDensity
+import com.ivy.design.system.motion.IvyMotion
+import com.ivy.legacy.utils.bottomInsetPadding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import androidx.compose.ui.semantics.Role
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 const val SWIPE_UP_EXPANDED_THRESHOLD = 200
+
+/** Drag distance for a full expand/collapse until the accounts header has been measured. */
+private val FallbackDragRange = 200.dp
+private const val HalfExpanded = 0.5f
+private const val CollapsedArrowRotation = -180f
+
+/**
+ * Expansion progress of the edit sheet (1 = accounts shown). Written synchronously while
+ * dragging; spring-animated otherwise, always starting from the current value and velocity.
+ */
+@Stable
+private class SheetExpansion(private val scope: CoroutineScope) {
+    var progress by mutableFloatStateOf(1f)
+        private set
+    private var velocity = 0f
+    private var settleJob: Job? = null
+    private var dragging = false
+
+    /** Full height of the collapsible header: the drag distance of a full expand/collapse. */
+    var rangePx = 0
+
+    fun grab() {
+        dragging = true
+        settleJob?.cancel()
+    }
+
+    fun drag(deltaPx: Float, rangePx: Float) {
+        // Dragging down collapses: progress falls as the finger moves down.
+        progress = (progress - deltaPx / rangePx).coerceIn(0f, 1f)
+    }
+
+    /** @return the state to settle to, chosen from where the flick would land. */
+    fun release(velocityPx: Float, rangePx: Float): Float {
+        dragging = false
+        val projected = progress - IvyMotion.projectedDistance(velocityPx) / rangePx
+        val target = if (projected >= HalfExpanded) 1f else 0f
+        velocity = -velocityPx / rangePx
+        settleAsync(target)
+        return target
+    }
+
+    fun settleAsync(target: Float) {
+        settleJob?.cancel()
+        settleJob = scope.launch { settle(target) }
+    }
+
+    private suspend fun settle(target: Float) {
+        if (dragging) return
+        animate(
+            initialValue = progress,
+            targetValue = target,
+            initialVelocity = velocity,
+            animationSpec = IvyMotion.Springs.surface(),
+        ) { value, v ->
+            progress = value.coerceIn(0f, 1f)
+            velocity = v
+        }
+        velocity = 0f
+    }
+}
 
 @Suppress("LongMethod", "LongParameterList", "UnusedParameter", "ParameterNaming")
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
@@ -125,28 +192,23 @@ fun BoxWithConstraintsScope.EditBottomSheet(
         }
     }
 
-    val keyboardShownInsetDp by animateDpAsState(
-        targetValue = densityScope {
-            if (keyboardShown) keyboardOnlyWindowInsets().bottom.toDp() else 0.dp
-        },
-        animationSpec = tween(DURATION_MODAL_ANIM)
-    )
-    val navBarPadding by animateDpAsState(
-        targetValue = densityScope {
-            if (keyboardShown) 0.dp else navigationBarInsets().bottom.toDp()
-        },
-        animationSpec = tween(DURATION_MODAL_ANIM)
-    )
+    // Followed frame by frame during the IME animation (see InsetsExt).
+    val bottomInsets = WindowInsets.ime.union(WindowInsets.navigationBars)
 
     var bottomBarHeight by remember { mutableIntStateOf(0) }
 
     var internalExpanded by remember { mutableStateOf(true) }
     val expanded = internalExpanded && !keyboardShown
 
-    val percentExpanded by animateFloatAsState(
-        targetValue = if (expanded) 1f else 0f,
-        animationSpec = springBounce()
-    )
+    // Expanded (accounts visible) <-> collapsed. The sheet follows the finger while dragged and
+    // a release continues at the finger's velocity toward the state the flick projects to.
+    val scope = rememberCoroutineScope()
+    val expansion = remember { SheetExpansion(scope) }
+    val fallbackDragRangePx = with(LocalDensity.current) { FallbackDragRange.toPx() }
+    LaunchedEffect(expanded) {
+        expansion.settleAsync(if (expanded) 1f else 0f)
+    }
+    val percentExpanded = expansion.progress
     val percentCollapsed = 1f - percentExpanded
 
     val showConvertedAmountText by remember(convertedAmount) {
@@ -183,16 +245,20 @@ fun BoxWithConstraintsScope.EditBottomSheet(
                 shape = UI.shapes.r2Top
             )
             .background(UI.colors.pure, UI.shapes.r2Top)
-            .verticalSwipeListener(
-                sensitivity = SWIPE_UP_EXPANDED_THRESHOLD,
-                state = rememberSwipeListenerState(),
-                onSwipeUp = {
-                    hideKeyboard(rootView)
-                    internalExpanded = true
+            .draggable(
+                orientation = Orientation.Vertical,
+                state = rememberDraggableState { delta ->
+                    expansion.drag(delta, expansion.rangePx.takeIf { it > 0 }?.toFloat() ?: fallbackDragRangePx)
                 },
-                onSwipeDown = {
-                    internalExpanded = false
-                }
+                onDragStarted = {
+                    expansion.grab()
+                    // Pulling the sheet up while typing means "show the accounts again".
+                    if (keyboardShown) hideKeyboard(rootView)
+                },
+                onDragStopped = { velocity ->
+                    val range = expansion.rangePx.takeIf { it > 0 }?.toFloat() ?: fallbackDragRangePx
+                    internalExpanded = expansion.release(velocity, range) == 1f
+                },
             )
             .consumeClicks(rememberInteractionSource())
     ) {
@@ -205,6 +271,7 @@ fun BoxWithConstraintsScope.EditBottomSheet(
 
         SheetHeader(
             percentExpanded = percentExpanded,
+            onFullHeight = { expansion.rangePx = it },
             label = label,
             type = type,
             accounts = accounts,
@@ -251,14 +318,12 @@ fun BoxWithConstraintsScope.EditBottomSheet(
             Spacer(Modifier.height(lastSpacer.dp))
         }
 //
-        // system stuff + keyboard padding
+        // Room for the bottom bar, which already includes the keyboard / navigation bar inset.
         Spacer(Modifier.height(densityScope { bottomBarHeight.toDp() }))
-        Spacer(Modifier.height(keyboardShownInsetDp))
     }
 
     BottomBar(
         keyboardShown = keyboardShown,
-        expanded = expanded,
         internalExpanded = internalExpanded,
         setInternalExpanded = {
             internalExpanded = it
@@ -267,8 +332,8 @@ fun BoxWithConstraintsScope.EditBottomSheet(
             bottomBarHeight = it
         },
 
-        keyboardShownInsetDp = keyboardShownInsetDp,
-        navBarPadding = navBarPadding,
+        bottomInsets = bottomInsets,
+        expansionProgress = { expansion.progress },
 
         ActionButton = ActionButton
     )
@@ -315,12 +380,11 @@ fun BoxWithConstraintsScope.EditBottomSheet(
 @Composable
 private fun BottomBar(
     keyboardShown: Boolean,
-    keyboardShownInsetDp: Dp,
+    bottomInsets: WindowInsets,
     setBottomBarHeight: (Int) -> Unit,
-    expanded: Boolean,
     internalExpanded: Boolean,
     setInternalExpanded: (Boolean) -> Unit,
-    navBarPadding: Dp,
+    expansionProgress: () -> Float,
     ActionButton: @Composable () -> Unit
 ) {
     val ivyContext = ivyWalletCtx()
@@ -333,32 +397,27 @@ private fun BottomBar(
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
 
-                val systemOffsetBottom = keyboardShownInsetDp.toPx()
-                val visibleHeight = placeable.height * 1f
-                val y = ivyContext.screenHeight - visibleHeight - systemOffsetBottom
+                // Bottom-aligned; the inset padding below keeps the buttons above the keyboard.
+                val y = ivyContext.screenHeight - placeable.height
 
                 layout(placeable.width, placeable.height) {
                     placeable.place(
                         0,
-                        y.roundToInt()
+                        y
                     )
                 }
             }
 //            .gradientCutBackground()
-            .padding(bottom = 12.dp)
-            .padding(bottom = navBarPadding),
+            .bottomInsetPadding(bottomInsets)
+            .padding(bottom = 12.dp),
         lineColor = UI.colors.medium
     ) {
         Spacer(Modifier.width(24.dp))
 
-        val expandRotation by animateFloatAsState(
-            targetValue = if (expanded) 0f else -180f,
-            animationSpec = springBounce()
-        )
-
         val rootView = LocalView.current
         CircleButton(
-            modifier = Modifier.rotate(expandRotation),
+            // Turns with the sheet, also while it is being dragged.
+            modifier = Modifier.graphicsLayer { rotationZ = CollapsedArrowRotation * (1f - expansionProgress()) },
             icon = R.drawable.ic_expand_more,
         ) {
             setInternalExpanded(!internalExpanded || keyboardShown)
@@ -396,7 +455,7 @@ private fun TransferRowMini(
                 }
             }
             .alpha(percentCollapsed)
-            .clickableNoIndication(rememberInteractionSource()) {
+            .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                 onSetExpanded()
             },
         verticalAlignment = Alignment.CenterVertically
@@ -451,6 +510,7 @@ private fun TransferRowMini(
 @Suppress("ParameterNaming")
 private fun SheetHeader(
     percentExpanded: Float,
+    onFullHeight: (Int) -> Unit,
     label: String,
     type: TransactionType,
     accounts: List<Account>,
@@ -465,8 +525,8 @@ private fun SheetHeader(
             modifier = Modifier
                 .layout { measurable, constraints ->
                     val placeable = measurable.measure(constraints)
+                    onFullHeight(placeable.height)
 
-//                    val x = lerp(0, ivyContext.screenWidth, (1f - percentExpanded))
                     val height = placeable.height * percentExpanded
 
                     layout(placeable.width, height.roundToInt()) {
@@ -703,7 +763,7 @@ private fun Amount(
         Column {
             BalanceRow(
                 modifier = Modifier
-                    .clickableNoIndication(rememberInteractionSource()) {
+                    .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                         onShowAmountModal()
                     }
                     .testTag("edit_amount_balance_row"),
@@ -767,6 +827,7 @@ private fun LabelAccountMini(
             .alpha(1f - percentExpanded)
             .clickableNoIndication(
                 interactionSource = rememberInteractionSource(),
+                role = Role.Button,
                 onClick = onClick
             ),
         horizontalAlignment = Alignment.CenterHorizontally

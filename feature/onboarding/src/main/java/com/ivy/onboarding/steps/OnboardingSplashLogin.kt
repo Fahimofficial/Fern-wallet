@@ -65,6 +65,7 @@ import com.ivy.wallet.ui.theme.Gray
 import com.ivy.wallet.ui.theme.Green
 import com.ivy.wallet.ui.theme.components.IvyIcon
 import kotlin.math.roundToInt
+import androidx.compose.ui.semantics.Role
 
 @Composable
 fun BoxWithConstraintsScope.OnboardingSplashLogin(
@@ -171,7 +172,7 @@ fun BoxWithConstraintsScope.OnboardingSplashLogin(
                         )
                     }
                 }
-                .clickableNoIndication(rememberInteractionSource()) {
+                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                     internalSwitch = !internalSwitch
                 },
             painter = painterResource(id = R.drawable.ivy_wallet_logo),

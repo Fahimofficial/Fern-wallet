@@ -71,6 +71,9 @@ import java.time.LocalDate
 import java.time.LocalTime
 import timber.log.Timber
 import javax.inject.Inject
+import androidx.compose.ui.Alignment
+import com.ivy.ui.undo.UndoController
+import com.ivy.ui.undo.UndoSnackbarHost
 
 @AndroidEntryPoint
 @Suppress("TooManyFunctions")
@@ -96,6 +99,9 @@ class RootActivity : AppCompatActivity(), RootScreen {
     @Inject
     lateinit var dateTimePicker: DateTimePicker
 
+    @Inject
+    lateinit var undoController: UndoController
+
     private lateinit var createFileLauncher: ActivityResultLauncher<String>
     private lateinit var onFileCreated: (fileUri: Uri) -> Unit
 
@@ -110,7 +116,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
         super.onCreate(savedInstanceState)
         setupApp()
         setContent {
-            // `viewModel` is the Activity's instance, the one onResume/onPause/back use too.
+            // `viewModel` is the Activity's instance, the one onResume/onPause use too.
             val isSystemInDarkTheme = isSystemInDarkTheme()
 
             LaunchedEffect(isSystemInDarkTheme) {
@@ -119,8 +125,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
 
             val appLocked by viewModel.appLocked.collectAsState()
             when (appLocked) {
-                null -> { // display nothing
-                }
+                null -> Unit // display nothing
                 true -> {
                     IvyUI(
                         design = appDesign(ivyContext),
@@ -140,12 +145,11 @@ class RootActivity : AppCompatActivity(), RootScreen {
                         )
                     }
                 }
-
                 false -> {
                     // Theme-coloured backdrop behind screen transitions: while one screen fades
                     // out and the next fades in, the dark window background must never show.
                     ThemedBackdrop(appDesign(ivyContext).colors(ivyContext.theme, isSystemInDarkTheme).pure) {
-                        NavigationRoot(navigation = navigation) { screen ->
+                        NavigationRoot(navigation = navigation, onUnhandledBack = ::leaveApp) { screen ->
                             IvyUI(
                                 design = appDesign(ivyContext),
                                 includeSurface = screen?.isLegacy ?: true,
@@ -168,6 +172,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
                 isTrueBlack = appDesign(ivyContext).context().theme == Theme.AMOLED_DARK
             ) {
                 dateTimePicker.Content()
+                if (appLocked == false) UndoOverlay(undoController)
             }
         }
     }
@@ -371,13 +376,17 @@ class RootActivity : AppCompatActivity(), RootScreen {
         biometricPrompt.authenticate(promptInfo)
     }
 
-    override fun onBackPressed() {
-        if (viewModel.isAppLocked()) {
-            super.onBackPressed()
+    /**
+     * Back that a screen declined with nowhere left to go: leave the app like the system would
+     * (Android 12+ keeps the task's root activity alive in the background).
+     * In-app back is handled by [NavigationRoot] through the predictive back dispatcher; while the
+     * app is locked no handler is registered, so the system handles back itself.
+     */
+    private fun leaveApp() {
+        if (isTaskRoot && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            moveTaskToBack(false)
         } else {
-            if (!navigation.onBackPressed()) {
-                super.onBackPressed()
-            }
+            finish()
         }
     }
 
@@ -556,6 +565,15 @@ class RootActivity : AppCompatActivity(), RootScreen {
         val appWidgetManager: AppWidgetManager = this.getSystemService(AppWidgetManager::class.java)
         val addTransactionWidget = ComponentName(this, widget)
         appWidgetManager.requestPinAppWidget(addTransactionWidget, null, null)
+    }
+}
+
+/** Above every screen, so "Transaction deleted · Undo" stays after its screen closes. */
+@Composable
+@Suppress("FunctionNaming") // composable
+private fun UndoOverlay(controller: UndoController) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+        UndoSnackbarHost(controller = controller)
     }
 }
 

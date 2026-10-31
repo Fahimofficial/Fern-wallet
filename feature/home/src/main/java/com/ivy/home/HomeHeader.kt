@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -61,6 +60,18 @@ import com.ivy.wallet.ui.theme.components.IvyIcon
 import com.ivy.wallet.ui.theme.components.IvyOutlinedButton
 import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
 import kotlin.math.absoluteValue
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalView
+import com.ivy.design.system.motion.IvyHaptics
+import com.ivy.design.system.motion.pressScale
+import androidx.compose.ui.semantics.Role
+
+/** Larger surfaces shrink less, so a pressed card reads as pressed, not as moving. */
+private const val CardPressedScale = 0.98f
 
 @ExperimentalAnimationApi
 @Composable
@@ -78,7 +89,9 @@ internal fun HomeHeader(
     onSelectPreviousMonth: () -> Unit,
 ) {
     Column {
-        val percentExpanded by animateFloatAsState(
+        // Read only in graphics layers and derived visibility checks: collapsing the header
+        // doesn't recompose it on every animation frame.
+        val percentExpanded = animateFloatAsState(
             targetValue = if (expanded) 1f else 0f,
             animationSpec = springBounce(
                 stiffness = Spring.StiffnessLow
@@ -89,7 +102,7 @@ internal fun HomeHeader(
         Spacer(Modifier.height(20.dp))
 
         HeaderStickyRow(
-            percentExpanded = percentExpanded,
+            percentExpanded = { percentExpanded.value },
             name = name,
             period = period,
             currency = currency,
@@ -105,9 +118,10 @@ internal fun HomeHeader(
 
         Spacer(Modifier.height(16.dp))
 
-        if (percentExpanded < 0.5f) {
+        val showDivider by remember { derivedStateOf { percentExpanded.value < 0.5f } }
+        if (showDivider) {
             TransactionsDividerLine(
-                modifier = Modifier.alpha(1f - percentExpanded),
+                modifier = Modifier.graphicsLayer { alpha = 1f - percentExpanded.value },
                 paddingHorizontal = 0.dp
             )
         }
@@ -116,7 +130,7 @@ internal fun HomeHeader(
 
 @Composable
 private fun HeaderStickyRow(
-    percentExpanded: Float,
+    percentExpanded: () -> Float,
     name: String,
     period: TimePeriod,
     currency: String,
@@ -128,6 +142,7 @@ private fun HeaderStickyRow(
     onHiddenBalanceClick: () -> Unit,
     onSelectPreviousMonth: () -> Unit,
 ) {
+    val view = LocalView.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,7 +156,7 @@ private fun HeaderStickyRow(
         ) {
             Text(
                 modifier = Modifier
-                    .alpha(percentExpanded)
+                    .graphicsLayer { alpha = percentExpanded() }
                     .testTag("home_greeting_text"),
                 text = if (name.isNotNullOrBlank()) {
                     stringResource(
@@ -160,11 +175,12 @@ private fun HeaderStickyRow(
             )
 
             // Balance mini row
-            if (percentExpanded < 1f) {
+            val showMiniBalance by remember { derivedStateOf { percentExpanded() < 1f } }
+            if (showMiniBalance) {
                 BalanceRowMini(
                     modifier = Modifier
-                        .alpha(alpha = 1f - percentExpanded)
-                        .clickableNoIndication(rememberInteractionSource()) {
+                        .graphicsLayer { alpha = 1f - percentExpanded() }
+                        .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                             if (hideBalance) {
                                 onHiddenBalanceClick()
                             } else {
@@ -185,9 +201,11 @@ private fun HeaderStickyRow(
                 sensitivity = 75,
                 state = rememberSwipeListenerState(),
                 onSwipeLeft = {
+                    IvyHaptics.tick(view)
                     onSelectNextMonth()
                 },
                 onSwipeRight = {
+                    IvyHaptics.tick(view)
                     onSelectPreviousMonth()
                 },
             ),
@@ -237,7 +255,7 @@ fun CashFlowInfo(
         BalanceRow(
             modifier = Modifier
                 .padding(horizontal = 20.dp)
-                .clickableNoIndication(rememberInteractionSource()) {
+                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                     if (hideBalance) {
                         onHiddenBalanceClick()
                     } else {
@@ -360,13 +378,17 @@ private fun RowScope.HeaderCard(
     testTag: String,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Column(
         modifier = Modifier
             .weight(1f)
+            .pressScale(interactionSource, pressedScale = CardPressedScale)
             .clip(UI.shapes.r4)
             .background(UI.colors.medium, UI.shapes.r4)
             .testTag(testTag)
             .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
                 onClick = onClick,
             )
             .padding(horizontal = 16.dp, vertical = 14.dp),
