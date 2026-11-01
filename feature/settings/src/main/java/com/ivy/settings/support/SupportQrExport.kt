@@ -24,7 +24,7 @@ internal object SupportQrExport {
     const val MIME_TYPE = "image/png"
 
     /** Must match the FileProvider declared in the app manifest. */
-    private const val FILE_PROVIDER_AUTHORITY_SUFFIX = ".supportshare"
+    private const val SUPPORT_SHARE_FILE_PROVIDER_AUTHORITY_SUFFIX = ".supportshare"
     private const val SHARE_DIR = "support_share"
     private const val PNG_QUALITY = 100
     private const val EXPORT_FAILURE_MESSAGE = "Couldn't export the UPI QR code"
@@ -60,7 +60,11 @@ internal object SupportQrExport {
         val dir = File(context.cacheDir, SHARE_DIR).apply { mkdirs() }
         val file = File(dir, FILE_NAME)
         file.outputStream().use(::renderPng)
-        val uri = FileProvider.getUriForFile(context, context.packageName + FILE_PROVIDER_AUTHORITY_SUFFIX, file)
+        val uri = FileProvider.getUriForFile(
+            context,
+            context.packageName + SUPPORT_SHARE_FILE_PROVIDER_AUTHORITY_SUFFIX,
+            file,
+        )
         val send = Intent(Intent.ACTION_SEND).apply {
             type = MIME_TYPE
             putExtra(Intent.EXTRA_STREAM, uri)

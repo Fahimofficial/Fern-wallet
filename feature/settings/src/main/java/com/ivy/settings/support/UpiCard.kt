@@ -73,7 +73,7 @@ internal fun UpiCard(actions: SupportScreenActions) {
         UpiCardHeader()
         Spacer(Modifier.height(16.dp))
 
-        UpiQrCodeImage(Modifier.align(Alignment.CenterHorizontally))
+        UpiPayeePaymentQrCodeImage(Modifier.align(Alignment.CenterHorizontally))
         Spacer(Modifier.height(16.dp))
 
         UpiIdentityDetails()
@@ -163,7 +163,7 @@ private fun UpiVerificationHint() {
  * Rendered at one pixel per module and scaled without filtering, so every module stays sharp.
  */
 @Composable
-private fun UpiQrCodeImage(modifier: Modifier = Modifier) {
+private fun UpiPayeePaymentQrCodeImage(modifier: Modifier = Modifier) {
     val bitmap = remember {
         UpiQrCode.toBitmap(UpiQrCode.encode(SupportDestinations.upiPaymentUri())).asImageBitmap()
     }
@@ -252,4 +252,3 @@ private fun RowScope.SupportPillButton(
         }
     }
 }
-

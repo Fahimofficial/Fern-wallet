@@ -82,7 +82,7 @@ object SupportDestinations {
     }
 
     /** RFC 3986 unreserved characters, plus `@`. Everything else is percent-encoded. */
-    private val URI_QUERY_SAFE_CHARACTERS: Set<Char> =
+    private val unescapedUriQueryValueCharacters: Set<Char> =
         (('A'..'Z') + ('a'..'z') + ('0'..'9') + listOf('-', '.', '_', '~', '@')).toSet()
     private const val BYTE_MASK = 0xFF
 
@@ -90,7 +90,7 @@ object SupportDestinations {
         value.toByteArray(Charsets.UTF_8).forEach { byte ->
             val unsigned = byte.toInt() and BYTE_MASK
             val c = unsigned.toChar()
-            if (c in URI_QUERY_SAFE_CHARACTERS) append(c) else append("%%%02X".format(unsigned))
+            if (c in unescapedUriQueryValueCharacters) append(c) else append("%%%02X".format(unsigned))
         }
     }
 }
