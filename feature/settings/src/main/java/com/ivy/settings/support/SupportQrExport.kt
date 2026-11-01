@@ -27,7 +27,7 @@ internal object SupportQrExport {
     private const val AUTHORITY_SUFFIX = ".supportshare"
     private const val SHARE_DIR = "support_share"
     private const val PNG_QUALITY = 100
-    private const val EXPORT_FAILURE_MESSAGE = "Couldn't share the UPI QR code"
+    private const val EXPORT_FAILURE_MESSAGE = "Couldn't export the UPI QR code"
 
     private fun renderPng(out: OutputStream) {
         val matrix = UpiQrCode.encode(SupportDestinations.upiPaymentUri())
@@ -45,13 +45,13 @@ internal object SupportQrExport {
         stream.use(::renderPng)
         true
     } catch (e: IOException) {
-        Timber.w(e, "Couldn't save the UPI QR code")
+        Timber.w(e, EXPORT_FAILURE_MESSAGE)
         false
     } catch (e: IllegalStateException) {
-        Timber.w(e, "Couldn't save the UPI QR code")
+        Timber.w(e, EXPORT_FAILURE_MESSAGE)
         false
     } catch (e: SecurityException) {
-        Timber.w(e, "Couldn't save the UPI QR code")
+        Timber.w(e, EXPORT_FAILURE_MESSAGE)
         false
     }
 

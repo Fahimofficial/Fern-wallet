@@ -238,15 +238,15 @@ private fun UpiCard(actions: SupportScreenActions) {
     ) {
         UpiCardHeader()
         Spacer(Modifier.height(16.dp))
-        
+
         UpiQr(Modifier.align(Alignment.CenterHorizontally))
         Spacer(Modifier.height(16.dp))
-        
+
         UpiIdentityDetails()
         Spacer(Modifier.height(16.dp))
-        
+
         UpiActionsButtons(actions)
-        
+
         Spacer(Modifier.height(16.dp))
         UpiVerificationHint()
     }
