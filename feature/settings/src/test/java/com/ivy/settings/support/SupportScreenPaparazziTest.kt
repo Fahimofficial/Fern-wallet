@@ -1,4 +1,4 @@
-package com.ivy.settings
+package com.ivy.settings.support
 
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
@@ -8,14 +8,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(TestParameterInjector::class)
-class SupportSectionPaparazziTest(
+class SupportScreenPaparazziTest(
     @param:TestParameter
     private val theme: PaparazziTheme,
 ) : PaparazziScreenshotTest() {
     @Test
-    fun `snapshot support section`() {
+    fun `snapshot support screen`() {
         snapshot(theme) {
-            SupportSectionUiTest(isDark = theme == PaparazziTheme.Dark)
+            SupportScreenUiTest(isDark = theme == PaparazziTheme.Dark)
         }
     }
 }

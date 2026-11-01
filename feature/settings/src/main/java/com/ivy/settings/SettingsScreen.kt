@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ivy.base.legacy.Theme
-import com.ivy.base.links.SupportDestinations
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
 import com.ivy.design.l1_buildingBlocks.IconScale
@@ -54,6 +53,7 @@ import com.ivy.navigation.FeaturesScreen
 import com.ivy.navigation.ImportScreen
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.ReleasesScreen
+import com.ivy.navigation.SupportScreen
 import com.ivy.navigation.navigation
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
@@ -463,19 +463,18 @@ private fun BoxWithConstraintsScope.UI(
         }
 
         item {
-            val rootScreen = rootScreen()
-            SupportSection(
-                actions = SupportActions(
-                    onOpenUrl = { url -> rootScreen.openUrlInBrowser(url) },
-                    onPayViaUpi = { rootScreen.openUpiPayment(SupportDestinations.upiPaymentUri()) },
-                    onCopyUpiId = {
-                        rootScreen.copyToClipboard(
-                            label = SupportDestinations.UPI_ID,
-                            text = SupportDestinations.UPI_ID,
-                        )
-                    },
-                )
-            )
+            SettingsSectionDivider(text = stringResource(R.string.support_my_work))
+
+            Spacer(Modifier.height(16.dp))
+
+            SettingsDefaultButton(
+                icon = R.drawable.ic_vue_support_heart,
+                iconPadding = 6.dp,
+                text = stringResource(R.string.support_my_work),
+                description = stringResource(R.string.support_my_work_entry_description),
+            ) {
+                nav.navigateTo(SupportScreen)
+            }
         }
 
         item {

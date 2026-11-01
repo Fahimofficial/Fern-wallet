@@ -409,9 +409,21 @@ class RootActivity : AppCompatActivity(), RootScreen {
             Timber.w("Refusing to open non-UPI payment URI")
             return
         }
+        // Explicit user action; the UPI app shows the payee and asks for the amount and
+        // confirmation. Launching it says nothing about whether a payment is made.
+        val payIntent = Intent(Intent.ACTION_VIEW, uri)
+
+        // Visible through the `upi` <queries> entry in the manifest.
+        @Suppress("DEPRECATION")
+        val upiApps = packageManager.queryIntentActivities(payIntent, 0)
         try {
-            // Explicit user action; the UPI app shows the payee and asks for amount/confirmation.
-            startActivity(Intent(Intent.ACTION_VIEW, uri))
+            when {
+                upiApps.isEmpty() -> throw ActivityNotFoundException("No UPI app installed")
+                upiApps.size == 1 -> startActivity(payIntent)
+                else -> startActivity(
+                    Intent.createChooser(payIntent, getString(R.string.support_choose_upi_app))
+                )
+            }
         } catch (e: ActivityNotFoundException) {
             Timber.w(e, "No UPI app installed")
             val upiId = uri.getQueryParameter("pa").orEmpty()

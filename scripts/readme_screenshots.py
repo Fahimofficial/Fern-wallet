@@ -31,7 +31,7 @@ SHOTS = {
     "more-menu-light.png": "feature/home/src/test/snapshots/images/"
     "com.ivy.home_HomeOverlaysPaparazziTest_snapshot more menu[Light].png",
     "support-light.png": "feature/settings/src/test/snapshots/images/"
-    "com.ivy.settings_SupportSectionPaparazziTest_snapshot support section[Light].png",
+    "com.ivy.settings.support_SupportScreenPaparazziTest_snapshot_support_screen[Light].png",
 }
 
 NAV_BAR_COLOR = (48, 48, 48)  # Paparazzi's emulated 3-button navigation bar

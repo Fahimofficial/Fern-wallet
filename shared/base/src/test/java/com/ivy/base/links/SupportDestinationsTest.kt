@@ -8,9 +8,9 @@ import org.junit.Test
 class SupportDestinationsTest {
 
     @Test
-    fun `UPI link matches the one published in the QuantumMPV README`() {
+    fun `UPI link identifies the payee only`() {
         SupportDestinations.upiPaymentUri() shouldBe
-            "upi://pay?pa=SimplyFahim%40Sbi&pn=SimplyFahim&cu=INR"
+            "upi://pay?pa=SimplyFahim@sbi&pn=SimplyFahim&cu=INR"
     }
 
     @Test
@@ -21,15 +21,23 @@ class SupportDestinationsTest {
     @Test
     fun `UPI link encodes payee values`() {
         SupportDestinations.upiPaymentUri(upiId = "a&b@bank", payeeName = "Jane Doe") shouldBe
-            "upi://pay?pa=a%26b%40bank&pn=Jane%20Doe&cu=INR"
+            "upi://pay?pa=a%26b@bank&pn=Jane%20Doe&cu=INR"
     }
 
     @Test
-    fun `support destinations are the verified QuantumMPV links`() {
-        SupportDestinations.UPI_ID shouldBe "SimplyFahim@Sbi"
-        SupportDestinations.WEBSITE shouldBe "https://quantummpv.vercel.app/"
-        SupportDestinations.REPOSITORY shouldBe "https://github.com/Fahimofficial/QuantumMPV"
-        SupportDestinations.ISSUES shouldBe "https://github.com/Fahimofficial/QuantumMPV/issues"
+    fun `support details are the developer's own`() {
+        SupportDestinations.UPI_ID shouldBe "SimplyFahim@sbi"
+        SupportDestinations.UPI_PAYEE_NAME shouldBe "SimplyFahim"
+        SupportDestinations.UPI_CURRENCY shouldBe "INR"
+        SupportDestinations.KOFI_URL shouldBe "https://ko-fi.com/simplyfahim"
+        SupportDestinations.WEBSITE shouldBe "https://SimplyFahim.pages.dev"
+        SupportDestinations.GITHUB_PROFILE shouldBe "https://github.com/Fahimofficial/"
+    }
+
+    @Test
+    fun `support screen links to Fern Wallet's own repository`() {
+        SupportDestinations.APP_REPOSITORY shouldBe "https://github.com/Fahimofficial/Fern-wallet"
+        SupportDestinations.APP_REPOSITORY shouldNotContain "QuantumMPV"
     }
 
     @Test

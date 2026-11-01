@@ -25,7 +25,7 @@
 <p align="center">
   <img src="docs/screenshots/more-menu-light.png" width="23%" alt="Quick access menu with search, savings goal and shortcuts" />
   <img src="docs/screenshots/home-dark.png" width="23%" alt="Home screen in dark theme" />
-  <img src="docs/screenshots/support-light.png" width="23%" alt="Support the developer section in Settings" />
+  <img src="docs/screenshots/support-light.png" width="23%" alt="Support my work screen" />
 </p>
 
 <sub>Rendered from the app's Compose previews with made-up sample data (Paparazzi), not from a real device or account.
@@ -125,11 +125,10 @@ signs, verifies, smoke-tests and drafts the GitHub release for review.
 - Security problems: see [SECURITY.md](SECURITY.md) (please don't open public issues)
 - Privacy: [PRIVACY.md](PRIVACY.md)
 
-**Supporting the developer.** Fern Wallet is maintained by Fahim (SimplyFahim), who also builds the
-[QuantumMPV](https://github.com/Fahimofficial/QuantumMPV) media player. The in-app **Settings → Support the
-developer** section links to QuantumMPV's official support channels
-([website](https://quantummpv.vercel.app/), UPI ID `SimplyFahim@Sbi`). Support is always optional; always
-confirm the recipient name in your UPI app before paying.
+**Support my work.** Fern Wallet is maintained by Fahim (SimplyFahim). **Settings → Support my work**
+offers [Ko-fi](https://ko-fi.com/simplyfahim) and UPI (`SimplyFahim@sbi`, with a QR code generated on the
+device), plus links to this repository and [SimplyFahim.pages.dev](https://SimplyFahim.pages.dev). Support is
+always optional; check the payee name in your UPI app before paying.
 
 ## Tech stack
 

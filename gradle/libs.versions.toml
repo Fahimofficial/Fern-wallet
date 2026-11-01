@@ -126,6 +126,10 @@ androidx-work = { module = "androidx.work:work-runtime-ktx", version.ref = "andr
 androidx-work-testing = { module = "androidx.work:work-testing", version.ref = "androidx-work" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 
+# QR codes: encoder only (pure Java, Apache-2.0, no network, no permissions). Used for the
+# on-device UPI QR code on the Support screen.
+zxing-core = { module = "com.google.zxing:core", version = "3.5.4" }
+
 # Material
 material = { module = "com.google.android.material:material", version = "1.14.0" }
 
