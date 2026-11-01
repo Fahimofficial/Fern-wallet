@@ -207,27 +207,41 @@ private fun ProjectContactSection(actions: SupportScreenActions) {
 
         Spacer(Modifier.height(16.dp))
 
-        SupportLinkRow(
+        ProjectLink(
             icon = R.drawable.github_logo,
             title = stringResource(R.string.support_app_repository),
-            description = SupportDestinations.APP_REPOSITORY.withoutScheme(),
-            onClick = { actions.onOpenUrl(SupportDestinations.APP_REPOSITORY) },
+            url = SupportDestinations.APP_REPOSITORY,
+            onOpenUrl = actions.onOpenUrl,
         )
-        Spacer(Modifier.height(12.dp))
-        SupportLinkRow(
+        ProjectLink(
             icon = R.drawable.ic_import_web,
             title = stringResource(R.string.support_website),
-            description = SupportDestinations.WEBSITE.withoutScheme(),
-            onClick = { actions.onOpenUrl(SupportDestinations.WEBSITE) },
+            url = SupportDestinations.WEBSITE,
+            onOpenUrl = actions.onOpenUrl,
         )
-        Spacer(Modifier.height(12.dp))
-        SupportLinkRow(
+        ProjectLink(
             icon = R.drawable.github_logo,
             title = stringResource(R.string.support_github_profile),
-            description = SupportDestinations.GITHUB_PROFILE.withoutScheme(),
-            onClick = { actions.onOpenUrl(SupportDestinations.GITHUB_PROFILE) },
+            url = SupportDestinations.GITHUB_PROFILE,
+            onOpenUrl = actions.onOpenUrl,
         )
     }
+}
+
+@Composable
+private fun ProjectLink(
+    @DrawableRes icon: Int,
+    title: String,
+    url: String,
+    onOpenUrl: (String) -> Unit,
+) {
+    SupportLinkRow(
+        icon = icon,
+        title = title,
+        description = url.withoutScheme(),
+        onClick = { onOpenUrl(url) },
+    )
+    Spacer(Modifier.height(12.dp))
 }
 
 @Composable
