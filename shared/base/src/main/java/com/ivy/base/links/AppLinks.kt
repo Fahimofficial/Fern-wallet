@@ -81,12 +81,12 @@ object SupportDestinations {
         append(encodeQueryValue(currency))
     }
 
-    /** RFC 3986 unreserved characters, plus `@`. Everything else is percent-encoded. */
     private val unescapedUriQueryValueCharacters: Set<Char> =
         (('A'..'Z') + ('a'..'z') + ('0'..'9') + listOf('-', '.', '_', '~', '@')).toSet()
     private const val BYTE_MASK = 0xFF
 
     private fun encodeQueryValue(value: String): String = buildString {
+        // RFC 3986 unreserved characters plus `@` stay literal; other bytes are percent-encoded.
         value.toByteArray(Charsets.UTF_8).forEach { byte ->
             val unsigned = byte.toInt() and BYTE_MASK
             val c = unsigned.toChar()

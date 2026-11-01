@@ -158,10 +158,6 @@ private fun UpiVerificationHint() {
     )
 }
 
-/**
- * The UPI QR code, drawn black on a white tile in both themes (scanners need dark-on-light).
- * Rendered at one pixel per module and scaled without filtering, so every module stays sharp.
- */
 @Composable
 private fun UpiPayeePaymentQrCodeImage(modifier: Modifier = Modifier) {
     val bitmap = remember {
@@ -172,6 +168,7 @@ private fun UpiPayeePaymentQrCodeImage(modifier: Modifier = Modifier) {
         SupportDestinations.UPI_ID,
         SupportDestinations.UPI_PAYEE_NAME,
     )
+    // A white tile and unfiltered scaling keep the QR modules sharp and scanner-readable.
     Box(
         modifier
             .clip(RoundedCornerShape(20.dp))

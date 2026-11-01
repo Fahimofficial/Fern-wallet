@@ -23,7 +23,6 @@ internal object SupportQrExport {
     const val FILE_NAME = "SimplyFahim-UPI-QR.png"
     const val MIME_TYPE = "image/png"
 
-    /** Must match the FileProvider declared in the app manifest. */
     private const val SUPPORT_SHARE_FILE_PROVIDER_AUTHORITY_SUFFIX = ".supportshare"
     private const val SHARE_DIR = "support_share"
     private const val PNG_QUALITY = 100
@@ -60,6 +59,7 @@ internal object SupportQrExport {
         val dir = File(context.cacheDir, SHARE_DIR).apply { mkdirs() }
         val file = File(dir, FILE_NAME)
         file.outputStream().use(::renderPng)
+        // This suffix must match the FileProvider authority declared in the app manifest.
         val uri = FileProvider.getUriForFile(
             context,
             context.packageName + SUPPORT_SHARE_FILE_PROVIDER_AUTHORITY_SUFFIX,
