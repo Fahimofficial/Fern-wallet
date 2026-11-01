@@ -21,22 +21,29 @@ import com.ivy.wallet.ui.theme.Gradient
 import com.ivy.wallet.ui.theme.GradientIvy
 import com.ivy.wallet.ui.theme.GradientRed
 import com.ivy.wallet.ui.theme.White
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
+import com.ivy.design.system.motion.pressScale
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
 fun IvyCircleButton(
+    @DrawableRes icon: Int,
     modifier: Modifier = Modifier,
     backgroundPadding: Dp = 0.dp,
     backgroundGradient: Gradient = GradientIvy,
     horizontalGradient: Boolean = true,
-    @DrawableRes icon: Int,
+    contentDescription: String? = null,
     tint: Color = White,
     enabled: Boolean = true,
     hasShadow: Boolean = true,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     IvyIcon(
         modifier = modifier
+            .pressScale(interactionSource)
             .thenIf(enabled && hasShadow) {
                 drawColoredShadow(
                     color = backgroundGradient.startColor,
@@ -59,11 +66,17 @@ fun IvyCircleButton(
                 },
                 shape = UI.shapes.rFull
             )
-            .clickable(onClick = onClick, enabled = enabled)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                enabled = enabled,
+                onClick = onClick,
+            )
             .padding(all = backgroundPadding),
         icon = icon,
         tint = tint,
-        contentDescription = "circle button"
+        // What the button does (it used to announce every icon button as "circle button").
+        contentDescription = contentDescription
     )
 }
 

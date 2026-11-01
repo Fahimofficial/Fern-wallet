@@ -4,13 +4,16 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.Role
+import com.ivy.design.system.motion.IvyHaptics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ivy.design.l0_system.UI
@@ -26,6 +29,7 @@ fun IvySwitch(
     enabled: Boolean,
     onEnabledChange: (checked: Boolean) -> Unit
 ) {
+    val view = LocalView.current
     val color by animateColorAsState(
         targetValue = if (enabled) Green else Gray,
         animationSpec = springBounce()
@@ -36,8 +40,10 @@ fun IvySwitch(
             .width(40.dp)
             .clip(UI.shapes.rFull)
             .border(2.dp, color, UI.shapes.rFull)
-            .clickable {
-                onEnabledChange(!enabled)
+            // Announced as a switch with its on/off state (it was an unlabeled button).
+            .toggleable(value = enabled, role = Role.Switch) { checked ->
+                IvyHaptics.toggle(view, on = checked)
+                onEnabledChange(checked)
             }
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically

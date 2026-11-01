@@ -47,6 +47,12 @@ sealed interface DataWriteEvent {
     data class SaveCategories(val categories: List<Category>) : CategoryChange
     data class DeleteCategories(val operation: DeleteOperation<CategoryId>) : CategoryChange
 
+    /**
+     * Transactions were written outside the screen that shows them (e.g. a deleted transaction
+     * restored by Undo after its edit screen closed). Lists and balances should reload.
+     */
+    data object TransactionsChanged : DataWriteEvent
+
     sealed interface TagChange : DataWriteEvent
     data class SaveTags(val tags: List<Tag>) : TagChange
     data class DeleteTags(val operation: DeleteOperation<TagId>) : TagChange

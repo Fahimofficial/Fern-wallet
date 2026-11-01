@@ -33,6 +33,10 @@ import com.ivy.wallet.ui.theme.Gradient
 import com.ivy.wallet.ui.theme.GradientIvy
 import com.ivy.wallet.ui.theme.Ivy
 import com.ivy.wallet.ui.theme.White
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
+import com.ivy.design.system.motion.pressScale
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
@@ -56,8 +60,10 @@ fun IvyButton(
     iconTextPadding: Dp = 4.dp,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = modifier
+            .pressScale(interactionSource)
             .thenIf(enabled && hasGlow) {
                 drawColoredShadow(
                     color = backgroundGradient.startColor,
@@ -77,7 +83,12 @@ fun IvyButton(
                 },
                 shape = UI.shapes.rFull
             )
-            .clickable(onClick = onClick, enabled = enabled),
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                enabled = enabled,
+                onClick = onClick,
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         when {

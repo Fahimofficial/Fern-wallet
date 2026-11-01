@@ -27,6 +27,7 @@ import com.ivy.legacy.utils.clickableNoIndication
 import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.components.IvyIcon
+import androidx.compose.ui.semantics.Role
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
@@ -43,7 +44,7 @@ fun PrimaryAttributeColumn(
             .fillMaxWidth()
             .clip(UI.shapes.r4)
             .border(2.dp, UI.colors.medium, UI.shapes.r4)
-            .clickableNoIndication(rememberInteractionSource(), onClick = onClick),
+            .clickableNoIndication(rememberInteractionSource(), role = Role.Button, onClick = onClick),
     ) {
         Spacer(modifier = Modifier.height(12.dp))
 

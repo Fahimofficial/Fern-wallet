@@ -97,4 +97,53 @@ class NavigationTest {
         nav.isAlive(details).shouldBeFalse()
         nav.backStackEmpty().shouldBeTrue()
     }
+
+    @Test
+    fun `back is left to the system only when there is nothing to go back to`() {
+        val nav = Navigation()
+        nav.navigateTo(MainScreen)
+        nav.handlesBack().shouldBeFalse()
+        nav.predictiveBackTarget() shouldBe null
+
+        nav.navigateTo(cardA)
+        nav.handlesBack().shouldBeTrue()
+        nav.predictiveBackTarget()!!.screen shouldBe MainScreen
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun `an open modal or a screen override disables the predictive preview but keeps back in the app`() {
+        val nav = Navigation()
+        nav.navigateTo(MainScreen)
+        nav.navigateTo(cardA)
+
+        nav.modalBackHandling.add(Navigation.ModalBackHandler(UUID(0, 9)) { true })
+        nav.handlesBack().shouldBeTrue()
+        nav.hasOpenModal().shouldBeTrue()
+        nav.predictiveBackTarget() shouldBe null
+        nav.modalBackHandling.pop()
+        nav.hasOpenModal().shouldBeFalse()
+
+        nav.onBackPressed[cardA] = { false }
+        nav.predictiveBackTarget() shouldBe null
+        nav.onBackPressed.remove(cardA)
+        nav.predictiveBackTarget()!!.screen shouldBe MainScreen
+    }
+
+    @Test
+    fun `before-back hooks run when leaving their screen by back only`() {
+        val nav = Navigation()
+        var calls = 0
+        nav.navigateTo(MainScreen)
+        nav.navigateTo(cardA)
+        nav.beforeBack[cardA] = { calls++ }
+
+        nav.navigateTo(editA)
+        calls shouldBe 0
+        nav.back()
+        calls shouldBe 0
+        nav.back()
+        calls shouldBe 1
+        nav.currentScreen shouldBe MainScreen
+    }
 }

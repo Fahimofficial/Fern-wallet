@@ -380,7 +380,7 @@ private fun AccountHeader(
         BalanceRow(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .clickableNoIndication(rememberInteractionSource()) {
+                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                     onBalanceClick()
                 },
             textColor = contrastColor,
@@ -397,7 +397,7 @@ private fun AccountHeader(
             BalanceRowMini(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .clickableNoIndication(rememberInteractionSource()) {
+                    .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                         onBalanceClick()
                     }
                     .testTag("baseCurrencyEquivalent"),

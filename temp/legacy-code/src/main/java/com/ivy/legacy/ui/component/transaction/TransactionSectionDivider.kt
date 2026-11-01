@@ -31,6 +31,9 @@ import com.ivy.wallet.ui.theme.Orange
 import com.ivy.wallet.ui.theme.Red
 import com.ivy.wallet.ui.theme.components.IvyDividerDot
 import com.ivy.wallet.ui.theme.components.IvyIcon
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
@@ -48,12 +51,14 @@ fun SectionDivider(
 ) {
     Spacer(Modifier.height(24.dp))
 
+    val stateText = stringResource(if (expanded) R.string.expanded else R.string.collapsed)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickableNoIndication(rememberInteractionSource()) {
+            .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                 setExpanded(!expanded)
-            },
+            }
+            .semantics { stateDescription = stateText },
         verticalAlignment = Alignment.CenterVertically
     ) {
         val expandIconRotation by animateFloatAsState(

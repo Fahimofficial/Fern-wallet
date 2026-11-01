@@ -84,6 +84,11 @@ class AccountsViewModel @Inject constructor(
                         onStart()
                     }
 
+                    // Balances depend on transactions (e.g. one restored by Undo).
+                    DataWriteEvent.TransactionsChanged -> {
+                        onStart()
+                    }
+
                     else -> {
                         // do nothing
                     }

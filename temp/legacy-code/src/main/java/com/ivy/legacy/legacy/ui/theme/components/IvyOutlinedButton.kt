@@ -27,6 +27,10 @@ import com.ivy.design.utils.thenIf
 import com.ivy.legacy.IvyWalletComponentPreview
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Green
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
+import com.ivy.design.system.motion.pressScale
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
@@ -45,10 +49,14 @@ fun IvyOutlinedButton(
 ) {
     val pure = UI.colors.pure
     val rFull = UI.shapes.rFull
+    val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = modifier
+            .pressScale(interactionSource)
             .clip(UI.shapes.rFull)
             .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
                 onClick = onClick,
             )
             .defaultMinSize(minWidth, minHeight)
@@ -98,11 +106,15 @@ fun IvyOutlinedButtonFillMaxWidth(
 ) {
     val pure = UI.colors.pure
     val rFull = UI.shapes.rFull
+    val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .pressScale(interactionSource)
             .clip(UI.shapes.rFull)
             .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
                 onClick = onClick,
             )
             .border(2.dp, borderColor, UI.shapes.rFull)

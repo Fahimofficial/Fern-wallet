@@ -61,6 +61,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
+import androidx.compose.ui.semantics.Role
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 data class RecurringRuleModalData(
@@ -338,7 +339,7 @@ private fun DateRow(
         val ivyContext = ivyWalletCtx()
 
         Column(
-            modifier = Modifier.clickableNoIndication(rememberInteractionSource()) {
+            modifier = Modifier.clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                 ivyContext.pickDate(dateTime.toLocalDate(), onDatePicked)
             }
         ) {

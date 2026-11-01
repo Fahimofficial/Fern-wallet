@@ -27,6 +27,7 @@ import com.ivy.navigation.navigation
 import com.ivy.wallet.domain.deprecated.logic.model.CreateAccountData
 import com.ivy.wallet.ui.theme.modal.edit.AccountModal
 import com.ivy.wallet.ui.theme.modal.edit.AccountModalData
+import androidx.activity.compose.BackHandler
 
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
@@ -37,10 +38,19 @@ fun BoxWithConstraintsScope.MainScreen(screen: MainScreen) {
     val currency by viewModel.currency.observeAsState("")
 
     onScreenStart {
-        viewModel.start(screen)
+        viewModel.start()
     }
 
     val ivyContext = ivyWalletCtx()
+    // Back on Accounts returns to Home; on Home it leaves the app, which the system handles
+    // (with its predictive "back to home" preview) because nothing here intercepts it.
+    // Open modals (registered with Navigation) close first; only while Main is the shown screen.
+    val nav = navigation()
+    BackHandler(
+        enabled = ivyContext.mainTab == MainTab.ACCOUNTS && nav.currentScreen == screen && !nav.hasOpenModal()
+    ) {
+        viewModel.selectTab(MainTab.HOME)
+    }
     UI(
         screen = screen,
         tab = ivyContext.mainTab,

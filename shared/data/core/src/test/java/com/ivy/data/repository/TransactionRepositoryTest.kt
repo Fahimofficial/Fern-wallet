@@ -416,6 +416,44 @@ class TransactionRepositoryTest {
     }
 
     @Test
+    fun `restorable delete removes the transaction and restore brings back the same one`() = runTest {
+        // given
+        repository = newRepository(fakeDao = FakeTransactionDao())
+        val trn = mockkFakeTrnMapping()
+        val other = mockkFakeTrnMapping()
+        repository.saveMany(listOf(trn, other))
+
+        // when
+        val deleted = repository.deleteByIdRestorable(trn.id)
+
+        // then
+        repository.findById(trn.id) shouldBe null
+        repository.findById(other.id) shouldBe other
+
+        // when
+        deleted!!.restore()
+
+        // then
+        repository.findById(trn.id) shouldBe trn
+        repository.findById(other.id) shouldBe other
+    }
+
+    @Test
+    fun `restorable delete of a missing transaction does nothing`() = runTest {
+        // given
+        repository = newRepository(fakeDao = FakeTransactionDao())
+        val other = mockkFakeTrnMapping()
+        repository.save(other)
+
+        // when
+        val deleted = repository.deleteByIdRestorable(mockkFakeTrnMapping().id)
+
+        // then
+        deleted shouldBe null
+        repository.findById(other.id) shouldBe other
+    }
+
+    @Test
     fun deleteAllByAccountId() = runTest {
         // given
         repository = newRepository(fakeDao = FakeTransactionDao())

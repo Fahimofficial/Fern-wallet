@@ -19,6 +19,7 @@ import com.ivy.legacy.utils.clickableNoIndication
 import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.wallet.ui.theme.components.BalanceRow
 import com.ivy.wallet.ui.theme.components.IvyDividerLine
+import androidx.compose.ui.semantics.Role
 
 @Suppress("UnusedParameter")
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
@@ -56,7 +57,7 @@ fun ModalAmountSection(
 
         BalanceRow(
             modifier = Modifier
-                .clickableNoIndication(rememberInteractionSource()) {
+                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                     showAmountModal()
                 }
                 .testTag("amount_balance"),

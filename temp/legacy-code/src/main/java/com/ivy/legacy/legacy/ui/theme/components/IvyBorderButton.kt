@@ -26,6 +26,10 @@ import com.ivy.design.l0_system.style
 import com.ivy.legacy.IvyWalletComponentPreview
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Gradient
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
+import com.ivy.design.system.motion.pressScale
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
@@ -46,8 +50,10 @@ fun IvyBorderButton(
     padding: Dp = 12.dp,
     onClick: () -> Unit
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = modifier
+            .pressScale(interactionSource)
             .clip(UI.shapes.rFull)
             .border(
                 width = 2.dp,
@@ -58,7 +64,12 @@ fun IvyBorderButton(
                 },
                 shape = UI.shapes.rFull
             )
-            .clickable(onClick = onClick, enabled = enabled),
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                enabled = enabled,
+                onClick = onClick,
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         when {

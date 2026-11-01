@@ -2,7 +2,12 @@ package com.ivy.onboarding
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import com.ivy.design.system.motion.IvyMotion
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -65,6 +70,43 @@ private fun BoxWithConstraintsScope.UI(
     categories: ImmutableList<Category>,
 
     onEvent: (OnboardingEvent) -> Unit = {}
+) {
+    // Steps move along the same horizontal axis as screen navigation: forward slides in from
+    // the right, going back (e.g. system back to the previous step) from the left.
+    AnimatedContent(
+        targetState = onboardingState,
+        transitionSpec = {
+            IvyMotion.screenTransform(forward = targetState.ordinal >= initialState.ordinal)
+        },
+        // Splash and login are one screen with its own internal animation.
+        contentKey = { if (it == OnboardingState.LOGIN) OnboardingState.SPLASH else it },
+        label = "onboarding_step",
+    ) { state ->
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            Step(
+                onboardingState = state,
+                currency = currency,
+                accountSuggestions = accountSuggestions,
+                accounts = accounts,
+                categorySuggestions = categorySuggestions,
+                categories = categories,
+                onEvent = onEvent,
+            )
+        }
+    }
+}
+
+@ExperimentalFoundationApi
+@Suppress("LongParameterList")
+@Composable
+private fun BoxWithConstraintsScope.Step(
+    onboardingState: OnboardingState,
+    currency: IvyCurrency,
+    accountSuggestions: ImmutableList<CreateAccountData>,
+    accounts: ImmutableList<AccountBalance>,
+    categorySuggestions: ImmutableList<CreateCategoryData>,
+    categories: ImmutableList<Category>,
+    onEvent: (OnboardingEvent) -> Unit,
 ) {
     when (onboardingState) {
         OnboardingState.SPLASH, OnboardingState.LOGIN -> {

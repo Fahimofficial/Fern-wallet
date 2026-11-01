@@ -7,6 +7,7 @@ import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -16,6 +17,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import kotlin.math.PI
 
 /**
  * Fern Wallet's motion system: one place for durations, easings and the standard transitions.
@@ -45,6 +47,44 @@ object IvyMotion {
         val EmphasizedAccelerate: Easing =
             CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)
     }
+
+    /**
+     * Springs for anything the user can touch or interrupt (sheets, drags, presses).
+     *
+     * A spring starts from the value currently on screen and keeps its velocity when the target
+     * changes, so the motion can be grabbed and reversed mid-flight without a jump. Parameters are
+     * given as damping ratio (1 = no overshoot) and response (seconds to reach the target), the
+     * pair Apple's fluid-interface guidelines use, then converted to Compose's stiffness.
+     */
+    object Springs {
+        /** Default for sheets and surfaces: critically damped, no overshoot. */
+        fun <T> surface(): SpringSpec<T> = spring(dampingRatio = 1f, response = 0.3f)
+
+        /** Content shrinking under the finger: immediate and critically damped. */
+        fun <T> press(): SpringSpec<T> = spring(dampingRatio = 1f, response = 0.12f)
+
+        /** Release after a press or a drag: slightly under-damped because the finger gave it momentum. */
+        fun <T> release(): SpringSpec<T> = spring(dampingRatio = 0.8f, response = 0.3f)
+
+        /** @param response seconds to (approximately) reach the target; not a fixed duration. */
+        fun <T> spring(dampingRatio: Float, response: Float): SpringSpec<T> {
+            val omega = 2f * PI.toFloat() / response
+            return androidx.compose.animation.core.spring(
+                dampingRatio = dampingRatio,
+                stiffness = omega * omega,
+            )
+        }
+    }
+
+    /**
+     * Where a flick would come to rest, using the exponential scroll deceleration of
+     * Apple's "Designing Fluid Interfaces" sample: choose snap targets from this, not from the
+     * release position, so a short fast flick still counts.
+     *
+     * @param velocity px per second.
+     */
+    fun projectedDistance(velocity: Float, decelerationRate: Float = ScrollDecelerationRate): Float =
+        velocity / MillisPerSecond * decelerationRate / (1f - decelerationRate)
 
     fun <T> standard(durationMillis: Int = Duration.Medium, delayMillis: Int = 0): FiniteAnimationSpec<T> =
         tween(durationMillis = durationMillis, delayMillis = delayMillis, easing = Easings.Standard)
@@ -102,4 +142,6 @@ object IvyMotion {
     private val NoSizeAnimation = SizeTransform(clip = false) { _, _ -> tween(0) }
     private const val SlideFraction = 0.08f
     private const val FadeOutDuration = 90
+    private const val ScrollDecelerationRate = 0.998f
+    private const val MillisPerSecond = 1000f
 }

@@ -19,6 +19,10 @@ import com.ivy.design.l0_system.UI
 import com.ivy.legacy.IvyWalletComponentPreview
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Gradient
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
+import com.ivy.design.system.motion.pressScale
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
@@ -45,12 +49,18 @@ fun CircleButton(
     tint: Color? = UI.colors.pureInverse,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Icon(
         modifier = modifier
+            .pressScale(interactionSource)
             .clip(CircleShape)
             .background(backgroundColor, CircleShape)
             .border(2.dp, borderColor, CircleShape)
-            .clickable(onClick = onClick) // enlarge click area
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                onClick = onClick,
+            ) // enlarge click area
             .padding(6.dp),
         painter = painterResource(id = icon),
         contentDescription = contentDescription,
@@ -69,11 +79,17 @@ fun CircleButtonFilled(
     clickAreaPadding: Dp = 8.dp,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Icon(
         modifier = modifier
+            .pressScale(interactionSource)
             .clip(CircleShape)
             .background(backgroundColor, CircleShape)
-            .clickable(onClick = onClick) // enlarge click area
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                onClick = onClick,
+            ) // enlarge click area
             .padding(clickAreaPadding),
         painter = painterResource(id = icon),
         contentDescription = contentDescription,
@@ -92,11 +108,17 @@ fun CircleButtonFilledGradient(
     tint: Color? = UI.colors.pureInverse,
     onClick: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Icon(
         modifier = modifier
+            .pressScale(interactionSource)
             .clip(CircleShape)
             .background(backgroundGradient.asHorizontalBrush(), CircleShape)
-            .clickable(onClick = onClick) // enlarge click area
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                onClick = onClick,
+            ) // enlarge click area
             .padding(iconPadding),
         painter = painterResource(id = icon),
         contentDescription = contentDescription,

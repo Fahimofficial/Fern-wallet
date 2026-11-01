@@ -64,6 +64,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import javax.inject.Inject
+import com.ivy.data.DataObserver
+import com.ivy.data.DataWriteEvent
 
 @Stable
 @HiltViewModel
@@ -92,8 +94,18 @@ class HomeViewModel @Inject constructor(
     private val transactionMapper: TransactionMapper,
     private val timeProvider: TimeProvider,
     private val timeConverter: TimeConverter,
-    private val features: Features
+    private val features: Features,
+    private val dataObserver: DataObserver,
 ) : ComposeViewModel<HomeState, HomeEvent>() {
+    init {
+        // e.g. a deleted transaction restored by Undo while Home is already showing.
+        viewModelScope.launch {
+            dataObserver.writeEvents.collect { event ->
+                if (event is DataWriteEvent.TransactionsChanged) reload()
+            }
+        }
+    }
+
     private var currentTheme by mutableStateOf(Theme.AUTO)
     private var name by mutableStateOf("")
     private var period by mutableStateOf(ivyContext.selectedPeriod)
