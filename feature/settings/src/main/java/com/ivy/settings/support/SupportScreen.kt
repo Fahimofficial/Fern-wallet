@@ -175,55 +175,59 @@ private fun SupportUi(actions: SupportScreenActions) {
 
 @Composable
 private fun PaymentOptionsSection(actions: SupportScreenActions) {
-    SettingsSectionDivider(text = stringResource(R.string.support_payment_options))
-    Spacer(Modifier.height(16.dp))
+    Column {
+        SettingsSectionDivider(text = stringResource(R.string.support_payment_options))
+        Spacer(Modifier.height(16.dp))
 
-    SupportLinkRow(
-        icon = SettingsR.drawable.ic_kofi,
-        iconTint = KofiRed,
-        title = stringResource(R.string.support_kofi),
-        description = SupportDestinations.KOFI_URL.withoutScheme(),
-        onClick = { actions.onOpenUrl(SupportDestinations.KOFI_URL) },
-    )
+        SupportLinkRow(
+            icon = SettingsR.drawable.ic_kofi,
+            iconTint = KofiRed,
+            title = stringResource(R.string.support_kofi),
+            description = SupportDestinations.KOFI_URL.withoutScheme(),
+            onClick = { actions.onOpenUrl(SupportDestinations.KOFI_URL) },
+        )
 
-    Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
-    UpiCard(actions)
+        UpiCard(actions)
+    }
 }
 
 @Composable
 private fun ProjectContactSection(actions: SupportScreenActions) {
-    SettingsSectionDivider(text = stringResource(R.string.support_project_and_contact))
-    Spacer(Modifier.height(8.dp))
+    Column {
+        SettingsSectionDivider(text = stringResource(R.string.support_project_and_contact))
+        Spacer(Modifier.height(8.dp))
 
-    Text(
-        modifier = Modifier.padding(horizontal = 32.dp),
-        text = stringResource(R.string.support_project_info),
-        style = UI.typo.nC.style(color = UI.colors.gray, fontWeight = FontWeight.Normal),
-    )
+        Text(
+            modifier = Modifier.padding(horizontal = 32.dp),
+            text = stringResource(R.string.support_project_info),
+            style = UI.typo.nC.style(color = UI.colors.gray, fontWeight = FontWeight.Normal),
+        )
 
-    Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
-    SupportLinkRow(
-        icon = R.drawable.github_logo,
-        title = stringResource(R.string.support_app_repository),
-        description = SupportDestinations.APP_REPOSITORY.withoutScheme(),
-        onClick = { actions.onOpenUrl(SupportDestinations.APP_REPOSITORY) },
-    )
-    Spacer(Modifier.height(12.dp))
-    SupportLinkRow(
-        icon = R.drawable.ic_import_web,
-        title = stringResource(R.string.support_website),
-        description = SupportDestinations.WEBSITE.withoutScheme(),
-        onClick = { actions.onOpenUrl(SupportDestinations.WEBSITE) },
-    )
-    Spacer(Modifier.height(12.dp))
-    SupportLinkRow(
-        icon = R.drawable.github_logo,
-        title = stringResource(R.string.support_github_profile),
-        description = SupportDestinations.GITHUB_PROFILE.withoutScheme(),
-        onClick = { actions.onOpenUrl(SupportDestinations.GITHUB_PROFILE) },
-    )
+        SupportLinkRow(
+            icon = R.drawable.github_logo,
+            title = stringResource(R.string.support_app_repository),
+            description = SupportDestinations.APP_REPOSITORY.withoutScheme(),
+            onClick = { actions.onOpenUrl(SupportDestinations.APP_REPOSITORY) },
+        )
+        Spacer(Modifier.height(12.dp))
+        SupportLinkRow(
+            icon = R.drawable.ic_import_web,
+            title = stringResource(R.string.support_website),
+            description = SupportDestinations.WEBSITE.withoutScheme(),
+            onClick = { actions.onOpenUrl(SupportDestinations.WEBSITE) },
+        )
+        Spacer(Modifier.height(12.dp))
+        SupportLinkRow(
+            icon = R.drawable.github_logo,
+            title = stringResource(R.string.support_github_profile),
+            description = SupportDestinations.GITHUB_PROFILE.withoutScheme(),
+            onClick = { actions.onOpenUrl(SupportDestinations.GITHUB_PROFILE) },
+        )
+    }
 }
 
 @Composable
@@ -254,59 +258,65 @@ private fun UpiCard(actions: SupportScreenActions) {
 
 @Composable
 private fun UpiCardHeader() {
-    Text(
-        modifier = Modifier.semantics { heading() },
-        text = stringResource(R.string.support_upi),
-        style = UI.typo.b2.style(color = UI.colors.pureInverse, fontWeight = FontWeight.Bold),
-    )
-    Spacer(Modifier.height(4.dp))
-    Text(
-        text = stringResource(R.string.support_upi_scan_hint),
-        style = UI.typo.nC.style(color = UI.colors.gray, fontWeight = FontWeight.Normal),
-    )
+    Column {
+        Text(
+            modifier = Modifier.semantics { heading() },
+            text = stringResource(R.string.support_upi),
+            style = UI.typo.b2.style(color = UI.colors.pureInverse, fontWeight = FontWeight.Bold),
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = stringResource(R.string.support_upi_scan_hint),
+            style = UI.typo.nC.style(color = UI.colors.gray, fontWeight = FontWeight.Normal),
+        )
+    }
 }
 
 @Composable
 private fun UpiIdentityDetails() {
-    Text(
-        text = stringResource(R.string.support_upi_id_label),
-        style = UI.typo.c.style(color = UI.colors.gray, fontWeight = FontWeight.Bold),
-    )
-    SelectionContainer {
+    Column {
         Text(
-            text = SupportDestinations.UPI_ID,
-            style = UI.typo.nB1.style(color = UI.colors.pureInverse, fontWeight = FontWeight.Bold),
+            text = stringResource(R.string.support_upi_id_label),
+            style = UI.typo.c.style(color = UI.colors.gray, fontWeight = FontWeight.Bold),
+        )
+        SelectionContainer {
+            Text(
+                text = SupportDestinations.UPI_ID,
+                style = UI.typo.nB1.style(color = UI.colors.pureInverse, fontWeight = FontWeight.Bold),
+            )
+        }
+        Text(
+            text = stringResource(R.string.support_upi_payee, SupportDestinations.UPI_PAYEE_NAME),
+            style = UI.typo.nC.style(color = UI.colors.gray, fontWeight = FontWeight.Normal),
         )
     }
-    Text(
-        text = stringResource(R.string.support_upi_payee, SupportDestinations.UPI_PAYEE_NAME),
-        style = UI.typo.nC.style(color = UI.colors.gray, fontWeight = FontWeight.Normal),
-    )
 }
 
 @Composable
 private fun UpiActionsButtons(actions: SupportScreenActions) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        CopyUpiIdButton(onCopy = actions.onCopyUpiId)
-        SupportPillButton(
-            icon = R.drawable.ic_vue_support_heart,
-            text = stringResource(R.string.support_open_upi_app),
-            primary = true,
-            onClick = actions.onOpenUpiApp,
-        )
-    }
-    Spacer(Modifier.height(8.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        SupportPillButton(
-            icon = R.drawable.ic_share,
-            text = stringResource(R.string.support_share_qr),
-            onClick = actions.onShareQr,
-        )
-        SupportPillButton(
-            icon = R.drawable.ic_save,
-            text = stringResource(R.string.support_save_qr),
-            onClick = actions.onSaveQr,
-        )
+    Column {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            CopyUpiIdButton(onCopy = actions.onCopyUpiId)
+            SupportPillButton(
+                icon = R.drawable.ic_vue_support_heart,
+                text = stringResource(R.string.support_open_upi_app),
+                primary = true,
+                onClick = actions.onOpenUpiApp,
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SupportPillButton(
+                icon = R.drawable.ic_share,
+                text = stringResource(R.string.support_share_qr),
+                onClick = actions.onShareQr,
+            )
+            SupportPillButton(
+                icon = R.drawable.ic_save,
+                text = stringResource(R.string.support_save_qr),
+                onClick = actions.onSaveQr,
+            )
+        }
     }
 }
 
