@@ -235,13 +235,15 @@ private fun ProjectLink(
     url: String,
     onOpenUrl: (String) -> Unit,
 ) {
-    SupportLinkRow(
-        icon = icon,
-        title = title,
-        description = url.withoutScheme(),
-        onClick = { onOpenUrl(url) },
-    )
-    Spacer(Modifier.height(12.dp))
+    Column {
+        SupportLinkRow(
+            icon = icon,
+            title = title,
+            description = url.withoutScheme(),
+            onClick = { onOpenUrl(url) },
+        )
+        Spacer(Modifier.height(12.dp))
+    }
 }
 
 @Composable
