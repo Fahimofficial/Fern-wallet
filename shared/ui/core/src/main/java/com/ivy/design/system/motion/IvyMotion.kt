@@ -125,12 +125,17 @@ object IvyMotion {
 
     /** Fade-through for switching between sibling destinations (bottom-bar tabs). */
     fun fadeThrough(): ContentTransform = ContentTransform(
-        targetContentEnter = fadeIn(
-            enterSpec(Duration.Medium - FadeOutDuration, delay = FadeOutDuration, easing = Easings.Standard)
-        ),
-        initialContentExit = fadeOut(exitSpec(FadeOutDuration)),
+        targetContentEnter = fadeIn(fadeThroughIn()),
+        initialContentExit = fadeOut(fadeThroughOut()),
         sizeTransform = NoSizeAnimation,
     )
+
+    /** Fade-through timing for the incoming content: starts once the outgoing one is gone. */
+    fun <T> fadeThroughIn(): FiniteAnimationSpec<T> =
+        enterSpec(Duration.Medium - FadeOutDuration, delay = FadeOutDuration, easing = Easings.Standard)
+
+    /** Fade-through timing for the outgoing content. */
+    fun <T> fadeThroughOut(): FiniteAnimationSpec<T> = exitSpec(FadeOutDuration)
 
     /** Expanding/collapsing a section inside a screen. */
     fun expandSection(): EnterTransition =

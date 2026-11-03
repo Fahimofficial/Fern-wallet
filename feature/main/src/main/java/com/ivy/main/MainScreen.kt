@@ -1,6 +1,5 @@
 package com.ivy.main
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
@@ -14,7 +13,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ivy.accounts.AccountsTab
 import com.ivy.base.model.TransactionType
-import com.ivy.design.system.motion.IvyMotion
 import com.ivy.home.HomeTab
 import com.ivy.legacy.IvyWalletPreview
 import com.ivy.legacy.data.model.MainTab
@@ -72,20 +70,11 @@ private fun BoxWithConstraintsScope.UI(
     selectTab: (MainTab) -> Unit,
     onCreateAccount: (CreateAccountData) -> Unit,
 ) {
-    val mainScope = this
-    AnimatedContent(
-        targetState = tab,
-        transitionSpec = { IvyMotion.fadeThrough() },
-        label = "main_tab",
-    ) { shownTab ->
-        // Tabs fill the whole screen, so they share this screen's constraints scope.
-        with(mainScope) {
-            when (shownTab) {
-                MainTab.HOME -> HomeTab()
-                MainTab.ACCOUNTS -> AccountsTab()
-            }
-        }
-    }
+    MainTabs(
+        tab = tab,
+        home = { HomeTab(modifier = it, selected = tab == MainTab.HOME) },
+        accounts = { AccountsTab(modifier = it, selected = tab == MainTab.ACCOUNTS) },
+    )
 
     var accountModalData: AccountModalData? by remember { mutableStateOf(null) }
 

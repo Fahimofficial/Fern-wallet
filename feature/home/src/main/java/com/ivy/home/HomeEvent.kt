@@ -29,4 +29,7 @@ sealed interface HomeEvent {
 
     data object SelectNextMonth : HomeEvent
     data object SelectPreviousMonth : HomeEvent
+
+    /** The tab is shown again after another tab: reload its data. */
+    data object Refresh : HomeEvent
 }
