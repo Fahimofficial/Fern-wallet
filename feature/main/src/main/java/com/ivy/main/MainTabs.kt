@@ -1,6 +1,5 @@
 package com.ivy.main
 
-import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
@@ -33,19 +32,23 @@ fun BoxWithConstraintsScope.MainTabs(
     val composed = remember { mutableSetOf<MainTab>() }
     composed += tab
     val transition = updateTransition(tab, label = "main_tab")
-    if (MainTab.HOME in composed) home(Modifier.tabVisibility(transition, MainTab.HOME))
-    if (MainTab.ACCOUNTS in composed) accounts(Modifier.tabVisibility(transition, MainTab.ACCOUNTS))
+    val alphas = MainTab.entries.associateWith { shown ->
+        transition.animateFloat(
+            transitionSpec = {
+                if (targetState == shown) IvyMotion.fadeThroughIn() else IvyMotion.fadeThroughOut()
+            },
+            label = "tab_alpha",
+        ) { if (it == shown) 1f else 0f }
+    }
+    if (MainTab.HOME in composed) {
+        home(Modifier.tabVisibility(tab == MainTab.HOME, alphas.getValue(MainTab.HOME)))
+    }
+    if (MainTab.ACCOUNTS in composed) {
+        accounts(Modifier.tabVisibility(tab == MainTab.ACCOUNTS, alphas.getValue(MainTab.ACCOUNTS)))
+    }
 }
 
-@Composable
-private fun Modifier.tabVisibility(transition: Transition<MainTab>, tab: MainTab): Modifier {
-    val alpha: State<Float> = transition.animateFloat(
-        transitionSpec = {
-            if (targetState == tab) IvyMotion.fadeThroughIn() else IvyMotion.fadeThroughOut()
-        },
-        label = "tab_alpha",
-    ) { if (it == tab) 1f else 0f }
-    val selected = transition.targetState == tab
+private fun Modifier.tabVisibility(selected: Boolean, alpha: State<Float>): Modifier {
     // The selected tab is on top, so it takes touches even while the other one fades out.
     var modifier = zIndex(if (selected) 1f else 0f)
     if (!selected) modifier = modifier.clearAndSetSemantics { }
