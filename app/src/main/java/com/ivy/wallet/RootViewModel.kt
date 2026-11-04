@@ -122,10 +122,12 @@ class RootViewModel @Inject constructor(
 
     @Suppress("SwallowedException")
     private fun handleSpecialStart(intent: Intent): Boolean {
+        // The launcher activity is exported: read only a String (no Java deserialization of
+        // another app's extras) and treat a malformed extras Bundle as "no special start".
         val addTrnType: TransactionType? = try {
-            intent.getSerializableExtra(EXTRA_ADD_TRANSACTION_TYPE) as? TransactionType
-                ?: TransactionType.valueOf(intent.getStringExtra(EXTRA_ADD_TRANSACTION_TYPE) ?: "")
-        } catch (e: IllegalArgumentException) {
+            intent.getStringExtra(EXTRA_ADD_TRANSACTION_TYPE)?.let(TransactionType::valueOf)
+        } catch (@Suppress("TooGenericExceptionCaught") e: RuntimeException) {
+            // Unparcelling a hostile Bundle throws plain RuntimeException; valueOf throws IllegalArgument.
             null
         }
 

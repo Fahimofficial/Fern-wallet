@@ -15,7 +15,6 @@ import com.ivy.base.model.TransactionType
 import com.ivy.base.time.TimeConverter
 import com.ivy.base.time.TimeProvider
 import com.ivy.data.db.dao.read.AccountDao
-import com.ivy.data.db.dao.write.WritePlannedPaymentRuleDao
 import com.ivy.data.model.AccountId
 import com.ivy.data.model.Category
 import com.ivy.data.model.CategoryId
@@ -26,10 +25,9 @@ import com.ivy.data.repository.AccountRepository
 import com.ivy.data.repository.CategoryRepository
 import com.ivy.data.repository.CreditCardRepository
 import com.ivy.data.repository.TagRepository
-import com.ivy.data.repository.TransactionRepository
 import com.ivy.data.repository.mapper.TransactionMapper
 import com.ivy.design.l0_system.RedLight
-import com.ivy.domain.creditcard.DeleteCreditCardUseCase
+import com.ivy.domain.creditcard.DeleteAccountUseCase
 import com.ivy.domain.features.Features
 import com.ivy.frp.then
 import com.ivy.legacy.IvyWalletCtx
@@ -95,8 +93,6 @@ class TransactionsViewModel @Inject constructor(
     private val calcAccIncomeExpenseAct: CalcAccIncomeExpenseAct,
     private val calcTrnsIncomeExpenseAct: LegacyCalcTrnsIncomeExpenseAct,
     private val exchangeAct: ExchangeAct,
-    private val transactionRepository: TransactionRepository,
-    private val plannedPaymentRuleWriter: WritePlannedPaymentRuleDao,
     private val transactionMapper: TransactionMapper,
     private val tagRepository: TagRepository,
     private val timeProvider: TimeProvider,
@@ -104,7 +100,7 @@ class TransactionsViewModel @Inject constructor(
     private val features: Features,
     private val creditCardRepository: CreditCardRepository,
     private val creditCardNotifications: CreditCardNotifications,
-    private val deleteCreditCardUseCase: DeleteCreditCardUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase,
     private val dataObserver: DataObserver,
 ) : ComposeViewModel<TransactionsState, TransactionsEvent>() {
     init {
@@ -761,25 +757,21 @@ class TransactionsViewModel @Inject constructor(
         ioThread {
             val id = AccountId(accountId)
             if (creditCardRepository.findByAccountId(id) != null) {
-                // Keeps bill payments in the paying accounts instead of orphaning them.
                 creditCardNotifications.cancelForCard(accountId)
-                deleteCreditCardUseCase.delete(id, fallbackTitle = null)
-            } else {
-                transactionRepository.deleteAllByAccountId(accountId = id)
-                plannedPaymentRuleWriter.deletedByAccountId(accountId = accountId)
-                accountRepository.deleteById(id)
             }
-
-            nav.back()
+            // One DB transaction that also keeps transfers with other accounts in those accounts;
+            // deleting only this account's rows left them pointing at a missing account.
+            val title = account.value?.name?.let { stringRes(R.string.deleted_account_transfer, it) }
+            deleteAccountUseCase.delete(id, fallbackTitle = title)
         }
+        nav.back()
     }
 
     private suspend fun deleteCategory(categoryId: UUID) {
         ioThread {
             categoryRepository.deleteById(CategoryId(categoryId))
-
-            nav.back()
         }
+        nav.back()
     }
 
     private fun setDeleteModal1Visible(delete: Boolean) {

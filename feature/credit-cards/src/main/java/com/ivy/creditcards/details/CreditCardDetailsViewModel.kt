@@ -17,7 +17,7 @@ import com.ivy.domain.creditcard.CardOverview
 import com.ivy.domain.creditcard.CardStatement
 import com.ivy.domain.creditcard.CreditCardOverviewUseCase
 import com.ivy.domain.creditcard.CreditCardWithOverview
-import com.ivy.domain.creditcard.DeleteCreditCardUseCase
+import com.ivy.domain.creditcard.DeleteAccountUseCase
 import com.ivy.navigation.CreditCardDetailsScreen
 import com.ivy.navigation.CreditCardStatementScreen
 import com.ivy.navigation.EditCreditCardScreen
@@ -94,7 +94,7 @@ class CreditCardDetailsViewModel @Inject constructor(
     private val creditCardNotifications: CreditCardNotifications,
     private val reminderScheduler: CreditCardReminderScheduler,
     private val rowsBuilder: CardRowsBuilder,
-    private val deleteCreditCardUseCase: DeleteCreditCardUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase,
     private val mapper: CardUiMapper,
     private val timeProvider: TimeProvider,
     private val navigation: Navigation,
@@ -197,14 +197,14 @@ class CreditCardDetailsViewModel @Inject constructor(
 
     /**
      * Only reachable after an explicit confirmation. Bill payments made from other accounts stay
-     * in those accounts (see [DeleteCreditCardUseCase]), as the confirmation text promises.
+     * in those accounts (see [DeleteAccountUseCase]), as the confirmation text promises.
      */
     private fun delete(id: AccountId, paymentTitle: String) {
         if (deleting) return
         deleting = true
         viewModelScope.launch {
             creditCardNotifications.cancelForCard(id.value)
-            deleteCreditCardUseCase.delete(id, fallbackTitle = paymentTitle)
+            deleteAccountUseCase.delete(id, fallbackTitle = paymentTitle)
             navigation.back()
         }
     }

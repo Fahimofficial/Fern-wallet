@@ -59,7 +59,7 @@ class CardChangeSafetyTest {
     @Test
     fun `a bill payment becomes an expense of the paying account with its own amount`() {
         val payment = transfer(from = bankId, to = cardId, fromAmount = 60.0, toAmount = 5000.0, title = "Bill")
-        val kept = DeleteCreditCardUseCase.preservedSides(listOf(payment), emptyList(), null)
+        val kept = DeleteAccountUseCase.preservedSides(listOf(payment), emptyList(), null)
 
         val expense = kept.single().shouldBeInstanceOf<Expense>()
         expense.id shouldBe payment.id
@@ -72,7 +72,7 @@ class CardChangeSafetyTest {
     @Test
     fun `money moved off the card becomes income of the receiving account`() {
         val out = transfer(from = cardId, to = bankId, fromAmount = 100.0, toAmount = 100.0)
-        val kept = DeleteCreditCardUseCase.preservedSides(emptyList(), listOf(out), NotBlankTrimmedString.unsafe("X"))
+        val kept = DeleteAccountUseCase.preservedSides(emptyList(), listOf(out), NotBlankTrimmedString.unsafe("X"))
 
         val income = kept.single().shouldBeInstanceOf<Income>()
         income.account shouldBe bankId
@@ -83,7 +83,7 @@ class CardChangeSafetyTest {
     @Test
     fun `planned unpaid transfers are not preserved`() {
         val planned = transfer(from = bankId, to = cardId, fromAmount = 1.0, toAmount = 1.0, settled = false)
-        DeleteCreditCardUseCase.preservedSides(listOf(planned), emptyList(), null) shouldHaveSize 0
+        DeleteAccountUseCase.preservedSides(listOf(planned), emptyList(), null) shouldHaveSize 0
     }
     // endregion
 

@@ -7,6 +7,21 @@ Release notes for published builds are generated on the
 
 First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 
+### Account deletion
+- Deleting a bank or cash account no longer breaks your other accounts: a transfer with the
+  deleted account now stays in the other account as an expense or income ("Transfer with
+  <account>"). Before, those transfers pointed at a missing account and dropped out of the other
+  account's history. Credit cards already worked this way.
+- The deletion runs as one database transaction, so an interrupted delete can't leave half the data.
+
+### Smaller fixes
+- Home: dismissed tip cards fade out and the list closes the gap smoothly instead of jumping.
+- TalkBack: each FAB menu action (income, expense, transfer) is one focus stop instead of three.
+- The launcher activity reads the "add transaction" extra only as text, so another app can't make
+  it deserialize objects or crash it with a malformed intent.
+- Duplicating a transaction no longer adds tag links for a copy that couldn't be saved.
+- The "Category name" hint on the delete confirmation is now translatable.
+
 ### Support my work
 - New **Settings → Support my work** screen: Ko-fi, UPI (`SimplyFahim@sbi`) with a QR code
   generated on the device, Copy UPI ID, Open UPI app (chooser when several are installed, clear

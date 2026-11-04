@@ -63,7 +63,7 @@ Legend: complexity S/M/L, priority C(ritical)/H/M/L. "Done" means it is implemen
 | M4 | `IvySwitch` | Plain `clickable` with no role or state. | TalkBack reads "double tap to activate" with no on/off state. No feedback. | `toggleable(role = Switch)` plus toggle haptics. | S | H | Done |
 | M5 | Month swipe on the period button | Changes the month silently. | Easy to swipe twice without noticing. | Haptic tick per step. | S | L | Done |
 | M6 | Deletes | Always a confirmation modal. No undo anywhere. | Apple's guidance is to prefer undo for reversible slips and confirm only irreversible actions. | Transaction delete is now immediate, with a root-level "Transaction deleted · Undo" snackbar that restores the exact row. Skip-all, accounts and categories keep their confirmation (bulk or cascading). | M | M | Done (follow-up) |
-| M7 | Customer-journey cards | Dismissed cards vanish instantly. The cards render in one non-lazy item. | Abrupt. | Give each card its own keyed item with `animateItem()`. | S | L | Recommended |
+| M7 | Customer-journey cards | Dismissed cards vanish instantly. The cards render in one non-lazy item. | Abrupt. | Give each card its own keyed item with `animateItem()`. | S | L | Done (November 2026) |
 
 ### Design
 
@@ -87,8 +87,9 @@ Legend: complexity S/M/L, priority C(ritical)/H/M/L. "Done" means it is implemen
   (balances, rows, FAB labels, account chips). Transaction section headers announce expanded/collapsed.
   Checkbox rows are a single checkbox with state. Icon buttons got real labels instead of "circle button"
   (FAB: add transaction / close / add account; income, expense, transfer, delete).
-- Still open: the three invisible FAB click areas are unlabeled focus stops, and new strings are English-only
-  until translated.
+- Done (November 2026): the FAB menu's text labels and invisible click areas are hidden from TalkBack
+  (`clearAndSetSemantics`), so each action is one labelled focus stop.
+- Still open: new strings are English-only until translated.
 - Reduced motion: on Android this is "Remove animations" (animator scale 0). Compose already completes all
   springs and tweens instantly then, and all new motion here uses standard Compose animation APIs,
   so it respects that setting. No per-frame custom loops were added.

@@ -36,8 +36,8 @@ import com.ivy.design.api.LocalTimeProvider
 import com.ivy.frp.forward
 import com.ivy.frp.then2
 import com.ivy.home.Constants.SWIPE_HORIZONTAL_THRESHOLD
-import com.ivy.home.customerjourney.CustomerJourney
 import com.ivy.home.customerjourney.CustomerJourneyCardModel
+import com.ivy.home.customerjourney.customerJourney
 import com.ivy.legacy.IvyWalletPreview
 import com.ivy.legacy.data.AppBaseData
 import com.ivy.legacy.data.BufferInfo
@@ -390,12 +390,10 @@ fun HomeLazyColumn(
             TransactionsDividerLine()
         }
 
-        item {
-            CustomerJourney(
-                customerJourneyCards = customerJourneyCards,
-                onDismiss = onDismiss
-            )
-        }
+        customerJourney(
+            customerJourneyCards = customerJourneyCards,
+            onDismiss = onDismiss
+        )
 
         transactions(
             baseData = baseData,

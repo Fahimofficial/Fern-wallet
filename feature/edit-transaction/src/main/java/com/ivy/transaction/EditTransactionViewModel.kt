@@ -664,11 +664,11 @@ class EditTransactionViewModel @Inject constructor(
                     .toDomain(transactionMapper)
                     ?.let {
                         transactionRepo.save(it)
+                        // Only link tags to a copy that was actually saved.
+                        tagRepository.findByIds(transactionAssociatedTags).forEach { tag ->
+                            associateTagToTransaction(tag, id)
+                        }
                     }
-
-                tagRepository.findByIds(transactionAssociatedTags).forEach {
-                    associateTagToTransaction(it, id)
-                }
 
                 refreshWidget(WalletBalanceWidgetReceiver::class.java)
             }

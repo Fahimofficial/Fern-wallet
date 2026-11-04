@@ -32,6 +32,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -466,6 +467,8 @@ private fun AddIncomeButton(
                 }
             }
             .graphicsLayer { alpha = buttonsShownPercent().coerceIn(0f, 1f) }
+            // The labelled circle button is the one TalkBack target; this is a bigger touch area for it.
+            .clearAndSetSemantics {}
             .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                 onAddIncome()
             }
@@ -496,6 +499,8 @@ private fun AddIncomeButton(
                 }
             }
             .zIndex(199f)
+            // The labelled circle button is the one TalkBack target; this is a bigger touch area for it.
+            .clearAndSetSemantics {}
             .clickableNoIndication(rememberInteractionSource()) {
                 onAddIncome()
             }
@@ -553,6 +558,8 @@ private fun AddExpenseButton(
                 }
             }
             .graphicsLayer { alpha = buttonsShownPercent().coerceIn(0f, 1f) }
+            // The labelled circle button is the one TalkBack target; this is a bigger touch area for it.
+            .clearAndSetSemantics {}
             .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                 onAddExpense()
             }
@@ -583,6 +590,8 @@ private fun AddExpenseButton(
                 }
             }
             .zIndex(199f)
+            // The labelled circle button is the one TalkBack target; this is a bigger touch area for it.
+            .clearAndSetSemantics {}
             .clickableNoIndication(rememberInteractionSource()) {
                 onAddExpense()
             }
@@ -640,6 +649,8 @@ private fun AddTransferButton(
                 }
             }
             .graphicsLayer { alpha = buttonsShownPercent().coerceIn(0f, 1f) }
+            // The labelled circle button is the one TalkBack target; this is a bigger touch area for it.
+            .clearAndSetSemantics {}
             .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                 onAddTransfer()
             }
@@ -670,6 +681,8 @@ private fun AddTransferButton(
                 }
             }
             .zIndex(199f)
+            // The labelled circle button is the one TalkBack target; this is a bigger touch area for it.
+            .clearAndSetSemantics {}
             .clickableNoIndication(rememberInteractionSource()) {
                 onAddTransfer()
             }

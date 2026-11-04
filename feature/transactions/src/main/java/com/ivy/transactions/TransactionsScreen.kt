@@ -579,7 +579,7 @@ private fun BoxWithConstraintsScope.DeleteModals(
         } else {
             stringResource(R.string.please_type_category_name, category?.name?.value ?: "")
         },
-        hint = if (account != null) stringResource(id = R.string.account_name) else "Category name",
+        hint = stringResource(if (account != null) R.string.account_name else R.string.category_name),
         onAccountNameChange = updateAccountNameConfirmation,
         enableDeletionButton = enableDeletionButton,
         dismiss = {

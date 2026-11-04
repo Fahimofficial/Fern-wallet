@@ -2,7 +2,6 @@ package com.ivy.home.customerjourney
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
+import com.ivy.design.system.motion.IvyMotion
 import com.ivy.domain.RootScreen
 import com.ivy.legacy.ivyWalletCtx
 import com.ivy.legacy.rootScreen
@@ -36,38 +39,42 @@ import com.ivy.wallet.ui.theme.dynamicContrast
 import com.ivy.wallet.ui.theme.findContrastTextColor
 import kotlinx.collections.immutable.ImmutableList
 
-@Composable
-fun CustomerJourney(
+/**
+ * Each card is its own keyed item: a dismissed card fades out and the rows below glide up into
+ * its place instead of jumping.
+ */
+fun LazyListScope.customerJourney(
     customerJourneyCards: ImmutableList<CustomerJourneyCardModel>,
-    modifier: Modifier = Modifier,
     onDismiss: (CustomerJourneyCardModel) -> Unit,
 ) {
-    val ivyContext = ivyWalletCtx()
-    val nav = navigation()
-    // Check is added for Paparazzi Test where context is different
-    if (LocalContext.current is RootScreen) {
+    if (customerJourneyCards.isEmpty()) return
+    item(key = "customer_journey_top") {
+        Spacer(Modifier.animateJourneyItem(this).height(12.dp))
+    }
+    items(customerJourneyCards, key = { "customer_journey_${it.id}" }) { card ->
+        // Paparazzi renders Home without a RootScreen context.
+        if (LocalContext.current !is RootScreen) return@items
+        val ivyContext = ivyWalletCtx()
+        val nav = navigation()
         val rootScreen = rootScreen()
-
-        if (customerJourneyCards.isNotEmpty()) {
+        Column(Modifier.animateJourneyItem(this)) {
             Spacer(Modifier.height(12.dp))
-        }
-
-        for (card in customerJourneyCards) {
-            Spacer(Modifier.height(12.dp))
-
             CustomerJourneyCard(
-                modifier = modifier,
                 cardData = card,
-                onDismiss = {
-                    onDismiss(card)
-                }
+                onDismiss = { onDismiss(card) }
             ) {
                 card.onAction(nav, ivyContext, rootScreen)
             }
         }
-    } else {
-        Box(modifier)
     }
+}
+
+private fun Modifier.animateJourneyItem(scope: LazyItemScope): Modifier = with(scope) {
+    animateItem(
+        fadeInSpec = IvyMotion.standard(IvyMotion.Duration.Medium),
+        placementSpec = IvyMotion.Springs.surface(),
+        fadeOutSpec = IvyMotion.standard(IvyMotion.Duration.Short),
+    )
 }
 
 @Composable
