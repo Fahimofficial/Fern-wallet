@@ -20,7 +20,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,20 +76,29 @@ import kotlinx.collections.immutable.persistentListOf
 import java.util.UUID
 
 @Composable
-fun BoxWithConstraintsScope.AccountsTab() {
+fun BoxWithConstraintsScope.AccountsTab(modifier: Modifier = Modifier, selected: Boolean = true) {
     val viewModel: AccountsViewModel = screenScopedViewModel()
     val uiState = viewModel.uiState()
 
+    // The tab stays composed while Home is shown: reload when it's shown again, as re-entering
+    // it used to (e.g. balances after a planned payment was paid on Home).
+    var wasHidden by remember { mutableStateOf(false) }
+    LaunchedEffect(selected) {
+        if (!selected) wasHidden = true else if (wasHidden) viewModel.onEvent(AccountsEvent.Refresh)
+    }
+
     UI(
         state = uiState,
-        onEvent = viewModel::onEvent
+        onEvent = viewModel::onEvent,
+        modifier = modifier,
     )
 }
 
 @Composable
 private fun BoxWithConstraintsScope.UI(
     state: AccountsState,
-    onEvent: (AccountsEvent) -> Unit = {}
+    modifier: Modifier = Modifier,
+    onEvent: (AccountsEvent) -> Unit = {},
 ) {
     val nav = navigation()
     val ivyContext = com.ivy.legacy.ivyWalletCtx()
@@ -103,7 +116,7 @@ private fun BoxWithConstraintsScope.UI(
         state.accountsData.filter { it.account.type != AccountType.CREDIT_CARD }
     }
     LazyColumn(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .statusBarsPadding()
             .navigationBarsPadding()

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,11 +71,18 @@ import java.math.BigDecimal
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun BoxWithConstraintsScope.HomeTab() {
+fun BoxWithConstraintsScope.HomeTab(modifier: Modifier = Modifier, selected: Boolean = true) {
     val viewModel: HomeViewModel = screenScopedViewModel()
     val uiState = viewModel.uiState()
 
-    HomeUi(uiState, viewModel::onEvent)
+    // The tab stays composed while Accounts is shown: reload when it's shown again, as
+    // re-entering it used to (e.g. balances after a payment made from Accounts).
+    var wasHidden by remember { mutableStateOf(false) }
+    LaunchedEffect(selected) {
+        if (!selected) wasHidden = true else if (wasHidden) viewModel.onEvent(HomeEvent.Refresh)
+    }
+
+    HomeUi(uiState, viewModel::onEvent, modifier)
 }
 
 @Suppress("LongMethod")
