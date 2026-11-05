@@ -835,4 +835,6 @@
     <string name="appearance_token_budget_description">While a budget is within limit</string>
     <string name="appearance_token_savings">Savings progress</string>
     <string name="appearance_token_savings_description">Savings goal on Home</string>
+    <string name="select_month">Choose month</string>
+    <string name="home_add_short">Add</string>
 </resources>

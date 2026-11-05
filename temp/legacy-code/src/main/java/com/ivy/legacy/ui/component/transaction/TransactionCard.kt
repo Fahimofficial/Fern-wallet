@@ -140,7 +140,10 @@ fun TransactionCard(
             shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions
         )
 
-        TransactionCardDateAndText(transaction)
+        TransactionCardDateAndText(
+            transaction = transaction,
+            untitledText = untitledText(transaction, baseData.categories),
+        )
         Spacer(Modifier.height(12.dp))
 
         TypeAmountCurrency(
@@ -214,8 +217,18 @@ fun TransactionCard(
     }
 }
 
+// What an untitled row leads with instead of only its account chip: the category, else the time.
 @Composable
-private fun TransactionCardDateAndText(transaction: Transaction) {
+private fun untitledText(transaction: Transaction, categories: List<Category>): String? {
+    if (transaction.title.isNotNullOrBlank()) return null
+    category(transaction.categoryId, categories)?.let { return it.name.value }
+    val dateTime = transaction.dateTime ?: return null
+    val local = with(LocalTimeConverter.current) { dateTime.toLocalDateTime() }
+    return with(LocalTimeFormatter.current) { local.toLocalTime().format() }
+}
+
+@Composable
+private fun TransactionCardDateAndText(transaction: Transaction, untitledText: String?) {
     if (transaction.dueDate != null) {
         Spacer(Modifier.height(12.dp))
         val timeFormatter = LocalTimeFormatter.current
@@ -256,6 +269,18 @@ private fun TransactionCardDateAndText(transaction: Transaction) {
                 fontWeight = FontWeight.ExtraBold,
                 color = UI.colors.pureInverse
             )
+        )
+    } else if (untitledText != null) {
+        Spacer(Modifier.height(12.dp))
+        Text(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            text = untitledText,
+            style = UI.typo.b1.style(
+                fontWeight = FontWeight.ExtraBold,
+                color = UI.colors.pureInverse
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 
@@ -572,7 +597,9 @@ fun TypeAmountCurrency(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.testTag("type_amount_currency"),
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("type_amount_currency"),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(Modifier.width(24.dp))
@@ -612,11 +639,21 @@ fun TypeAmountCurrency(
         )
 
         Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.weight(1f))
 
-        AmountCurrencyB1(
-            amount = amount,
-            currency = currency,
-            textColor = style.textColor
+        // Right-aligned so amounts line up down the list; the currency is secondary, so smaller.
+        Text(
+            modifier = Modifier
+                .alignByBaseline()
+                .testTag("amount_currency_b1"),
+            text = amount.format(currency),
+            style = UI.typo.nB1.style(fontWeight = FontWeight.Bold, color = style.textColor),
+        )
+        Spacer(Modifier.width(4.dp))
+        Text(
+            modifier = Modifier.alignByBaseline(),
+            text = currency,
+            style = UI.typo.nC.style(fontWeight = FontWeight.Normal, color = style.textColor),
         )
 
         Spacer(Modifier.width(24.dp))

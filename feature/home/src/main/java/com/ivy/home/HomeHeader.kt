@@ -8,6 +8,8 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,7 +61,6 @@ import com.ivy.wallet.ui.theme.incomeTextColor
 import com.ivy.wallet.ui.theme.components.BalanceRow
 import com.ivy.wallet.ui.theme.components.BalanceRowMini
 import com.ivy.wallet.ui.theme.components.IvyIcon
-import com.ivy.wallet.ui.theme.components.IvyOutlinedButton
 import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
 import kotlin.math.absoluteValue
 import androidx.compose.foundation.LocalIndication
@@ -198,7 +199,7 @@ private fun HeaderStickyRow(
             }
         }
 
-        IvyOutlinedButton(
+        MonthSelector(
             modifier = Modifier.horizontalSwipeListener(
                 sensitivity = 75,
                 state = rememberSwipeListenerState(),
@@ -211,21 +212,59 @@ private fun HeaderStickyRow(
                     onSelectPreviousMonth()
                 },
             ),
-            iconStart = R.drawable.ic_calendar,
             text = period.toDisplayShort(
                 startDateOfMonth = ivyWalletCtx().startDayOfMonth,
                 timeConverter = LocalTimeConverter.current,
                 timeProvider = LocalTimeProvider.current,
                 timeFormatter = LocalTimeFormatter.current,
             ),
-            minWidth = 130.dp,
-        ) {
-            onShowMonthModal()
-        }
+            onClick = onShowMonthModal,
+        )
 
         Spacer(Modifier.width(12.dp))
 
         Spacer(Modifier.width(40.dp)) // settings menu button spacer
+    }
+}
+
+/**
+ * One pill that opens the month picker: calendar, month, and its own caret (the round button next
+ * to it opens Quick access, not a month menu). A horizontal swipe still steps the month.
+ */
+@Composable
+private fun MonthSelector(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val label = stringResource(R.string.select_month)
+    Row(
+        modifier = modifier
+            .pressScale(interactionSource)
+            .clip(UI.shapes.rFull)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                role = Role.Button,
+                onClickLabel = label,
+                onClick = onClick,
+            )
+            .defaultMinSize(minWidth = 130.dp, minHeight = 48.dp)
+            .border(2.dp, UI.colors.medium, UI.shapes.rFull)
+            .padding(start = 12.dp, end = 8.dp)
+            .testTag("home_month_selector"),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        IvyIcon(icon = R.drawable.ic_calendar, tint = UI.colors.pureInverse)
+        Spacer(Modifier.width(4.dp))
+        Text(
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
+            text = text,
+            style = UI.typo.b2.style(fontWeight = FontWeight.Bold, color = UI.colors.pureInverse),
+        )
+        IvyIcon(icon = R.drawable.ic_expand_more, tint = UI.colors.gray)
     }
 }
 
@@ -242,7 +281,8 @@ fun CashFlowInfo(
     onOpenMoreMenu: () -> Unit,
     onBalanceClick: () -> Unit,
     onHiddenBalanceClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCashflowClick: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -285,19 +325,15 @@ fun CashFlowInfo(
         if (cashflow != 0.0 && !hideBalance) {
             Spacer(Modifier.height(12.dp))
 
-            Text(
-                modifier = Modifier.padding(
-                    start = 24.dp,
-                ),
+            CashflowChip(
                 text = stringResource(
                     R.string.cashflow,
                     (if (cashflow > 0) "+" else ""),
                     cashflow.format(currency),
                     currency,
                 ),
-                style = UI.typo.nB2.style(
-                    color = if (cashflow < 0) Gray else incomeTextColor(),
-                ),
+                color = if (cashflow < 0) Gray else incomeTextColor(),
+                onClick = onCashflowClick,
             )
 
             Spacer(Modifier.height(4.dp))
@@ -306,6 +342,39 @@ fun CashFlowInfo(
         }
     }
 }
+
+@Composable
+private fun CashflowChip(
+    text: String,
+    color: Color,
+    onClick: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Row(
+        modifier = Modifier
+            .padding(start = 16.dp)
+            .pressScale(interactionSource)
+            .clip(UI.shapes.rFull)
+            .background(color.copy(alpha = ChipTintAlpha), UI.shapes.rFull)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                role = Role.Button,
+                onClickLabel = stringResource(R.string.reports),
+                onClick = onClick,
+            )
+            .defaultMinSize(minHeight = 48.dp)
+            .padding(horizontal = 12.dp)
+            .testTag("home_cashflow_chip"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = text, style = UI.typo.nB2.style(color = color, fontWeight = FontWeight.Bold))
+        Spacer(Modifier.width(4.dp))
+        IvyIcon(icon = R.drawable.ic_arrow_right, tint = color)
+    }
+}
+
+private const val ChipTintAlpha = 0.12f
 
 @Composable
 private fun IncomeExpenses(

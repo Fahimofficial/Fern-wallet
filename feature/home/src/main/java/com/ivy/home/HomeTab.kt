@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -52,6 +53,8 @@ import com.ivy.legacy.utils.horizontalSwipeListener
 import com.ivy.legacy.utils.rememberSwipeListenerState
 import com.ivy.legacy.utils.verticalSwipeListener
 import com.ivy.navigation.IvyPreview
+import com.ivy.navigation.ReportScreen
+import com.ivy.navigation.navigation
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.ui.rememberScrollPositionListState
@@ -71,7 +74,11 @@ import java.math.BigDecimal
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun BoxWithConstraintsScope.HomeTab(modifier: Modifier = Modifier, selected: Boolean = true) {
+fun BoxWithConstraintsScope.HomeTab(
+    modifier: Modifier = Modifier,
+    selected: Boolean = true,
+    onBarsVisibleChange: (Boolean) -> Unit = {},
+) {
     val viewModel: HomeViewModel = screenScopedViewModel()
     val uiState = viewModel.uiState()
 
@@ -82,7 +89,7 @@ fun BoxWithConstraintsScope.HomeTab(modifier: Modifier = Modifier, selected: Boo
         if (!selected) wasHidden = true else if (wasHidden) viewModel.onEvent(HomeEvent.Refresh)
     }
 
-    HomeUi(uiState, viewModel::onEvent, modifier)
+    HomeUi(uiState, viewModel::onEvent, modifier, onBarsVisibleChange = onBarsVisibleChange)
 }
 
 @Suppress("LongMethod")
@@ -96,6 +103,7 @@ fun BoxWithConstraintsScope.HomeUi(
     // Only used by previews / screenshot tests to render an overlay in its open state.
     initialPeriodModalOpen: Boolean = false,
     initialMoreMenuExpanded: Boolean? = null,
+    onBarsVisibleChange: (Boolean) -> Unit = {},
 ) {
     val ivyContext = ivyWalletCtx()
 
@@ -225,7 +233,8 @@ fun BoxWithConstraintsScope.HomeUi(
             } then2 onEvent,
             onSkipAllTransactions = {
                 skipAllModalVisible = true
-            }
+            },
+            onBarsVisibleChange = onBarsVisibleChange,
         )
     }
 
@@ -329,11 +338,14 @@ fun HomeLazyColumn(
     onHiddenIncomeClick: () -> Unit,
     onSkipTransaction: (Transaction) -> Unit,
     onSkipAllTransactions: (List<Transaction>) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBarsVisibleChange: (Boolean) -> Unit = {},
 ) {
     val ivyContext = ivyWalletCtx()
+    val nav = navigation()
 
     val currentOnSetExpand by rememberUpdatedState(onSetExpand)
+    val currentOnBarsVisibleChange by rememberUpdatedState(onBarsVisibleChange)
     val nestedScrollConnection = remember(listState) {
         object : NestedScrollConnection {
             private var lastExpanded: Boolean? = null
@@ -352,6 +364,12 @@ fun HomeLazyColumn(
                     lastExpanded = expanded
                     currentOnSetExpand(expanded)
                 }
+                // Bottom bar and +: hide while reading down, back on any scroll up or at the top.
+                // Reported on every delta; the receiver's state ignores repeats of the same value.
+                when {
+                    expanded || consumed.y > BarsToggleDeltaPx -> currentOnBarsVisibleChange(true)
+                    consumed.y < -BarsToggleDeltaPx -> currentOnBarsVisibleChange(false)
+                }
                 return super.onPostScroll(consumed, available, source)
             }
         }
@@ -365,7 +383,9 @@ fun HomeLazyColumn(
             .fillMaxSize()
             .nestedScroll(nestedScrollConnection)
             .testTag("home_lazy_column"),
-        state = listState
+        state = listState,
+        // The last row clears the bottom bar and the + button that overlaps it.
+        contentPadding = PaddingValues(bottom = BottomBarClearance),
     ) {
         item {
             CashFlowInfo(
@@ -381,7 +401,8 @@ fun HomeLazyColumn(
                 onBalanceClick = onBalanceClick,
                 onHiddenBalanceClick = onHiddenBalanceClick,
                 hideIncome = hideIncome,
-                onHiddenIncomeClick = onHiddenIncomeClick
+                onHiddenIncomeClick = onHiddenIncomeClick,
+                onCashflowClick = { nav.navigateTo(ReportScreen) },
             )
         }
         item {
@@ -416,11 +437,17 @@ fun HomeLazyColumn(
                 )
             ),
             shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions,
+            lastItemSpacer = 0.dp,
             onSkipTransaction = onSkipTransaction,
             onSkipAllTransactions = onSkipAllTransactions
         )
     }
 }
+
+// Bottom bar (~52dp) plus the + button rising 30dp above it, plus breathing room. The system
+// navigation bar is already excluded by Home's systemBarsPadding.
+private val BottomBarClearance = 104.dp
+private const val BarsToggleDeltaPx = 4f
 
 /** Which overlay to show on top of the Home sample (screenshots / previews). */
 enum class HomeSampleOverlay { None, PeriodPicker, MoreMenu }

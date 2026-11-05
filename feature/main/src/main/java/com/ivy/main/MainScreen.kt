@@ -54,7 +54,9 @@ fun BoxWithConstraintsScope.MainScreen(screen: MainScreen) {
         tab = ivyContext.mainTab,
         baseCurrency = currency,
         selectTab = viewModel::selectTab,
-        onCreateAccount = viewModel::createAccount
+        onCreateAccount = viewModel::createAccount,
+        fabExtended = viewModel.fabLabelVisible,
+        onFabLabelSeen = viewModel::onFabLabelSeen,
     )
 }
 
@@ -69,10 +71,16 @@ private fun BoxWithConstraintsScope.UI(
 
     selectTab: (MainTab) -> Unit,
     onCreateAccount: (CreateAccountData) -> Unit,
+    fabExtended: Boolean = false,
+    onFabLabelSeen: () -> Unit = {},
 ) {
+    // Home hides the bar while scrolling down; any other tab always shows it.
+    var homeBarsVisible by remember { mutableStateOf(true) }
     MainTabs(
         tab = tab,
-        home = { HomeTab(modifier = it, selected = tab == MainTab.HOME) },
+        home = {
+            HomeTab(modifier = it, selected = tab == MainTab.HOME, onBarsVisibleChange = { visible -> homeBarsVisible = visible })
+        },
         accounts = { AccountsTab(modifier = it, selected = tab == MainTab.ACCOUNTS) },
     )
 
@@ -122,7 +130,10 @@ private fun BoxWithConstraintsScope.UI(
                 balance = 0.0,
                 baseCurrency = baseCurrency
             )
-        }
+        },
+        barsVisible = tab != MainTab.HOME || homeBarsVisible,
+        fabExtended = fabExtended,
+        onFabLabelSeen = onFabLabelSeen,
     )
 
     AccountModal(
