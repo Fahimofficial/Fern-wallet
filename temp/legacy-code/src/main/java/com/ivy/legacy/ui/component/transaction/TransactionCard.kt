@@ -92,7 +92,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
-@Suppress("CyclomaticComplexMethod", "LongMethod")
+@Suppress("LongMethod")
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
 fun TransactionCard(
@@ -140,64 +140,7 @@ fun TransactionCard(
             shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions
         )
 
-        if (transaction.dueDate != null) {
-            Spacer(Modifier.height(12.dp))
-            val timeFormatter = LocalTimeFormatter.current
-            val timeProvider = LocalTimeProvider.current
-            Text(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                text = stringResource(
-                    R.string.due_on,
-                    with(timeFormatter) {
-                        transaction.dueDate!!.formatLocal(
-                            TimeFormatter.Style.DateOnly(
-                                includeWeekDay = true
-                            )
-                        )
-                    }
-                ).uppercase(),
-                style = UI.typo.nC.style(
-                    color = if (transaction.dueDate!!.isAfter(timeProvider.utcNow())) {
-                        UI.colors.orange
-                    } else {
-                        UI.colors.gray
-                    },
-                    fontWeight = FontWeight.Bold
-                )
-            )
-        }
-
-        if (transaction.title.isNotNullOrBlank()) {
-            Spacer(
-                Modifier.height(
-                    if (transaction.dueDate != null) 8.dp else 12.dp
-                )
-            )
-            Text(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                text = transaction.title!!,
-                style = UI.typo.b1.style(
-                    fontWeight = FontWeight.ExtraBold,
-                    color = UI.colors.pureInverse
-                )
-            )
-        }
-
-        val description = getTransactionDescription(transaction)
-        if (!description.isNullOrBlank()) {
-            Spacer(Modifier.height(if (transaction.title.isNotNullOrBlank()) 4.dp else 8.dp))
-            Text(
-                text = description,
-                modifier = Modifier.padding(horizontal = 24.dp),
-                style = UI.typo.nC.style(
-                    color = UI.colors.gray,
-                    fontWeight = FontWeight.Bold
-                ),
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
+        TransactionCardDateAndText(transaction)
         Spacer(Modifier.height(12.dp))
 
         TypeAmountCurrency(
@@ -268,6 +211,67 @@ fun TransactionCard(
         }
 
         Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun TransactionCardDateAndText(transaction: Transaction) {
+    if (transaction.dueDate != null) {
+        Spacer(Modifier.height(12.dp))
+        val timeFormatter = LocalTimeFormatter.current
+        val timeProvider = LocalTimeProvider.current
+        Text(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            text = stringResource(
+                R.string.due_on,
+                with(timeFormatter) {
+                    transaction.dueDate!!.formatLocal(
+                        TimeFormatter.Style.DateOnly(
+                            includeWeekDay = true
+                        )
+                    )
+                }
+            ).uppercase(),
+            style = UI.typo.nC.style(
+                color = if (transaction.dueDate!!.isAfter(timeProvider.utcNow())) {
+                    UI.colors.orange
+                } else {
+                    UI.colors.gray
+                },
+                fontWeight = FontWeight.Bold
+            )
+        )
+    }
+
+    if (transaction.title.isNotNullOrBlank()) {
+        Spacer(
+            Modifier.height(
+                if (transaction.dueDate != null) 8.dp else 12.dp
+            )
+        )
+        Text(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            text = transaction.title!!,
+            style = UI.typo.b1.style(
+                fontWeight = FontWeight.ExtraBold,
+                color = UI.colors.pureInverse
+            )
+        )
+    }
+
+    val description = getTransactionDescription(transaction)
+    if (!description.isNullOrBlank()) {
+        Spacer(Modifier.height(if (transaction.title.isNotNullOrBlank()) 4.dp else 8.dp))
+        Text(
+            text = description,
+            modifier = Modifier.padding(horizontal = 24.dp),
+            style = UI.typo.nC.style(
+                color = UI.colors.gray,
+                fontWeight = FontWeight.Bold
+            ),
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
