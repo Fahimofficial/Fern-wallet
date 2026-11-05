@@ -48,8 +48,9 @@ private data class PaletteColors(
     val overdue: Long,
     val budgetProgress: Long,
     val savingsProgress: Long,
-) {
-    fun toColorMap(): Map<ColorToken, Color> = mapOf(
+)
+
+private fun PaletteColors.toColorMap(): Map<ColorToken, Color> = mapOf(
         Background to Color(background),
         Card to Color(card),
         Elevated to Color(elevated),
@@ -70,7 +71,6 @@ private data class PaletteColors(
         BudgetProgress to Color(budgetProgress),
         SavingsProgress to Color(savingsProgress),
     )
-}
 
 // Fern: the colours the app shipped with before Appearance existed. The one change: dialogs and
 // sheets (Elevated) sit one step above the background instead of matching it.
