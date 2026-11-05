@@ -841,4 +841,9 @@
     <string name="balance_details">Balance details</string>
     <string name="show_exact_amount">Show exact amount</string>
     <string name="show_compact_amount">Show compact amount</string>
+    <string name="saving">Saving</string>
+    <string name="swap_accounts">Swap From and To</string>
+    <string name="more_details">More</string>
+    <string name="collapse">Hide accounts</string>
+    <string name="expand">Show accounts</string>
 </resources>
