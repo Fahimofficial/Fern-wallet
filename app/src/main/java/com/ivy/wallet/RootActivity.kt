@@ -59,7 +59,7 @@ import com.ivy.home.customerjourney.CustomerJourneyCardsProvider
 import com.ivy.legacy.Constants
 import com.ivy.legacy.IvyWalletCtx
 import com.ivy.legacy.appDesign
-import com.ivy.legacy.utils.MotionPreferences
+import com.ivy.design.system.motion.MotionPreferences
 import com.ivy.legacy.utils.activityForResultLauncher
 import com.ivy.legacy.utils.simpleActivityForResultLauncher
 import com.ivy.navigation.Navigation

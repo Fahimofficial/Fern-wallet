@@ -39,6 +39,15 @@ object IvyMotion {
         const val Long = 300
     }
 
+    /** List entrance: each item starts [StepMillis] after the previous one, only the first [MaxItems]. */
+    object Stagger {
+        const val StepMillis = 35
+        const val MaxItems = 8
+
+        /** Distance an entering item travels up while it fades in. */
+        const val OffsetDp = 20
+    }
+
     /** Material 3 easing curves. */
     object Easings {
         val Standard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
@@ -65,6 +74,9 @@ object IvyMotion {
 
         /** Release after a press or a drag: slightly under-damped because the finger gave it momentum. */
         fun <T> release(): SpringSpec<T> = spring(dampingRatio = 0.8f, response = 0.3f)
+
+        /** A small, visible bounce for a selection landing (nav icons, sliding thumbs). */
+        fun <T> bouncy(): SpringSpec<T> = spring(dampingRatio = 0.55f, response = 0.3f)
 
         /** @param response seconds to (approximately) reach the target; not a fixed duration. */
         fun <T> spring(dampingRatio: Float, response: Float): SpringSpec<T> {
