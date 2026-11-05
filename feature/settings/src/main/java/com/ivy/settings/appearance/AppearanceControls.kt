@@ -34,6 +34,7 @@ import com.ivy.base.legacy.Theme
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
 import com.ivy.design.system.appearance.AppearancePreset
+import com.ivy.design.system.appearance.AppearanceSettings
 import com.ivy.design.system.appearance.ColorToken
 import com.ivy.design.system.appearance.FernTheme
 import com.ivy.design.system.appearance.colors
@@ -97,11 +98,12 @@ private val ThemeModes = listOf(
 
 @Composable
 internal fun PresetRow(
-    selected: AppearancePreset,
-    hasCustomColours: Boolean,
+    appearance: AppearanceSettings,
     dark: Boolean,
     onSelect: (AppearancePreset) -> Unit,
 ) {
+    val selected = appearance.preset
+    val hasCustomColours = appearance.lightOverrides.isNotEmpty() || appearance.darkOverrides.isNotEmpty()
     Row(
         Modifier
             .horizontalScroll(rememberScrollState())

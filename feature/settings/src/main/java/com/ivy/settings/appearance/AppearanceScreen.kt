@@ -108,11 +108,7 @@ private fun AppearanceUi(
         ThemeModeRow(theme, actions.onTheme)
 
         SectionTitle(R.string.appearance_presets)
-        PresetRow(
-            selected = appearance.preset,
-            hasCustomColours = appearance.lightOverrides.isNotEmpty() || appearance.darkOverrides.isNotEmpty(),
-            dark = dark,
-        ) { preset -> actions.onUpdate { it.withPreset(preset) } }
+        PresetRow(appearance, dark) { preset -> actions.onUpdate { it.withPreset(preset) } }
 
         EditingThemeHint(dark)
 
