@@ -15,6 +15,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Edits the app-wide appearance. Changes go to [IvyWalletCtx] first, so every screen (and the
@@ -34,11 +39,22 @@ class AppearanceViewModel @Inject constructor(
     val appearance: AppearanceSettings get() = ivyContext.appearance
     val theme: Theme get() = ivyContext.theme
 
+    /** null until the first change on this screen; then whether a save is still running. */
+    var saving: Boolean? by mutableStateOf(null)
+        private set
+    private var pendingSaves = 0
+
     fun update(transform: (AppearanceSettings) -> AppearanceSettings) {
         ivyContext.appearance = transform(ivyContext.appearance)
+        pendingSaves++
+        saving = true
         applicationScope.launch {
             // Encodes inside the lock, so the last write always holds the latest choice.
             saveLock.withLock { appearanceDataSource.set(ivyContext.appearance.encode()) }
+            withContext(Dispatchers.Main) {
+                pendingSaves--
+                if (pendingSaves == 0) saving = false
+            }
         }
     }
 

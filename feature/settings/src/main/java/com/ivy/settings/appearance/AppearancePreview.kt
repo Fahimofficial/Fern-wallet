@@ -1,5 +1,6 @@
 package com.ivy.settings.appearance
 
+import com.ivy.design.system.appearance.ColorGroup
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -45,8 +46,18 @@ import com.ivy.ui.R
  */
 @Composable
 internal fun AppearancePreview(palette: FernPalette, modifier: Modifier = Modifier) {
+    // Changes sweep through the miniature as a wave: balance and text, then money, then bars.
     val c: @Composable (ColorToken) -> Color = { token ->
-        animateColorAsState(palette[token], IvyMotion.standard(), label = "preview_${token.name}").value
+        val delay = when (token.group) {
+            ColorGroup.Money -> WaveStepMillis
+            ColorGroup.Progress, ColorGroup.Navigation -> 2 * WaveStepMillis
+            else -> 0
+        }
+        animateColorAsState(
+            palette[token],
+            IvyMotion.standard(delayMillis = delay),
+            label = "preview_${token.name}",
+        ).value
     }
     val background = c(ColorToken.Background)
     val card = c(ColorToken.Card)
@@ -76,7 +87,7 @@ internal fun AppearancePreview(palette: FernPalette, modifier: Modifier = Modifi
         Spacer(Modifier.height(8.dp))
         TransactionRow(R.string.appearance_preview_salary, c(ColorToken.Income), "+3,200.00", card, text)
         TransactionRow(R.string.appearance_preview_groceries, c(ColorToken.Expense), "-42.50", card, text)
-        TransactionRow(R.string.appearance_preview_rent, c(ColorToken.Upcoming), "-950.00", card, text)
+        TransactionRow(R.string.appearance_preview_rent, c(ColorToken.Upcoming), "-950.00", card, text, warning = true)
         Spacer(Modifier.height(10.dp))
         ProgressRow(card, c(ColorToken.BudgetProgress), c(ColorToken.Overdue), c(ColorToken.Transfer))
         Spacer(Modifier.height(12.dp))
@@ -101,7 +112,15 @@ private fun RowScope.SummaryCard(@DrawableRes icon: Int, color: Color, amount: S
 }
 
 @Composable
-private fun TransactionRow(label: Int, color: Color, amount: String, card: Color, text: Color) {
+private fun TransactionRow(
+    label: Int,
+    color: Color,
+    amount: String,
+    card: Color,
+    text: Color,
+    // "Due soon" isn't told by the amber alone: it gets a warning mark too.
+    warning: Boolean = false,
+) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -116,6 +135,15 @@ private fun TransactionRow(label: Int, color: Color, amount: String, card: Color
             text = stringResource(label),
             style = UI.typo.c.style(color = text, fontWeight = FontWeight.Bold)
         )
+        if (warning) {
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(R.drawable.ic_overdue),
+                contentDescription = null,
+                tint = color.readableOn(card),
+            )
+            Spacer(Modifier.width(4.dp))
+        }
         Text(text = amount, style = UI.typo.nC.style(color = color.readableOn(card), fontWeight = FontWeight.Bold))
     }
 }
@@ -211,6 +239,7 @@ private val NavTokens = listOf(
     ColorToken.Accent,
     ColorToken.Elevated,
 )
+private const val WaveStepMillis = 60
 private const val BudgetShare = 0.45f
 private const val TransferShare = 0.15f
 private const val OverShare = 0.1f

@@ -855,4 +855,12 @@
         <item quantity="one">%d due</item>
         <item quantity="other">%d due</item>
     </plurals>
+    <string name="appearance_amoled_hint">AMOLED: pure black, saves battery on OLED screens.</string>
+    <string name="appearance_saving">Saving…</string>
+    <string name="appearance_saved">Saved on this device</string>
+    <string name="appearance_reset_all_title">Reset appearance?</string>
+    <string name="appearance_reset_summary_preset">Preset: %1$s → Fern</string>
+    <string name="appearance_reset_summary_light">Custom light colours removed: %1$d</string>
+    <string name="appearance_reset_summary_dark">Custom dark colours removed: %1$d</string>
+    <string name="appearance_reset_summary_theme">Theme mode, accounts and categories stay as they are.</string>
 </resources>

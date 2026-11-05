@@ -1,5 +1,23 @@
 package com.ivy.settings.appearance
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.get
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,7 +30,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,11 +52,9 @@ import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
 import com.ivy.design.system.appearance.AppearanceSettings
 import com.ivy.design.system.appearance.ColorGroup
-import com.ivy.design.system.appearance.ColorToken
 import com.ivy.design.system.appearance.FernPalette
 import com.ivy.design.system.appearance.FernTheme
 import com.ivy.design.system.appearance.colors
-import com.ivy.design.system.appearance.get
 import com.ivy.design.system.appearance.overrides
 import com.ivy.design.system.appearance.resetGroup
 import com.ivy.design.system.appearance.withColor
@@ -68,6 +83,7 @@ fun AppearanceScreenImpl() {
         appearance = viewModel.appearance,
         theme = viewModel.theme,
         palette = FernTheme.palette,
+        saving = viewModel.saving,
         actions = remember(viewModel, nav) {
             AppearanceActions(
                 onBack = { nav.onBackPressed() },
@@ -85,6 +101,7 @@ private fun AppearanceUi(
     theme: Theme,
     palette: FernPalette,
     actions: AppearanceActions,
+    saving: Boolean? = null,
 ) {
     // The colours being edited are those of the theme on screen now.
     val dark = !palette.isLight
@@ -98,11 +115,17 @@ private fun AppearanceUi(
             .background(UI.colors.pure)
             .statusBarsPadding()
             .navigationBarsPadding()
-            .verticalScroll(rememberScrollState())
     ) {
         IvyToolbar(onBack = actions.onBack)
-        AppearanceHeader()
+        // Pinned: every control below scrolls under it, so a change is always seen in context.
         AppearancePreview(palette)
+        SaveIndicator(saving)
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        AppearanceHeader()
 
         SectionTitle(R.string.appearance_theme)
         ThemeModeRow(theme, actions.onTheme)
@@ -126,6 +149,7 @@ private fun AppearanceUi(
 
         ResetAllButton { confirmResetAll = true }
     }
+    }
 
     val editingToken = editing?.let { name -> ColorToken.entries.firstOrNull { it.name == name } }
     if (editingToken != null) {
@@ -141,7 +165,8 @@ private fun AppearanceUi(
         )
     }
     if (confirmResetAll) {
-        ResetAllDialog(
+        ResetAllSheet(
+            appearance = appearance,
             onConfirm = {
                 actions.onUpdate { AppearanceSettings.Default }
                 confirmResetAll = false
@@ -186,18 +211,78 @@ private fun ResetAllButton(onClick: () -> Unit) {
     }
 }
 
+/** Says exactly what "Reset all" will undo before doing it. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ResetAllDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        text = { Text(stringResource(R.string.appearance_reset_all_confirm)) },
-        confirmButton = {
-            TextButton(onClick = onConfirm) { Text(stringResource(R.string.appearance_reset_group)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.appearance_cancel)) }
-        },
-    )
+private fun ResetAllSheet(appearance: AppearanceSettings, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = UI.colors.pure) {
+        Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp)) {
+            Text(
+                modifier = Modifier.semantics { heading() },
+                text = stringResource(R.string.appearance_reset_all_title),
+                style = UI.typo.b1.style(fontWeight = FontWeight.ExtraBold),
+            )
+            Spacer(Modifier.height(12.dp))
+            val lines = listOf(
+                stringResource(R.string.appearance_reset_summary_preset, stringResource(appearance.preset.nameRes())),
+                stringResource(R.string.appearance_reset_summary_light, appearance.lightOverrides.size),
+                stringResource(R.string.appearance_reset_summary_dark, appearance.darkOverrides.size),
+                stringResource(R.string.appearance_reset_summary_theme),
+            )
+            lines.forEach { line ->
+                Text(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    text = "• $line",
+                    style = UI.typo.b2.style(color = UI.colors.gray, fontWeight = FontWeight.Medium),
+                )
+            }
+            Spacer(Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(modifier = Modifier.weight(1f), onClick = onDismiss) {
+                    Text(stringResource(R.string.appearance_cancel))
+                }
+                TextButton(modifier = Modifier.weight(1f), onClick = onConfirm) {
+                    Text(
+                        text = stringResource(R.string.appearance_reset_all),
+                        color = UI.colors.red,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** "Saved on this device": a spinner while writing, then a check. Hidden until something changes. */
+@Composable
+private fun SaveIndicator(saving: Boolean?) {
+    AnimatedVisibility(visible = saving != null, enter = fadeIn(), exit = fadeOut()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp, vertical = 6.dp)
+                .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AnimatedContent(targetState = saving == true, label = "save_state") { inProgress ->
+                if (inProgress) {
+                    CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = UI.colors.gray)
+                } else {
+                    Icon(
+                        modifier = Modifier.size(14.dp),
+                        painter = painterResource(R.drawable.ic_check),
+                        contentDescription = null,
+                        tint = FernTheme.palette[ColorToken.Income],
+                    )
+                }
+            }
+            Spacer(Modifier.width(6.dp))
+            Text(
+                text = stringResource(if (saving == true) R.string.appearance_saving else R.string.appearance_saved),
+                style = UI.typo.c.style(color = UI.colors.gray, fontWeight = FontWeight.Medium),
+            )
+        }
+    }
 }
 
 @Composable
