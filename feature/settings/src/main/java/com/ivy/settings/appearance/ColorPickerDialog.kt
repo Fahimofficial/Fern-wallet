@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,12 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -40,8 +35,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.ivy.design.IVY_COLOR_PICKER_COLORS_FREE
 import com.ivy.design.l0_system.UI
@@ -136,37 +129,6 @@ internal fun ColorPickerDialog(
     )
 }
 
-@Composable
-private fun HsvSliders(hsv: Hsv, onChange: (Hsv) -> Unit) {
-    Column {
-        HsvSlider(R.string.appearance_hue, hsv.hue, 0f..MaxHue) { onChange(hsv.copy(hue = it)) }
-        HsvSlider(R.string.appearance_saturation, hsv.saturation, 0f..1f) { onChange(hsv.copy(saturation = it)) }
-        HsvSlider(R.string.appearance_brightness, hsv.value, 0f..1f) { onChange(hsv.copy(value = it)) }
-    }
-}
-
-@Composable
-private fun HexField(text: String, error: Int?, onTextChange: (String) -> Unit) {
-    OutlinedTextField(
-        modifier = Modifier.fillMaxWidth(),
-        value = text,
-        onValueChange = onTextChange,
-        prefix = { Text("#") },
-        label = { Text(stringResource(R.string.appearance_hex)) },
-        singleLine = true,
-        isError = error == R.string.appearance_hex_invalid,
-        supportingText = error?.let { res -> { Text(stringResource(res)) } },
-        keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.Characters,
-            keyboardType = KeyboardType.Ascii,
-        ),
-    )
-}
-
-/** What the HEX field keeps of what was typed or pasted: up to 6 hex digits, upper case. */
-internal fun sanitizeHexInput(text: String): String =
-    text.filter { it in HexInputChars }.take(HexDigits).uppercase(Locale.ROOT)
-
 // The colour itself, then a chip per neighbouring colour showing real text over it.
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -248,29 +210,6 @@ private fun Swatches(selected: Color?, onPick: (Color) -> Unit) {
     }
 }
 
-@Composable
-private fun HsvSlider(label: Int, value: Float, range: ClosedFloatingPointRange<Float>, onChange: (Float) -> Unit) {
-    Column {
-        Text(text = stringResource(label), style = UI.typo.c.style(fontWeight = FontWeight.Bold))
-        Slider(
-            value = value,
-            onValueChange = onChange,
-            valueRange = range,
-            colors = SliderDefaults.colors(),
-        )
-    }
-}
-
-private data class Hsv(val hue: Float, val saturation: Float, val value: Float)
-
-private fun Color.toHsv(): Hsv {
-    val out = FloatArray(HsvComponents)
-    android.graphics.Color.colorToHSV(toArgb(), out)
-    return Hsv(out[0], out[1], out[2])
-}
-
-private fun Hsv.toColor(): Color = Color.hsv(hue.coerceIn(0f, MaxHue), saturation, value)
-
 private val Neutrals = persistentListOf(
     Color(0xFFFFFFFF),
     Color(0xFFFAFAFA),
@@ -281,8 +220,4 @@ private val Neutrals = persistentListOf(
     Color(0xFF111114),
     Color(0xFF000000),
 )
-private const val HsvComponents = 3
 private val SwatchSize = 32.dp
-private const val MaxHue = 359.9f
-private const val HexDigits = 6
-private const val HexInputChars = "0123456789abcdefABCDEF"

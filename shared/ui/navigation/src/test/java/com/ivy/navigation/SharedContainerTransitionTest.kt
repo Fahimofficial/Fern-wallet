@@ -30,8 +30,8 @@ class SharedContainerTransitionTest : PaparazziRenderTest() {
         val first = frames.firstDestinationFrame()
 
         // Starts where the card is (card: 120 x 80 dp at 40, 400 on a 412 dp wide screen).
-        check(first.width < first.screenWidth * GrowingMaxWidth) { "first frame $first" }
-        check(first.left > first.screenWidth * CardLeftMin) { "first frame $first" }
+        check(first.width < first.screenWidth * GrowingMaxWidth) { firstFrameMessage(first) }
+        check(first.left > first.screenWidth * CardLeftMin) { firstFrameMessage(first) }
         frames.last().destinationBounds().assertFullScreen()
     }
 
@@ -43,7 +43,7 @@ class SharedContainerTransitionTest : PaparazziRenderTest() {
         )
         val first = frames.firstDestinationFrame()
 
-        check(first.width < first.screenWidth * GrowingMaxWidth) { "first frame $first" }
+        check(first.width < first.screenWidth * GrowingMaxWidth) { firstFrameMessage(first) }
         frames.last().destinationBounds().assertFullScreen()
     }
 
@@ -84,14 +84,14 @@ class SharedContainerTransitionTest : PaparazziRenderTest() {
         val first = frames.firstDestinationFrame()
 
         // The whole destination screen fades in at once, not from the card.
-        check(first.width > first.screenWidth * FullWidthMin) { "first frame $first" }
+        check(first.width > first.screenWidth * FullWidthMin) { firstFrameMessage(first) }
         frames.last().destinationBounds().assertFullScreen()
     }
 
     private fun editTransaction(id: UUID?) =
         EditTransactionScreen(initialTransactionId = id, type = TransactionType.EXPENSE)
 
-    /** A list with one card for [cardKey], opening [destination] as soon as it is shown. */
+    // A list with one card for [cardKey], opening [destination] as soon as it is shown.
     private fun transition(cardKey: Any, destination: Screen): List<BufferedImage> {
         val navigation = Navigation().apply { navigateTo(ListScreen) }
         return renderFrames(durationMillis = DurationMillis, fps = Fps) {
@@ -119,40 +119,6 @@ class SharedContainerTransitionTest : PaparazziRenderTest() {
         }
     }
 
-    // The production keys of the two destinations that have a shared container.
-    private fun Screen.destinationKey(): Any? = when (this) {
-        is EditTransactionScreen -> sharedKey
-        is TransactionsScreen -> sharedKey
-        else -> null
-    }
-
-    private fun List<BufferedImage>.firstDestinationFrame(): Bounds =
-        asSequence().map { it.destinationBounds() }.firstOrNull { it.width > 0 }
-            ?: error("the destination never appeared in ${this.size} frames")
-
-    private fun Bounds.assertFullScreen() = check(width > screenWidth * FullWidthMin) { "last frame $this" }
-
-    private data class Bounds(val left: Int, val width: Int, val screenWidth: Int)
-
-    // Where the destination (red, possibly fading in over black) is drawn.
-    private fun BufferedImage.destinationBounds(): Bounds {
-        var left = width
-        var right = -1
-        for (y in 0 until height step ScanStep) {
-            for (x in 0 until width) {
-                val rgb = getRGB(x, y)
-                val r = rgb shr 16 and 0xFF
-                val g = rgb shr 8 and 0xFF
-                val b = rgb and 0xFF
-                if (r >= RedMin && g < OtherMax && b < OtherMax) {
-                    left = minOf(left, x)
-                    right = maxOf(right, x)
-                }
-            }
-        }
-        return Bounds(left = left, width = if (right < 0) 0 else right - left + 1, screenWidth = width)
-    }
-
     private companion object {
         // Any screen without its own shared element works as the list.
         val ListScreen: Screen = SettingsScreen
@@ -160,11 +126,7 @@ class SharedContainerTransitionTest : PaparazziRenderTest() {
         val DestinationColor = Color(0xFFFF0000)
         const val DurationMillis = 600L
         const val Fps = 60
-        const val ScanStep = 8
-        const val RedMin = 48
-        const val OtherMax = 32
         const val GrowingMaxWidth = 0.7f
         const val CardLeftMin = 0.03f
-        const val FullWidthMin = 0.9f
     }
 }
