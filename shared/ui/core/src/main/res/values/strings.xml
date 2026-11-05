@@ -846,4 +846,13 @@
     <string name="more_details">More</string>
     <string name="collapse">Hide accounts</string>
     <string name="expand">Show accounts</string>
+    <string name="insight_top_category_title">This month</string>
+    <plurals name="insight_top_category">
+        <item quantity="one">Most often: %1$s (%2$d expense)</item>
+        <item quantity="other">Most often: %1$s (%2$d expenses)</item>
+    </plurals>
+    <plurals name="planned_due_badge">
+        <item quantity="one">%d due</item>
+        <item quantity="other">%d due</item>
+    </plurals>
 </resources>

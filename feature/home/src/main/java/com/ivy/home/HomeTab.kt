@@ -23,7 +23,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -262,7 +261,13 @@ fun BoxWithConstraintsScope.HomeUi(
         },
         onCurrencyClick = {
             currencyModalVisible = true
-        }
+        },
+        plannedDue = uiState.upcoming.trns.size + uiState.overdue.trns.size,
+        topCategory = remember(uiState.history, uiState.baseData.categories) {
+            topExpenseCategory(uiState.history, uiState.baseData.categories)
+        },
+        celebrateGoal = uiState.celebrateSavingsGoal,
+        onGoalCelebrated = { onEvent(HomeEvent.SavingsGoalCelebrated) },
     )
 
     BufferModal(
@@ -352,11 +357,8 @@ fun HomeLazyColumn(
     val nav = navigation()
 
     // The entrance marks rows arriving from a load. Rows already there on the first frame
-    // (screenshots, previews) are shown settled.
-    val inspection = LocalInspectionMode.current
-    val motion = remember {
-        HistoryMotion(entrancePending = !homeEntrancePlayed && !inspection && history.isEmpty())
-    }
+    // (screenshots, previews, a restored screen) are shown settled.
+    val motion = remember { HistoryMotion(entrancePending = !homeEntrancePlayed && history.isEmpty()) }
     LaunchedEffect(history.isNotEmpty()) {
         if (history.isNotEmpty() && motion.entrancePending) {
             delay(HistoryMotion.EntranceMillis.toLong())

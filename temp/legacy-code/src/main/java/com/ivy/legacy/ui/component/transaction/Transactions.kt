@@ -59,6 +59,8 @@ fun LazyListScope.transactions(
     // Home only: entrance/month motion, and swipe rows (edit/delete) when a delete is given.
     motion: HistoryMotion? = null,
     onDeleteTransaction: ((Transaction) -> Unit)? = null,
+    // Search: the query to mark in titles and descriptions.
+    highlight: String? = null,
 ) {
     upcomingSection(
         baseData = baseData,
@@ -89,6 +91,7 @@ fun LazyListScope.transactions(
         onPayOrGet = onPayOrGet,
         motion = motion,
         onDeleteTransaction = onDeleteTransaction,
+        highlight = highlight,
     )
 
     if (
@@ -261,6 +264,7 @@ private fun LazyListScope.historySection(
     onPayOrGet: (Transaction) -> Unit,
     motion: HistoryMotion?,
     onDeleteTransaction: ((Transaction) -> Unit)?,
+    highlight: String?,
 ) {
     if (history.isNotEmpty()) {
         itemsIndexed(
@@ -289,7 +293,8 @@ private fun LazyListScope.historySection(
 
                             transaction = it,
                             shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions,
-                            onPayOrGet = onPayOrGet
+                            onPayOrGet = onPayOrGet,
+                            highlight = highlight,
                         ) { trn ->
                             onTransactionClick(
                                 nav = nav,

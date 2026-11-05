@@ -17,6 +17,7 @@ class SharedPrefs @Inject constructor(
         // -------------------------------------- UX ------------------------------------------------
         const val LAST_SELECTED_ACCOUNT_ID = "last_selected_account_id"
         const val FAB_LABEL_SHOWN = "fab_label_shown"
+        const val SAVINGS_GOAL_CELEBRATED = "savings_goal_celebrated"
         // -------------------------------------- UX ------------------------------------------------
 
         // ----------------------------- App Settings -----------------------------------------------

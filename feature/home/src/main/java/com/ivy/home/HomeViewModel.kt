@@ -154,6 +154,7 @@ class HomeViewModel @Inject constructor(
     private var hideBalance by mutableStateOf(false)
     private var hideIncome by mutableStateOf(false)
     private var expanded by mutableStateOf(true)
+    private var celebrateSavingsGoal by mutableStateOf(false)
 
     @Composable
     override fun uiState(): HomeState {
@@ -176,7 +177,8 @@ class HomeViewModel @Inject constructor(
             hideBalance = getHideBalance(),
             expanded = getExpanded(),
             hideIncome = getHideIncome(),
-            shouldShowAccountSpecificColorInTransactions = getShouldShowAccountSpecificColorInTransactions()
+            shouldShowAccountSpecificColorInTransactions = getShouldShowAccountSpecificColorInTransactions(),
+            celebrateSavingsGoal = celebrateSavingsGoal,
         )
     }
 
@@ -277,6 +279,7 @@ class HomeViewModel @Inject constructor(
                 HomeEvent.Refresh -> start()
                 is HomeEvent.DeleteTransaction -> deleteTransaction(event.transaction)
                 HomeEvent.ToggleHideBalance -> toggleHideBalance()
+                HomeEvent.SavingsGoalCelebrated -> savingsGoalCelebrated()
             }
         }
     }
@@ -378,7 +381,17 @@ class HomeViewModel @Inject constructor(
             )
         )
 
+        val goal = settings.bufferAmount
+        celebrateSavingsGoal = goal > BigDecimal.ZERO && balance >= goal &&
+            ioThread { sharedPrefs.getString(SharedPrefs.SAVINGS_GOAL_CELEBRATED, null) } != goal.stripTrailingZeros().toPlainString()
+
         return settings.baseCurrency to timeRange
+    }
+
+    private suspend fun savingsGoalCelebrated() {
+        celebrateSavingsGoal = false
+        val goal = buffer.amount.stripTrailingZeros().toPlainString()
+        ioThread { sharedPrefs.putString(SharedPrefs.SAVINGS_GOAL_CELEBRATED, goal) }
     }
 
     private suspend fun loadTrnHistory(

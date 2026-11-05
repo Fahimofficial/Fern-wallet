@@ -30,6 +30,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -102,6 +105,7 @@ fun TransactionCard(
     onPayOrGet: (Transaction) -> Unit,
     modifier: Modifier = Modifier,
     onSkipTransaction: (Transaction) -> Unit = {},
+    highlight: String? = null,
     onClick: (Transaction) -> Unit,
 ) {
     // Looked up once per card and data change instead of on every recomposition.
@@ -144,6 +148,7 @@ fun TransactionCard(
         TransactionCardDateAndText(
             transaction = transaction,
             untitledText = untitledText(transaction, baseData.categories),
+            highlight = highlight,
         )
         Spacer(Modifier.height(12.dp))
 
@@ -229,7 +234,11 @@ private fun untitledText(transaction: Transaction, categories: List<Category>): 
 }
 
 @Composable
-private fun TransactionCardDateAndText(transaction: Transaction, untitledText: String?) {
+private fun TransactionCardDateAndText(transaction: Transaction, untitledText: String?, highlight: String?) {
+    val mark = SpanStyle(
+        background = FernTheme.palette[ColorToken.Accent].copy(alpha = HighlightAlpha),
+        fontWeight = FontWeight.Black,
+    )
     if (transaction.dueDate != null) {
         Spacer(Modifier.height(12.dp))
         val timeFormatter = LocalTimeFormatter.current
@@ -265,7 +274,7 @@ private fun TransactionCardDateAndText(transaction: Transaction, untitledText: S
         )
         Text(
             modifier = Modifier.padding(horizontal = 24.dp),
-            text = transaction.title!!,
+            text = highlightMatches(transaction.title!!, highlight, mark),
             style = UI.typo.b1.style(
                 fontWeight = FontWeight.ExtraBold,
                 color = UI.colors.pureInverse
@@ -289,7 +298,7 @@ private fun TransactionCardDateAndText(transaction: Transaction, untitledText: S
     if (!description.isNullOrBlank()) {
         Spacer(Modifier.height(if (transaction.title.isNotNullOrBlank()) 4.dp else 8.dp))
         Text(
-            text = description,
+            text = highlightMatches(description, highlight, mark),
             modifier = Modifier.padding(horizontal = 24.dp),
             style = UI.typo.nC.style(
                 color = UI.colors.gray,
@@ -298,6 +307,22 @@ private fun TransactionCardDateAndText(transaction: Transaction, untitledText: S
             maxLines = 3,
             overflow = TextOverflow.Ellipsis
         )
+    }
+}
+
+private const val HighlightAlpha = 0.3f
+
+/** [text] with every case-insensitive occurrence of [query] styled with [mark]. */
+fun highlightMatches(text: String, query: String?, mark: SpanStyle): AnnotatedString {
+    val needle = query?.trim().orEmpty()
+    if (needle.isEmpty()) return AnnotatedString(text)
+    return buildAnnotatedString {
+        append(text)
+        var from = text.indexOf(needle, ignoreCase = true)
+        while (from >= 0) {
+            addStyle(mark, from, from + needle.length)
+            from = text.indexOf(needle, startIndex = from + needle.length, ignoreCase = true)
+        }
     }
 }
 
