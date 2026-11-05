@@ -331,6 +331,7 @@ private fun onTransactionClick(
     nav: Navigation,
     transaction: Transaction
 ) {
+    ReturnPulse.opened(transaction.id)
     nav.navigateTo(
         EditTransactionScreen(
             initialTransactionId = transaction.id,

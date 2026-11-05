@@ -124,6 +124,7 @@ fun TransactionCard(
                 }
             }
             .background(UI.colors.medium, UI.shapes.r4)
+            .returnPulse(transaction.id)
             .testTag("transaction_card")
     ) {
         val transactionCurrency = account?.currency ?: baseData.baseCurrency
