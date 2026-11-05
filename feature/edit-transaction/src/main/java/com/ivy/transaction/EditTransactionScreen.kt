@@ -53,9 +53,9 @@ import com.ivy.legacy.utils.onScreenStart
 import com.ivy.navigation.EditPlannedScreen
 import com.ivy.navigation.EditTransactionScreen
 import com.ivy.navigation.IvyPreview
-import com.ivy.navigation.SharedKeys
 import com.ivy.navigation.navigation
 import com.ivy.navigation.sharedContainer
+import com.ivy.navigation.sharedKey
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.wallet.domain.data.CustomExchangeRateState
@@ -281,7 +281,7 @@ private fun BoxWithConstraintsScope.UI(
         modifier = Modifier
             .fillMaxSize()
             // The opened transaction card grows into this screen.
-            .sharedContainer(screen.initialTransactionId?.let(SharedKeys::transaction), UI.shapes.r4)
+            .sharedContainer(screen.sharedKey, UI.shapes.r4)
             // Opaque, so the screen covers what's behind while it grows out of the card.
             .background(UI.colors.pure)
             .statusBarsPadding()

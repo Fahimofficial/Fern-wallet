@@ -128,21 +128,7 @@ private fun AppearanceUi(
             .verticalScroll(rememberScrollState())
     ) {
         IvyToolbar(onBack = actions.onBack)
-        Text(
-            modifier = Modifier
-                .padding(horizontal = 32.dp)
-                .semantics { heading() },
-            text = stringResource(R.string.appearance),
-            style = UI.typo.h2.style(fontWeight = FontWeight.Black),
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            modifier = Modifier.padding(horizontal = 32.dp),
-            text = stringResource(R.string.appearance_intro),
-            style = UI.typo.b2.style(color = UI.colors.gray, fontWeight = FontWeight.Medium).copy(lineHeight = 22.sp),
-        )
-        Spacer(Modifier.height(20.dp))
-
+        AppearanceHeader()
         AppearancePreview(palette)
 
         SectionTitle(R.string.appearance_theme)
@@ -173,19 +159,7 @@ private fun AppearanceUi(
 
         AccountsAndCategoriesCard(actions.onOpenCategories)
 
-        Spacer(Modifier.height(24.dp))
-        TextButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            onClick = { confirmResetAll = true },
-        ) {
-            Text(
-                text = stringResource(R.string.appearance_reset_all),
-                style = UI.typo.b2.style(color = UI.colors.red, fontWeight = FontWeight.Bold),
-            )
-        }
-        Spacer(Modifier.height(48.dp))
+        ResetAllButton { confirmResetAll = true }
     }
 
     val editingToken = editing?.let { name -> ColorToken.entries.firstOrNull { it.name == name } }
@@ -202,22 +176,63 @@ private fun AppearanceUi(
         )
     }
     if (confirmResetAll) {
-        AlertDialog(
-            onDismissRequest = { confirmResetAll = false },
-            text = { Text(stringResource(R.string.appearance_reset_all_confirm)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    actions.onUpdate { AppearanceSettings.Default }
-                    confirmResetAll = false
-                }) { Text(stringResource(R.string.appearance_reset_group)) }
+        ResetAllDialog(
+            onConfirm = {
+                actions.onUpdate { AppearanceSettings.Default }
+                confirmResetAll = false
             },
-            dismissButton = {
-                TextButton(onClick = { confirmResetAll = false }) {
-                    Text(stringResource(R.string.appearance_cancel))
-                }
-            },
+            onDismiss = { confirmResetAll = false },
         )
     }
+}
+
+@Composable
+private fun AppearanceHeader() {
+    Column {
+        Text(
+            modifier = Modifier
+                .padding(horizontal = 32.dp)
+                .semantics { heading() },
+            text = stringResource(R.string.appearance),
+            style = UI.typo.h2.style(fontWeight = FontWeight.Black),
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            modifier = Modifier.padding(horizontal = 32.dp),
+            text = stringResource(R.string.appearance_intro),
+            style = UI.typo.b2.style(color = UI.colors.gray, fontWeight = FontWeight.Medium).copy(lineHeight = 22.sp),
+        )
+        Spacer(Modifier.height(20.dp))
+    }
+}
+
+@Composable
+private fun ResetAllButton(onClick: () -> Unit) {
+    TextButton(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 48.dp),
+        onClick = onClick,
+    ) {
+        Text(
+            text = stringResource(R.string.appearance_reset_all),
+            style = UI.typo.b2.style(color = UI.colors.red, fontWeight = FontWeight.Bold),
+        )
+    }
+}
+
+@Composable
+private fun ResetAllDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        text = { Text(stringResource(R.string.appearance_reset_all_confirm)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text(stringResource(R.string.appearance_reset_group)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.appearance_cancel)) }
+        },
+    )
 }
 
 @Composable
@@ -405,33 +420,9 @@ private fun GroupSection(
                 .padding(start = 20.dp, end = 8.dp, top = 14.dp, bottom = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Colour strip: what's in the group at a glance, without opening it.
-            Row(horizontalArrangement = Arrangement.spacedBy(-GroupDotOverlap)) {
-                tokens.take(MaxGroupDots).forEach {
-                    Box(
-                        Modifier
-                            .size(18.dp)
-                            .clip(CircleShape)
-                            .background(palette[it])
-                            .border(1.5.dp, UI.colors.medium, CircleShape)
-                    )
-                }
-            }
+            GroupColorDots(tokens.take(MaxGroupDots).map { palette[it] })
             Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text(text = stringResource(group.nameRes()), style = UI.typo.b2.style(fontWeight = FontWeight.Bold))
-                Text(
-                    text = if (customised > 0) {
-                        stringResource(R.string.appearance_customized_count, customised)
-                    } else {
-                        stringResource(group.descriptionRes())
-                    },
-                    style = UI.typo.c.style(
-                        color = if (customised > 0) palette[ColorToken.Accent] else UI.colors.gray,
-                        fontWeight = FontWeight.Medium
-                    ),
-                )
-            }
+            GroupTitle(group, customised, palette[ColorToken.Accent], Modifier.weight(1f))
             if (customised > 0) {
                 TextButton(onClick = onReset) {
                     Text(stringResource(R.string.appearance_reset_group))
@@ -455,6 +446,40 @@ private fun GroupSection(
                 }
             }
         }
+    }
+}
+
+// What's in the group at a glance, without opening it.
+@Composable
+private fun GroupColorDots(colors: List<Color>) {
+    Row(horizontalArrangement = Arrangement.spacedBy(-GroupDotOverlap)) {
+        colors.forEach { color ->
+            Box(
+                Modifier
+                    .size(18.dp)
+                    .clip(CircleShape)
+                    .background(color)
+                    .border(1.5.dp, UI.colors.medium, CircleShape)
+            )
+        }
+    }
+}
+
+@Composable
+private fun GroupTitle(group: ColorGroup, customised: Int, accent: Color, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        Text(text = stringResource(group.nameRes()), style = UI.typo.b2.style(fontWeight = FontWeight.Bold))
+        Text(
+            text = if (customised > 0) {
+                stringResource(R.string.appearance_customized_count, customised)
+            } else {
+                stringResource(group.descriptionRes())
+            },
+            style = UI.typo.c.style(
+                color = if (customised > 0) accent else UI.colors.gray,
+                fontWeight = FontWeight.Medium
+            ),
+        )
     }
 }
 

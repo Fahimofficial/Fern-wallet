@@ -19,10 +19,16 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
@@ -44,11 +50,12 @@ class AppearanceViewModelTest {
     private val settings = mockk<Settings>(relaxed = true)
     private val settingsAct = mockk<SettingsAct> { coEvery { getSettings() } returns settings }
     private val updateSettingsAct = mockk<UpdateSettingsAct>(relaxed = true)
+    private val mainDispatcher = UnconfinedTestDispatcher()
     private lateinit var viewModel: AppearanceViewModel
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
+        Dispatchers.setMain(mainDispatcher)
         viewModel = AppearanceViewModel(ivyContext, dataSource, settingsAct, updateSettingsAct)
     }
 
@@ -64,6 +71,32 @@ class AppearanceViewModelTest {
         ivyContext.appearance.preset shouldBe AppearancePreset.Ivy
         // What the next app start reads back (RootViewModel decodes the same value).
         decodeAppearance(stored) shouldBe ivyContext.appearance
+    }
+
+    @Test
+    fun `leaving the screen while a save is still writing doesn't lose it`() = runTest(mainDispatcher) {
+        val writeStarted = CompletableDeferred<Unit>()
+        val finishWrite = CompletableDeferred<Unit>()
+        coEvery { dataSource.set(any()) } coAnswers {
+            writeStarted.complete(Unit)
+            finishWrite.await()
+            stored = firstArg()
+        }
+        val store = ViewModelStore()
+        val screenViewModel = ViewModelProvider(
+            store,
+            viewModelFactory {
+                initializer { AppearanceViewModel(ivyContext, dataSource, settingsAct, updateSettingsAct) }
+            },
+        )[AppearanceViewModel::class.java]
+
+        screenViewModel.update { it.withPreset(AppearancePreset.Midnight) }
+        writeStarted.await()
+        store.clear() // the screen-scoped ViewModel is gone: its scope is cancelled
+        finishWrite.complete(Unit)
+        testScheduler.advanceUntilIdle()
+
+        decodeAppearance(stored).preset shouldBe AppearancePreset.Midnight
     }
 
     @Test

@@ -99,7 +99,7 @@ fun IvyTheme(
     }
 }
 
-/** The old colour slots, filled from the user's palette. The "1" variants are tints of their colour. */
+// The old colour slots, filled from the user's palette. The "1" variants are tints of their colour.
 private fun IvyColors.withPalette(palette: FernPalette): IvyColors {
     val base = this
     val background = palette[ColorToken.Background]

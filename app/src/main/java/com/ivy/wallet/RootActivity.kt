@@ -256,7 +256,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
         }
     }
 
-    /** The palette outside IvyUI (backdrop, pickers, undo bar), so it matches the screens. */
+    // The palette outside IvyUI (backdrop, pickers, undo bar), so it matches the screens.
     @Composable
     private fun rootPalette(systemDarkTheme: Boolean): FernPalette {
         val dark = isDarkThemeEnabled(appDesign(ivyContext), systemDarkTheme)

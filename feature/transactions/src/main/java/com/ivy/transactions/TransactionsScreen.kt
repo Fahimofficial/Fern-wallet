@@ -68,10 +68,10 @@ import com.ivy.navigation.CreditCardDetailsScreen
 import com.ivy.navigation.EditTransactionScreen
 import com.ivy.navigation.IvyPreview
 import com.ivy.navigation.PieChartStatisticScreen
-import com.ivy.navigation.SharedKeys
 import com.ivy.navigation.TransactionsScreen
 import com.ivy.navigation.navigation
 import com.ivy.navigation.sharedContainer
+import com.ivy.navigation.sharedKey
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.ui.rememberScrollPositionListState
@@ -638,7 +638,7 @@ private fun Header(
     Column(
         modifier = Modifier
             // The account card the user tapped grows into this header.
-            .sharedContainer(screen.accountId?.let(SharedKeys::account), UI.shapes.r4)
+            .sharedContainer(screen.sharedKey, UI.shapes.r4)
             .background(itemColor)
     ) {
         Spacer(Modifier.height(20.dp))

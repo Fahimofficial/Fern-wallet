@@ -80,14 +80,7 @@ internal fun AppearancePreview(palette: FernPalette, modifier: Modifier = Modifi
         Spacer(Modifier.height(10.dp))
         ProgressRow(card, c(ColorToken.BudgetProgress), c(ColorToken.Overdue), c(ColorToken.Transfer))
         Spacer(Modifier.height(12.dp))
-        NavBarRow(
-            bar = c(ColorToken.NavBar),
-            selected = c(ColorToken.NavSelected),
-            unselected = c(ColorToken.NavUnselected),
-            fab = c(ColorToken.Fab),
-            accent = c(ColorToken.Accent),
-            elevated = c(ColorToken.Elevated),
-        )
+        NavBarRow(NavTokens.associateWith { c(it) })
     }
 }
 
@@ -144,16 +137,21 @@ private fun ProgressRow(card: Color, budget: Color, overdue: Color, transfer: Co
 }
 
 @Composable
-private fun NavBarRow(bar: Color, selected: Color, unselected: Color, fab: Color, accent: Color, elevated: Color) {
+private fun NavBarRow(colors: Map<ColorToken, Color>) {
+    val fab = colors.getValue(ColorToken.Fab)
     Row(
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(bar)
+            .background(colors.getValue(ColorToken.NavBar))
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(painterResource(R.drawable.ic_home), contentDescription = null, tint = selected)
+        Icon(
+            painter = painterResource(R.drawable.ic_home),
+            contentDescription = null,
+            tint = colors.getValue(ColorToken.NavSelected),
+        )
         Spacer(Modifier.weight(1f))
         Box(
             Modifier.size(40.dp).clip(CircleShape).background(fab),
@@ -167,16 +165,25 @@ private fun NavBarRow(bar: Color, selected: Color, unselected: Color, fab: Color
             )
         }
         Spacer(Modifier.weight(1f))
-        Icon(painterResource(R.drawable.ic_accounts), contentDescription = null, tint = unselected)
+        Icon(
+            painter = painterResource(R.drawable.ic_accounts),
+            contentDescription = null,
+            tint = colors.getValue(ColorToken.NavUnselected),
+        )
         Spacer(Modifier.width(12.dp))
         // Accent button on a dialog surface.
         Box(
             Modifier
                 .clip(RoundedCornerShape(12.dp))
-                .background(elevated)
+                .background(colors.getValue(ColorToken.Elevated))
                 .padding(4.dp)
         ) {
-            Box(Modifier.size(width = 28.dp, height = 16.dp).clip(CircleShape).background(accent))
+            Box(
+                Modifier
+                    .size(width = 28.dp, height = 16.dp)
+                    .clip(CircleShape)
+                    .background(colors.getValue(ColorToken.Accent))
+            )
         }
     }
 }
@@ -196,6 +203,14 @@ private fun Badge(@DrawableRes icon: Int, color: Color) {
     }
 }
 
+private val NavTokens = listOf(
+    ColorToken.NavBar,
+    ColorToken.NavSelected,
+    ColorToken.NavUnselected,
+    ColorToken.Fab,
+    ColorToken.Accent,
+    ColorToken.Elevated,
+)
 private const val BudgetShare = 0.45f
 private const val TransferShare = 0.15f
 private const val OverShare = 0.1f

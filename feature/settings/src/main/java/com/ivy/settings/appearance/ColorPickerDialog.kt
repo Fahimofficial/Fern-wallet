@@ -99,44 +99,22 @@ internal fun ColorPickerDialog(
                 Spacer(Modifier.height(12.dp))
                 Swatches(selected = candidate, onPick = ::pick)
                 Spacer(Modifier.height(8.dp))
-                HsvSlider(R.string.appearance_hue, hsv.hue, 0f..MaxHue) {
-                    hsv = hsv.copy(hue = it)
-                    hexText = hsv.toColor().toHex()
+                HsvSliders(hsv) {
+                    hsv = it
+                    hexText = it.toColor().toHex()
                 }
-                HsvSlider(R.string.appearance_saturation, hsv.saturation, 0f..1f) {
-                    hsv = hsv.copy(saturation = it)
-                    hexText = hsv.toColor().toHex()
-                }
-                HsvSlider(R.string.appearance_brightness, hsv.value, 0f..1f) {
-                    hsv = hsv.copy(value = it)
-                    hexText = hsv.toColor().toHex()
-                }
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = hexText,
-                    onValueChange = { text ->
-                        // Typing must not fight the user: only sync sliders once the value is valid.
-                        hexText = text.filter { it.isLetterOrDigit() }.take(HexDigits).uppercase(Locale.ROOT)
-                        parseHexColor(hexText)?.let { hsv = it.toHsv() }
-                    },
-                    prefix = { Text("#") },
-                    label = { Text(stringResource(R.string.appearance_hex)) },
-                    singleLine = true,
-                    isError = candidate == null,
-                    supportingText = when {
-                        candidate == null -> {
-                            { Text(stringResource(R.string.appearance_hex_invalid)) }
-                        }
-                        !readable -> {
-                            { Text(stringResource(R.string.appearance_unreadable)) }
-                        }
+                HexField(
+                    text = hexText,
+                    error = when {
+                        candidate == null -> R.string.appearance_hex_invalid
+                        !readable -> R.string.appearance_unreadable
                         else -> null
                     },
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Characters,
-                        keyboardType = KeyboardType.Ascii,
-                    ),
-                )
+                ) { text ->
+                    hexText = sanitizeHexInput(text)
+                    // Typing must not fight the user: only sync sliders once the value is valid.
+                    parseHexColor(hexText)?.let { hsv = it.toHsv() }
+                }
             }
         },
         confirmButton = {
@@ -158,7 +136,38 @@ internal fun ColorPickerDialog(
     )
 }
 
-/** The colour itself, then a chip per neighbouring colour showing real text over it. */
+@Composable
+private fun HsvSliders(hsv: Hsv, onChange: (Hsv) -> Unit) {
+    Column {
+        HsvSlider(R.string.appearance_hue, hsv.hue, 0f..MaxHue) { onChange(hsv.copy(hue = it)) }
+        HsvSlider(R.string.appearance_saturation, hsv.saturation, 0f..1f) { onChange(hsv.copy(saturation = it)) }
+        HsvSlider(R.string.appearance_brightness, hsv.value, 0f..1f) { onChange(hsv.copy(value = it)) }
+    }
+}
+
+@Composable
+private fun HexField(text: String, error: Int?, onTextChange: (String) -> Unit) {
+    OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(),
+        value = text,
+        onValueChange = onTextChange,
+        prefix = { Text("#") },
+        label = { Text(stringResource(R.string.appearance_hex)) },
+        singleLine = true,
+        isError = error == R.string.appearance_hex_invalid,
+        supportingText = error?.let { res -> { Text(stringResource(res)) } },
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Characters,
+            keyboardType = KeyboardType.Ascii,
+        ),
+    )
+}
+
+/** What the HEX field keeps of what was typed or pasted: up to 6 hex digits, upper case. */
+internal fun sanitizeHexInput(text: String): String =
+    text.filter { it in HexInputChars }.take(HexDigits).uppercase(Locale.ROOT)
+
+// The colour itself, then a chip per neighbouring colour showing real text over it.
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ColorPreview(palette: FernPalette, color: Color, checks: List<ContrastCheck>) {
@@ -276,3 +285,4 @@ private const val HsvComponents = 3
 private val SwatchSize = 32.dp
 private const val MaxHue = 359.9f
 private const val HexDigits = 6
+private const val HexInputChars = "0123456789abcdefABCDEF"

@@ -26,6 +26,14 @@ object SharedKeys {
     fun account(id: UUID): Any = "account-$id"
 }
 
+/** The opened transaction's card grows into this screen; a new transaction has no card. */
+val EditTransactionScreen.sharedKey: Any?
+    get() = initialTransactionId?.let(SharedKeys::transaction)
+
+/** An account's card grows into its screen's header; category and filtered lists have no card. */
+val TransactionsScreen.sharedKey: Any?
+    get() = accountId?.let(SharedKeys::account)
+
 /**
  * Container transform between screens: if the screen being opened has an element with the same
  * [key], this element grows into it, and shrinks back when the user returns. Content of both ends

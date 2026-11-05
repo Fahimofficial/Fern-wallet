@@ -25,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -333,42 +334,50 @@ private fun SearchButton(
 private fun OpenSource() {
     val uriHandler = LocalUriHandler.current
     LinkCard(
-        icon = R.drawable.github_logo,
-        iconTint = UI.colors.pureInverse,
-        title = stringResource(R.string.ivy_wallet_open_source),
-        subtitle = Constants.URL_IVY_WALLET_REPO,
-        subtitleColor = Blue,
-        testTag = "home_open_source_card",
+        content = LinkCardContent(
+            icon = R.drawable.github_logo,
+            iconTint = UI.colors.pureInverse,
+            title = stringResource(R.string.ivy_wallet_open_source),
+            subtitle = Constants.URL_IVY_WALLET_REPO,
+            subtitleColor = Blue,
+        ),
+        modifier = Modifier.testTag("home_open_source_card"),
     ) {
         openUrl(uriHandler = uriHandler, url = Constants.URL_IVY_WALLET_REPO)
     }
 }
 
-/** Opens the in-app Support screen, which holds the verified Ko-fi and UPI destinations. */
+// Opens the in-app Support screen, which holds the verified Ko-fi and UPI destinations.
 @Composable
 private fun SupportMyWork() {
     val nav = navigation()
     LinkCard(
-        icon = R.drawable.ic_vue_support_heart,
-        iconTint = SupportHeart,
-        title = stringResource(R.string.support_my_work),
-        subtitle = stringResource(R.string.support_my_work_home_description),
-        subtitleColor = UI.colors.gray,
-        testTag = "home_support_card",
+        content = LinkCardContent(
+            icon = R.drawable.ic_vue_support_heart,
+            iconTint = SupportHeart,
+            title = stringResource(R.string.support_my_work),
+            subtitle = stringResource(R.string.support_my_work_home_description),
+            subtitleColor = UI.colors.gray,
+        ),
+        modifier = Modifier.testTag(SupportCardTag),
     ) {
         nav.navigateTo(SupportScreen)
     }
 }
 
-/** A tappable row card of the more menu; the open-source and support cards share it. */
+// A tappable row card of the more menu; the open-source and support cards share it.
+@Immutable
+private class LinkCardContent(
+    @DrawableRes val icon: Int,
+    val iconTint: Color,
+    val title: String,
+    val subtitle: String,
+    val subtitleColor: Color,
+)
+
 @Composable
 private fun LinkCard(
-    @DrawableRes icon: Int,
-    iconTint: Color,
-    title: String,
-    subtitle: String,
-    subtitleColor: Color,
-    testTag: String,
+    content: LinkCardContent,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
@@ -381,13 +390,12 @@ private fun LinkCard(
             .clip(UI.shapes.r4)
             .background(UI.colors.pure)
             .clickable(interactionSource = interactionSource, indication = LocalIndication.current, onClick = onClick)
-            .padding(vertical = 12.dp)
-            .testTag(testTag),
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Spacer(Modifier.width(16.dp))
 
-        IvyIcon(icon = icon, tint = iconTint)
+        IvyIcon(icon = content.icon, tint = content.iconTint)
 
         Column(
             modifier = Modifier
@@ -395,7 +403,7 @@ private fun LinkCard(
                 .padding(start = 16.dp, end = 24.dp)
         ) {
             Text(
-                text = title,
+                text = content.title,
                 style = UI.typo.b2.style(
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -404,17 +412,20 @@ private fun LinkCard(
             Spacer(Modifier.height(4.dp))
 
             Text(
-                text = subtitle,
+                text = content.subtitle,
                 style = UI.typo.c.style(
                     fontWeight = FontWeight.ExtraBold,
-                    color = subtitleColor
+                    color = content.subtitleColor
                 )
             )
         }
     }
 }
 
-/** Same heart colour as the Ko-fi button on the Support screen. */
+/** Test tag of the Home menu's "Support my work" card. */
+const val SupportCardTag = "home_support_card"
+
+// Same heart colour as the Ko-fi button on the Support screen.
 private val SupportHeart = Color(0xFFFF5E5B)
 
 @Composable
