@@ -334,7 +334,7 @@ private fun SearchButton(
 private fun OpenSource() {
     val uriHandler = LocalUriHandler.current
     LinkCard(
-        content = LinkCardContent(
+        content = LinkCardData(
             icon = R.drawable.github_logo,
             iconTint = UI.colors.pureInverse,
             title = stringResource(R.string.ivy_wallet_open_source),
@@ -352,7 +352,7 @@ private fun OpenSource() {
 private fun SupportMyWork() {
     val nav = navigation()
     LinkCard(
-        content = LinkCardContent(
+        content = LinkCardData(
             icon = R.drawable.ic_vue_support_heart,
             iconTint = SupportHeart,
             title = stringResource(R.string.support_my_work),
@@ -367,7 +367,7 @@ private fun SupportMyWork() {
 
 // A tappable row card of the more menu; the open-source and support cards share it.
 @Immutable
-private class LinkCardContent(
+private data class LinkCardData(
     @DrawableRes val icon: Int,
     val iconTint: Color,
     val title: String,
@@ -377,7 +377,7 @@ private class LinkCardContent(
 
 @Composable
 private fun LinkCard(
-    content: LinkCardContent,
+    content: LinkCardData,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {

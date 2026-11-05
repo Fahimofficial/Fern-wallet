@@ -2,6 +2,10 @@ package com.ivy.settings.appearance
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.ivy.base.legacy.Theme
 import com.ivy.base.legacy.appContext
 import com.ivy.data.datasource.AppearanceDataSource
@@ -19,13 +23,12 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -51,16 +54,19 @@ class AppearanceViewModelTest {
     private val settingsAct = mockk<SettingsAct> { coEvery { getSettings() } returns settings }
     private val updateSettingsAct = mockk<UpdateSettingsAct>(relaxed = true)
     private val mainDispatcher = UnconfinedTestDispatcher()
+    private lateinit var applicationScope: CoroutineScope
     private lateinit var viewModel: AppearanceViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(mainDispatcher)
-        viewModel = AppearanceViewModel(ivyContext, dataSource, settingsAct, updateSettingsAct)
+        applicationScope = CoroutineScope(mainDispatcher + SupervisorJob())
+        viewModel = AppearanceViewModel(ivyContext, dataSource, settingsAct, updateSettingsAct, applicationScope)
     }
 
     @After
     fun tearDown() {
+        applicationScope.cancel()
         Dispatchers.resetMain()
     }
 
@@ -74,26 +80,23 @@ class AppearanceViewModelTest {
     }
 
     @Test
-    fun `leaving the screen while a save is still writing doesn't lose it`() = runTest(mainDispatcher) {
-        val writeStarted = CompletableDeferred<Unit>()
-        val finishWrite = CompletableDeferred<Unit>()
-        coEvery { dataSource.set(any()) } coAnswers {
-            writeStarted.complete(Unit)
-            finishWrite.await()
-            stored = firstArg()
-        }
+    fun `leaving the screen before a save starts doesn't lose the queued change`() = runTest(mainDispatcher) {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        applicationScope.cancel()
+        applicationScope = CoroutineScope(dispatcher + SupervisorJob())
         val store = ViewModelStore()
         val screenViewModel = ViewModelProvider(
             store,
             viewModelFactory {
-                initializer { AppearanceViewModel(ivyContext, dataSource, settingsAct, updateSettingsAct) }
+                initializer {
+                    AppearanceViewModel(ivyContext, dataSource, settingsAct, updateSettingsAct, applicationScope)
+                }
             },
         )[AppearanceViewModel::class.java]
 
         screenViewModel.update { it.withPreset(AppearancePreset.Midnight) }
-        writeStarted.await()
         store.clear() // the screen-scoped ViewModel is gone: its scope is cancelled
-        finishWrite.complete(Unit)
         testScheduler.advanceUntilIdle()
 
         decodeAppearance(stored).preset shouldBe AppearancePreset.Midnight

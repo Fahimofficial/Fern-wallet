@@ -83,4 +83,13 @@ class AppearanceTest {
         light[ColorToken.Background] shouldBe Color(0xFFFAFAFA)
         light[ColorToken.Card] shouldBe Color(0xFFEFEEF0)
     }
+
+    @Test
+    fun `every named preset palette maps every color token in both themes`() {
+        AppearancePreset.entries.forEach { preset ->
+            listOf(false, true).forEach { dark ->
+                preset.colors(dark).keys shouldBe ColorToken.entries.toSet()
+            }
+        }
+    }
 }

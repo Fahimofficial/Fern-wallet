@@ -28,88 +28,228 @@ fun AppearancePreset.colors(dark: Boolean): Map<ColorToken, Color> = when (this)
     AppearancePreset.Ember -> if (dark) EmberDark else EmberLight
 }
 
-private fun palette(
-    surfaces: List<Long>, // background, card, elevated
-    text: List<Long>, // primary, secondary, outline
-    accents: List<Long>, // accent, secondary accent
-    nav: List<Long>, // bar, selected, unselected, fab
-    money: List<Long>, // income, expense, transfer, upcoming, overdue, budget progress, savings progress
-): Map<ColorToken, Color> {
-    val tokens = listOf(
-        Background, Card, Elevated,
-        TextPrimary, TextSecondary, Outline,
-        Accent, AccentSecondary,
-        NavBar, NavSelected, NavUnselected, Fab,
-        Income, Expense, Transfer, Upcoming, Overdue,
-        BudgetProgress, SavingsProgress,
+private data class PaletteColors(
+    val background: Long,
+    val card: Long,
+    val elevated: Long,
+    val textPrimary: Long,
+    val textSecondary: Long,
+    val outline: Long,
+    val accent: Long,
+    val accentSecondary: Long,
+    val navBar: Long,
+    val navSelected: Long,
+    val navUnselected: Long,
+    val fab: Long,
+    val income: Long,
+    val expense: Long,
+    val transfer: Long,
+    val upcoming: Long,
+    val overdue: Long,
+    val budgetProgress: Long,
+    val savingsProgress: Long,
+) {
+    fun toColorMap(): Map<ColorToken, Color> = mapOf(
+        Background to Color(background),
+        Card to Color(card),
+        Elevated to Color(elevated),
+        TextPrimary to Color(textPrimary),
+        TextSecondary to Color(textSecondary),
+        Outline to Color(outline),
+        Accent to Color(accent),
+        AccentSecondary to Color(accentSecondary),
+        NavBar to Color(navBar),
+        NavSelected to Color(navSelected),
+        NavUnselected to Color(navUnselected),
+        Fab to Color(fab),
+        Income to Color(income),
+        Expense to Color(expense),
+        Transfer to Color(transfer),
+        Upcoming to Color(upcoming),
+        Overdue to Color(overdue),
+        BudgetProgress to Color(budgetProgress),
+        SavingsProgress to Color(savingsProgress),
     )
-    val values = surfaces + text + accents + nav + money
-    check(tokens.size == ColorToken.entries.size && values.size == tokens.size)
-    return tokens.zip(values) { token, argb -> token to Color(argb) }.toMap()
 }
 
 // Fern: the colours the app shipped with before Appearance existed. The one change: dialogs and
 // sheets (Elevated) sit one step above the background instead of matching it.
 // Expenses use the text colour on purpose: calm ink instead of an alarming red.
-private val FernDark = palette(
-    surfaces = listOf(0xFF111114, 0xFF2B2C2D, 0xFF1C1C1F),
-    text = listOf(0xFFFAFAFA, 0xFF939199, 0xFF74747A),
-    accents = listOf(0xFF13876A, 0xFF12B880),
-    nav = listOf(0xFF111114, 0xFF13876A, 0xFFFAFAFA, 0xFF13876A),
-    money = listOf(0xFF14CC9E, 0xFFFAFAFA, 0xFF3D6FE0, 0xFFF29F30, 0xFFFF4060, 0xFF14CC9E, 0xFF14CC9E),
-)
-private val FernLight = palette(
-    surfaces = listOf(0xFFFAFAFA, 0xFFEFEEF0, 0xFFFFFFFF),
-    text = listOf(0xFF111114, 0xFF939199, 0xFF74747A),
-    accents = listOf(0xFF13876A, 0xFF12B880),
-    nav = listOf(0xFFFAFAFA, 0xFF13876A, 0xFF111114, 0xFF13876A),
-    money = listOf(0xFF14CC9E, 0xFF111114, 0xFF3D6FE0, 0xFFF29F30, 0xFFFF4060, 0xFF14CC9E, 0xFF14CC9E),
-)
+private val FernDark = PaletteColors(
+    background = 0xFF111114,
+    card = 0xFF2B2C2D,
+    elevated = 0xFF1C1C1F,
+    textPrimary = 0xFFFAFAFA,
+    textSecondary = 0xFF939199,
+    outline = 0xFF74747A,
+    accent = 0xFF13876A,
+    accentSecondary = 0xFF12B880,
+    navBar = 0xFF111114,
+    navSelected = 0xFF13876A,
+    navUnselected = 0xFFFAFAFA,
+    fab = 0xFF13876A,
+    income = 0xFF14CC9E,
+    expense = 0xFFFAFAFA,
+    transfer = 0xFF3D6FE0,
+    upcoming = 0xFFF29F30,
+    overdue = 0xFFFF4060,
+    budgetProgress = 0xFF14CC9E,
+    savingsProgress = 0xFF14CC9E,
+).toColorMap()
+
+private val FernLight = PaletteColors(
+    background = 0xFFFAFAFA,
+    card = 0xFFEFEEF0,
+    elevated = 0xFFFFFFFF,
+    textPrimary = 0xFF111114,
+    textSecondary = 0xFF939199,
+    outline = 0xFF74747A,
+    accent = 0xFF13876A,
+    accentSecondary = 0xFF12B880,
+    navBar = 0xFFFAFAFA,
+    navSelected = 0xFF13876A,
+    navUnselected = 0xFF111114,
+    fab = 0xFF13876A,
+    income = 0xFF14CC9E,
+    expense = 0xFF111114,
+    transfer = 0xFF3D6FE0,
+    upcoming = 0xFFF29F30,
+    overdue = 0xFFFF4060,
+    budgetProgress = 0xFF14CC9E,
+    savingsProgress = 0xFF14CC9E,
+).toColorMap()
 
 // Ivy: the original Ivy Wallet look, violet accents with emerald income.
-private val IvyDark = palette(
-    surfaces = listOf(0xFF111114, 0xFF2B2C2D, 0xFF1C1C1F),
-    text = listOf(0xFFFAFAFA, 0xFF939199, 0xFF74747A),
-    accents = listOf(0xFF5C3DF5, 0xFFC34CFF),
-    nav = listOf(0xFF111114, 0xFF7B62F5, 0xFFFAFAFA, 0xFF5C3DF5),
-    money = listOf(0xFF14CC9E, 0xFFFAFAFA, 0xFF4CC3FF, 0xFFF29F30, 0xFFFF4060, 0xFF5C3DF5, 0xFF14CC9E),
-)
-private val IvyLight = palette(
-    surfaces = listOf(0xFFFAFAFA, 0xFFEFEEF0, 0xFFFFFFFF),
-    text = listOf(0xFF111114, 0xFF939199, 0xFF74747A),
-    accents = listOf(0xFF5C3DF5, 0xFFC34CFF),
-    nav = listOf(0xFFFAFAFA, 0xFF5C3DF5, 0xFF111114, 0xFF5C3DF5),
-    money = listOf(0xFF14CC9E, 0xFF111114, 0xFF457BE6, 0xFFF29F30, 0xFFFF4060, 0xFF5C3DF5, 0xFF14CC9E),
-)
+private val IvyDark = PaletteColors(
+    background = 0xFF111114,
+    card = 0xFF2B2C2D,
+    elevated = 0xFF1C1C1F,
+    textPrimary = 0xFFFAFAFA,
+    textSecondary = 0xFF939199,
+    outline = 0xFF74747A,
+    accent = 0xFF5C3DF5,
+    accentSecondary = 0xFFC34CFF,
+    navBar = 0xFF111114,
+    navSelected = 0xFF7B62F5,
+    navUnselected = 0xFFFAFAFA,
+    fab = 0xFF5C3DF5,
+    income = 0xFF14CC9E,
+    expense = 0xFFFAFAFA,
+    transfer = 0xFF4CC3FF,
+    upcoming = 0xFFF29F30,
+    overdue = 0xFFFF4060,
+    budgetProgress = 0xFF5C3DF5,
+    savingsProgress = 0xFF14CC9E,
+).toColorMap()
+
+private val IvyLight = PaletteColors(
+    background = 0xFFFAFAFA,
+    card = 0xFFEFEEF0,
+    elevated = 0xFFFFFFFF,
+    textPrimary = 0xFF111114,
+    textSecondary = 0xFF939199,
+    outline = 0xFF74747A,
+    accent = 0xFF5C3DF5,
+    accentSecondary = 0xFFC34CFF,
+    navBar = 0xFFFAFAFA,
+    navSelected = 0xFF5C3DF5,
+    navUnselected = 0xFF111114,
+    fab = 0xFF5C3DF5,
+    income = 0xFF14CC9E,
+    expense = 0xFF111114,
+    transfer = 0xFF457BE6,
+    upcoming = 0xFFF29F30,
+    overdue = 0xFFFF4060,
+    budgetProgress = 0xFF5C3DF5,
+    savingsProgress = 0xFF14CC9E,
+).toColorMap()
 
 // Midnight: blue-tinted surfaces with a clear step between background, cards and sheets.
-private val MidnightDark = palette(
-    surfaces = listOf(0xFF0D1321, 0xFF1B2436, 0xFF151C2B),
-    text = listOf(0xFFF2F5FA, 0xFF8E99AE, 0xFF3A4660),
-    accents = listOf(0xFF4C8DFF, 0xFF7BC4FF),
-    nav = listOf(0xFF0D1321, 0xFF4C8DFF, 0xFFF2F5FA, 0xFF4C8DFF),
-    money = listOf(0xFF2ED6A0, 0xFFF2F5FA, 0xFF9B8CFF, 0xFFFFB547, 0xFFFF5C7A, 0xFF4C8DFF, 0xFF2ED6A0),
-)
-private val MidnightLight = palette(
-    surfaces = listOf(0xFFF4F7FC, 0xFFE6ECF5, 0xFFFFFFFF),
-    text = listOf(0xFF0D1321, 0xFF5B6578, 0xFF9AA6BA),
-    accents = listOf(0xFF2D6FE0, 0xFF5A9BEA),
-    nav = listOf(0xFFF4F7FC, 0xFF2D6FE0, 0xFF0D1321, 0xFF2D6FE0),
-    money = listOf(0xFF16A37A, 0xFF0D1321, 0xFF6C5CE0, 0xFFD98A1F, 0xFFD93A55, 0xFF2D6FE0, 0xFF16A37A),
-)
+private val MidnightDark = PaletteColors(
+    background = 0xFF0D1321,
+    card = 0xFF1B2436,
+    elevated = 0xFF151C2B,
+    textPrimary = 0xFFF2F5FA,
+    textSecondary = 0xFF8E99AE,
+    outline = 0xFF3A4660,
+    accent = 0xFF4C8DFF,
+    accentSecondary = 0xFF7BC4FF,
+    navBar = 0xFF0D1321,
+    navSelected = 0xFF4C8DFF,
+    navUnselected = 0xFFF2F5FA,
+    fab = 0xFF4C8DFF,
+    income = 0xFF2ED6A0,
+    expense = 0xFFF2F5FA,
+    transfer = 0xFF9B8CFF,
+    upcoming = 0xFFFFB547,
+    overdue = 0xFFFF5C7A,
+    budgetProgress = 0xFF4C8DFF,
+    savingsProgress = 0xFF2ED6A0,
+).toColorMap()
+
+private val MidnightLight = PaletteColors(
+    background = 0xFFF4F7FC,
+    card = 0xFFE6ECF5,
+    elevated = 0xFFFFFFFF,
+    textPrimary = 0xFF0D1321,
+    textSecondary = 0xFF5B6578,
+    outline = 0xFF9AA6BA,
+    accent = 0xFF2D6FE0,
+    accentSecondary = 0xFF5A9BEA,
+    navBar = 0xFFF4F7FC,
+    navSelected = 0xFF2D6FE0,
+    navUnselected = 0xFF0D1321,
+    fab = 0xFF2D6FE0,
+    income = 0xFF16A37A,
+    expense = 0xFF0D1321,
+    transfer = 0xFF6C5CE0,
+    upcoming = 0xFFD98A1F,
+    overdue = 0xFFD93A55,
+    budgetProgress = 0xFF2D6FE0,
+    savingsProgress = 0xFF16A37A,
+).toColorMap()
 
 // Ember: warm neutrals with a coral accent.
-private val EmberDark = palette(
-    surfaces = listOf(0xFF15110F, 0xFF2A2320, 0xFF1F1916),
-    text = listOf(0xFFFAF4EF, 0xFFA3968D, 0xFF4A3F39),
-    accents = listOf(0xFFF2673A, 0xFFFFB070),
-    nav = listOf(0xFF15110F, 0xFFF2673A, 0xFFFAF4EF, 0xFFF2673A),
-    money = listOf(0xFF3CCB8B, 0xFFFAF4EF, 0xFF6EA8FF, 0xFFFFB347, 0xFFFF4F5E, 0xFFF2673A, 0xFF3CCB8B),
-)
-private val EmberLight = palette(
-    surfaces = listOf(0xFFFBF7F4, 0xFFF1E9E3, 0xFFFFFFFF),
-    text = listOf(0xFF1E1814, 0xFF7D7068, 0xFFB8AAA0),
-    accents = listOf(0xFFD9541F, 0xFFE8893F),
-    nav = listOf(0xFFFBF7F4, 0xFFD9541F, 0xFF1E1814, 0xFFD9541F),
-    money = listOf(0xFF1E9E66, 0xFF1E1814, 0xFF3A73D9, 0xFFD98A1F, 0xFFD93A48, 0xFFD9541F, 0xFF1E9E66),
-)
+private val EmberDark = PaletteColors(
+    background = 0xFF15110F,
+    card = 0xFF2A2320,
+    elevated = 0xFF1F1916,
+    textPrimary = 0xFFFAF4EF,
+    textSecondary = 0xFFA3968D,
+    outline = 0xFF4A3F39,
+    accent = 0xFFF2673A,
+    accentSecondary = 0xFFFFB070,
+    navBar = 0xFF15110F,
+    navSelected = 0xFFF2673A,
+    navUnselected = 0xFFFAF4EF,
+    fab = 0xFFF2673A,
+    income = 0xFF3CCB8B,
+    expense = 0xFFFAF4EF,
+    transfer = 0xFF6EA8FF,
+    upcoming = 0xFFFFB347,
+    overdue = 0xFFFF4F5E,
+    budgetProgress = 0xFFF2673A,
+    savingsProgress = 0xFF3CCB8B,
+).toColorMap()
+
+private val EmberLight = PaletteColors(
+    background = 0xFFFBF7F4,
+    card = 0xFFF1E9E3,
+    elevated = 0xFFFFFFFF,
+    textPrimary = 0xFF1E1814,
+    textSecondary = 0xFF7D7068,
+    outline = 0xFFB8AAA0,
+    accent = 0xFFD9541F,
+    accentSecondary = 0xFFE8893F,
+    navBar = 0xFFFBF7F4,
+    navSelected = 0xFFD9541F,
+    navUnselected = 0xFF1E1814,
+    fab = 0xFFD9541F,
+    income = 0xFF1E9E66,
+    expense = 0xFF1E1814,
+    transfer = 0xFF3A73D9,
+    upcoming = 0xFFD98A1F,
+    overdue = 0xFFD93A48,
+    budgetProgress = 0xFFD9541F,
+    savingsProgress = 0xFF1E9E66,
+).toColorMap()

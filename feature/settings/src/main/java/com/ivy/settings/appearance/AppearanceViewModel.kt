@@ -1,20 +1,19 @@
 package com.ivy.settings.appearance
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.ivy.base.di.AppCoroutineScope
 import com.ivy.base.legacy.Theme
 import com.ivy.data.datasource.AppearanceDataSource
 import com.ivy.design.system.appearance.AppearanceSettings
 import com.ivy.design.system.appearance.encode
 import com.ivy.legacy.IvyWalletCtx
-import com.ivy.wallet.domain.action.settings.SettingsAct
 import com.ivy.legacy.domain.action.settings.UpdateSettingsAct
+import com.ivy.wallet.domain.action.settings.SettingsAct
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /**
@@ -27,6 +26,7 @@ class AppearanceViewModel @Inject constructor(
     private val appearanceDataSource: AppearanceDataSource,
     private val settingsAct: SettingsAct,
     private val updateSettingsAct: UpdateSettingsAct,
+    @AppCoroutineScope private val applicationScope: CoroutineScope,
 ) : ViewModel() {
     private val saveLock = Mutex()
 
@@ -36,22 +36,17 @@ class AppearanceViewModel @Inject constructor(
 
     fun update(transform: (AppearanceSettings) -> AppearanceSettings) {
         ivyContext.appearance = transform(ivyContext.appearance)
-        viewModelScope.launch {
-            // Leaving the screen right after a tap must not lose the change.
-            withContext(NonCancellable) {
-                // Encodes inside the lock, so the last write always holds the latest choice.
-                saveLock.withLock { appearanceDataSource.set(ivyContext.appearance.encode()) }
-            }
+        applicationScope.launch {
+            // Encodes inside the lock, so the last write always holds the latest choice.
+            saveLock.withLock { appearanceDataSource.set(ivyContext.appearance.encode()) }
         }
     }
 
     fun setTheme(theme: Theme) {
         if (theme == ivyContext.theme) return
         ivyContext.switchTheme(theme)
-        viewModelScope.launch {
-            withContext(NonCancellable) {
-                updateSettingsAct(settingsAct.getSettings().copy(theme = theme))
-            }
+        applicationScope.launch {
+            updateSettingsAct(settingsAct.getSettings().copy(theme = theme))
         }
     }
 }
