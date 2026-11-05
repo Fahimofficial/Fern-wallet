@@ -58,32 +58,32 @@ import com.ivy.legacy.utils.dateNowUTC
 import com.ivy.legacy.utils.format
 import com.ivy.legacy.utils.isNotNullOrBlank
 import com.ivy.legacy.utils.timeNowUTC
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.contentColor
+import com.ivy.design.system.appearance.get
+import com.ivy.design.system.appearance.readableOn
 import com.ivy.navigation.Navigation
+import com.ivy.navigation.SharedKeys
 import com.ivy.navigation.TransactionsScreen
+import com.ivy.navigation.sharedContainer
 import com.ivy.navigation.navigation
 import com.ivy.ui.R
 import com.ivy.ui.time.TimeFormatter
 import com.ivy.wallet.domain.data.IvyCurrency
 import com.ivy.wallet.ui.theme.Blue
 import com.ivy.wallet.ui.theme.Gradient
-import com.ivy.wallet.ui.theme.GradientGreen
-import com.ivy.wallet.ui.theme.GradientTransfer
-import com.ivy.wallet.ui.theme.GradientOrangeRevert
-import com.ivy.wallet.ui.theme.GradientRed
 import com.ivy.wallet.ui.theme.Gray
 import com.ivy.wallet.ui.theme.Green
 import com.ivy.wallet.ui.theme.GreenDark
 import com.ivy.wallet.ui.theme.IvyDark
 import com.ivy.wallet.ui.theme.Orange
-import com.ivy.wallet.ui.theme.Red
-import com.ivy.wallet.ui.theme.TransferBlue
-import com.ivy.wallet.ui.theme.White
 import com.ivy.wallet.ui.theme.components.ItemIconSDefaultIcon
 import com.ivy.wallet.ui.theme.components.IvyButton
 import com.ivy.wallet.ui.theme.components.IvyIcon
 import com.ivy.wallet.ui.theme.findContrastTextColor
 import com.ivy.wallet.ui.theme.gradientExpenses
-import com.ivy.wallet.ui.theme.incomeTextColor
+import com.ivy.wallet.ui.theme.gradientIncome
 import com.ivy.wallet.ui.theme.toComposeColor
 import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
 import kotlinx.collections.immutable.ImmutableList
@@ -92,7 +92,7 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
-@Suppress("CyclomaticComplexMethod", "LongMethod")
+@Suppress("LongMethod")
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
 fun TransactionCard(
@@ -116,6 +116,7 @@ fun TransactionCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .padding(top = 10.dp)
+            .sharedContainer(SharedKeys.transaction(transaction.id), UI.shapes.r4)
             .clip(UI.shapes.r4)
             .clickable {
                 if (account != null) {
@@ -139,64 +140,7 @@ fun TransactionCard(
             shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions
         )
 
-        if (transaction.dueDate != null) {
-            Spacer(Modifier.height(12.dp))
-            val timeFormatter = LocalTimeFormatter.current
-            val timeProvider = LocalTimeProvider.current
-            Text(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                text = stringResource(
-                    R.string.due_on,
-                    with(timeFormatter) {
-                        transaction.dueDate!!.formatLocal(
-                            TimeFormatter.Style.DateOnly(
-                                includeWeekDay = true
-                            )
-                        )
-                    }
-                ).uppercase(),
-                style = UI.typo.nC.style(
-                    color = if (transaction.dueDate!!.isAfter(timeProvider.utcNow())) {
-                        Orange
-                    } else {
-                        UI.colors.gray
-                    },
-                    fontWeight = FontWeight.Bold
-                )
-            )
-        }
-
-        if (transaction.title.isNotNullOrBlank()) {
-            Spacer(
-                Modifier.height(
-                    if (transaction.dueDate != null) 8.dp else 12.dp
-                )
-            )
-            Text(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                text = transaction.title!!,
-                style = UI.typo.b1.style(
-                    fontWeight = FontWeight.ExtraBold,
-                    color = UI.colors.pureInverse
-                )
-            )
-        }
-
-        val description = getTransactionDescription(transaction)
-        if (!description.isNullOrBlank()) {
-            Spacer(Modifier.height(if (transaction.title.isNotNullOrBlank()) 4.dp else 8.dp))
-            Text(
-                text = description,
-                modifier = Modifier.padding(horizontal = 24.dp),
-                style = UI.typo.nC.style(
-                    color = UI.colors.gray,
-                    fontWeight = FontWeight.Bold
-                ),
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
+        TransactionCardDateAndText(transaction)
         Spacer(Modifier.height(12.dp))
 
         TypeAmountCurrency(
@@ -226,6 +170,7 @@ fun TransactionCard(
             // Pay/Get button
             Spacer(Modifier.height(16.dp))
             val isExpense = transaction.type == TransactionType.EXPENSE
+            val payGetButtonColor = FernTheme.palette[if (isExpense) ColorToken.Expense else ColorToken.Income]
             Row {
                 IvyButton(
                     modifier = Modifier
@@ -250,9 +195,9 @@ fun TransactionCard(
                         .padding(end = 24.dp),
                     text = if (isExpense) stringResource(R.string.pay) else stringResource(R.string.get),
                     wrapContentMode = false,
-                    backgroundGradient = if (isExpense) gradientExpenses() else GradientGreen,
+                    backgroundGradient = if (isExpense) gradientExpenses() else gradientIncome(),
                     textStyle = UI.typo.b2.style(
-                        color = if (isExpense) UI.colors.pure else White,
+                        color = payGetButtonColor.contentColor(),
                         fontWeight = FontWeight.Bold
                     )
                 ) {
@@ -266,6 +211,67 @@ fun TransactionCard(
         }
 
         Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun TransactionCardDateAndText(transaction: Transaction) {
+    if (transaction.dueDate != null) {
+        Spacer(Modifier.height(12.dp))
+        val timeFormatter = LocalTimeFormatter.current
+        val timeProvider = LocalTimeProvider.current
+        Text(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            text = stringResource(
+                R.string.due_on,
+                with(timeFormatter) {
+                    transaction.dueDate!!.formatLocal(
+                        TimeFormatter.Style.DateOnly(
+                            includeWeekDay = true
+                        )
+                    )
+                }
+            ).uppercase(),
+            style = UI.typo.nC.style(
+                color = if (transaction.dueDate!!.isAfter(timeProvider.utcNow())) {
+                    UI.colors.orange
+                } else {
+                    UI.colors.gray
+                },
+                fontWeight = FontWeight.Bold
+            )
+        )
+    }
+
+    if (transaction.title.isNotNullOrBlank()) {
+        Spacer(
+            Modifier.height(
+                if (transaction.dueDate != null) 8.dp else 12.dp
+            )
+        )
+        Text(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            text = transaction.title!!,
+            style = UI.typo.b1.style(
+                fontWeight = FontWeight.ExtraBold,
+                color = UI.colors.pureInverse
+            )
+        )
+    }
+
+    val description = getTransactionDescription(transaction)
+    if (!description.isNullOrBlank()) {
+        Spacer(Modifier.height(if (transaction.title.isNotNullOrBlank()) 4.dp else 8.dp))
+        Text(
+            text = description,
+            modifier = Modifier.padding(horizontal = 24.dp),
+            style = UI.typo.nC.style(
+                color = UI.colors.gray,
+                fontWeight = FontWeight.Bold
+            ),
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -571,60 +577,31 @@ fun TypeAmountCurrency(
     ) {
         Spacer(Modifier.width(24.dp))
 
+        val palette = FernTheme.palette
+        val background = UI.colors.medium
+
+        // Colours come from Settings > Appearance; text is nudged until it reads on the card.
+        fun styleOf(@DrawableRes icon: Int, token: ColorToken) = palette[token].let { color ->
+            AmountTypeStyle(
+                icon = icon,
+                gradient = Gradient(color, color),
+                iconTint = color.contentColor(),
+                textColor = color.readableOn(background),
+            )
+        }
         val style = when (transactionType) {
-            TransactionType.INCOME -> {
-                AmountTypeStyle(
-                    icon = R.drawable.ic_income,
-                    gradient = GradientGreen,
-                    iconTint = White,
-                    textColor = incomeTextColor(UI.colors.isLight)
-                )
+            TransactionType.INCOME -> styleOf(R.drawable.ic_income, ColorToken.Income)
+            TransactionType.EXPENSE -> when {
+                dueDate != null && dueDate.isAfter(timeNowUTC()) ->
+                    styleOf(R.drawable.ic_expense, ColorToken.Upcoming)
+
+                dueDate != null && dueDate.isBefore(dateNowUTC().atStartOfDay()) ->
+                    styleOf(R.drawable.ic_overdue, ColorToken.Overdue)
+
+                else -> styleOf(R.drawable.ic_expense, ColorToken.Expense)
             }
 
-            TransactionType.EXPENSE -> {
-                when {
-                    dueDate != null && dueDate.isAfter(timeNowUTC()) -> {
-                        // Upcoming Expense
-                        AmountTypeStyle(
-                            icon = R.drawable.ic_expense,
-                            gradient = GradientOrangeRevert,
-                            iconTint = White,
-                            textColor = Orange
-                        )
-                    }
-
-                    dueDate != null && dueDate.isBefore(dateNowUTC().atStartOfDay()) -> {
-                        // Overdue Expense
-                        AmountTypeStyle(
-                            icon = R.drawable.ic_overdue,
-                            gradient = GradientRed,
-                            iconTint = White,
-                            textColor = Red
-                        )
-                    }
-
-                    else -> {
-                        // Normal Expense
-                        AmountTypeStyle(
-                            icon = R.drawable.ic_expense,
-                            // Solid ink badge; icon inverts so it stays visible in dark themes
-                            gradient = Gradient.solid(UI.colors.pureInverse),
-                            iconTint = UI.colors.pure,
-                            textColor = UI.colors.pureInverse
-                        )
-                    }
-                }
-            }
-
-            TransactionType.TRANSFER -> {
-                // Transfer
-                AmountTypeStyle(
-                    icon = R.drawable.ic_transfer,
-                    gradient = GradientTransfer,
-                    iconTint = White,
-                    textColor = TransferBlue
-                )
-            }
+            TransactionType.TRANSFER -> styleOf(R.drawable.ic_transfer, ColorToken.Transfer)
         }
 
         IvyIcon(

@@ -110,3 +110,11 @@ com.ivy.reports.AccountsFilter
 com.ivy.reports.CategoriesFilter
 com.ivy.reports.AmountFilter
 com.ivy.reports.KeywordsFilter
+com.ivy.design.system.appearance.FernTheme.<get-palette>
+com.ivy.navigation.sharedContainer
+com.ivy.wallet.ui.theme.<get-GradientIvy>
+com.ivy.wallet.ui.theme.incomeTextColor
+com.ivy.wallet.ui.theme.<get-TransferBlue>
+com.ivy.wallet.ui.theme.<get-GradientTransfer>
+com.ivy.wallet.ui.theme.gradientIncome
+com.ivy.wallet.ui.theme.paletteGradient

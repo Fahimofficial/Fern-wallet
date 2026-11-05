@@ -3,6 +3,7 @@ package com.ivy.home
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +52,10 @@ import com.ivy.base.legacy.Theme
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
 import com.ivy.design.utils.thenIf
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.get
+import com.ivy.design.system.motion.pressScale
 import com.ivy.domain.RootScreen
 import com.ivy.legacy.Constants
 import com.ivy.legacy.ivyWalletCtx
@@ -72,10 +78,10 @@ import com.ivy.navigation.PlannedPaymentsScreen
 import com.ivy.navigation.ReportScreen
 import com.ivy.navigation.SearchScreen
 import com.ivy.navigation.SettingsScreen
+import com.ivy.navigation.SupportScreen
 import com.ivy.navigation.navigation
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Blue
-import com.ivy.wallet.ui.theme.Gray
 import com.ivy.wallet.ui.theme.components.BufferBattery
 import com.ivy.wallet.ui.theme.components.CircleButtonFilled
 import com.ivy.wallet.ui.theme.components.IvyIcon
@@ -280,6 +286,10 @@ private fun ColumnScope.Content(
 
     OpenSource()
 
+    Spacer(Modifier.height(12.dp))
+
+    SupportMyWork()
+
     Spacer(Modifier.weight(1f))
 }
 
@@ -293,7 +303,7 @@ private fun SearchButton(
             .padding(horizontal = 16.dp)
             .clip(UI.shapes.rFull)
             .background(UI.colors.pure)
-            .border(1.dp, Gray, UI.shapes.rFull)
+            .border(1.dp, FernTheme.palette[ColorToken.Outline], UI.shapes.rFull)
             .clickable {
                 onClick()
             },
@@ -321,28 +331,71 @@ private fun SearchButton(
 }
 
 @Composable
-private fun ColumnScope.OpenSource() {
+private fun OpenSource() {
     val uriHandler = LocalUriHandler.current
+    LinkCard(
+        content = LinkCardData(
+            icon = R.drawable.github_logo,
+            iconTint = UI.colors.pureInverse,
+            title = stringResource(R.string.ivy_wallet_open_source),
+            subtitle = Constants.URL_IVY_WALLET_REPO,
+            subtitleColor = Blue,
+        ),
+        modifier = Modifier.testTag("home_open_source_card"),
+    ) {
+        openUrl(uriHandler = uriHandler, url = Constants.URL_IVY_WALLET_REPO)
+    }
+}
+
+// Opens the in-app Support screen, which holds the verified Ko-fi and UPI destinations.
+@Composable
+private fun SupportMyWork() {
+    val nav = navigation()
+    LinkCard(
+        content = LinkCardData(
+            icon = R.drawable.ic_vue_support_heart,
+            iconTint = SupportHeart,
+            title = stringResource(R.string.support_my_work),
+            subtitle = stringResource(R.string.support_my_work_home_description),
+            subtitleColor = UI.colors.gray,
+        ),
+        modifier = Modifier.testTag(SupportCardTag),
+    ) {
+        nav.navigateTo(SupportScreen)
+    }
+}
+
+// A tappable row card of the more menu; the open-source and support cards share it.
+@Immutable
+private data class LinkCardData(
+    @DrawableRes val icon: Int,
+    val iconTint: Color,
+    val title: String,
+    val subtitle: String,
+    val subtitleColor: Color,
+)
+
+@Composable
+private fun LinkCard(
+    content: LinkCardData,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val interactionSource = rememberInteractionSource()
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
+            .pressScale(interactionSource)
             .clip(UI.shapes.r4)
             .background(UI.colors.pure)
-            .clickable {
-                openUrl(
-                    uriHandler = uriHandler,
-                    url = Constants.URL_IVY_WALLET_REPO
-                )
-            }
+            .clickable(interactionSource = interactionSource, indication = LocalIndication.current, onClick = onClick)
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Spacer(Modifier.width(16.dp))
 
-        IvyIcon(
-            icon = R.drawable.github_logo
-        )
+        IvyIcon(icon = content.icon, tint = content.iconTint)
 
         Column(
             modifier = Modifier
@@ -350,7 +403,7 @@ private fun ColumnScope.OpenSource() {
                 .padding(start = 16.dp, end = 24.dp)
         ) {
             Text(
-                text = stringResource(R.string.ivy_wallet_open_source),
+                text = content.title,
                 style = UI.typo.b2.style(
                     fontWeight = FontWeight.ExtraBold
                 )
@@ -359,15 +412,21 @@ private fun ColumnScope.OpenSource() {
             Spacer(Modifier.height(4.dp))
 
             Text(
-                text = Constants.URL_IVY_WALLET_REPO,
+                text = content.subtitle,
                 style = UI.typo.c.style(
                     fontWeight = FontWeight.ExtraBold,
-                    color = Blue
+                    color = content.subtitleColor
                 )
             )
         }
     }
 }
+
+/** Test tag of the Home menu's "Support my work" card. */
+const val SupportCardTag = "home_support_card"
+
+// Same heart colour as the Ko-fi button on the Support screen.
+private val SupportHeart = Color(0xFFFF5E5B)
 
 @Composable
 private fun ColumnScope.Buffer(

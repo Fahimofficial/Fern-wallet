@@ -2,6 +2,7 @@ package com.ivy.transaction
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,6 +54,8 @@ import com.ivy.navigation.EditPlannedScreen
 import com.ivy.navigation.EditTransactionScreen
 import com.ivy.navigation.IvyPreview
 import com.ivy.navigation.navigation
+import com.ivy.navigation.sharedContainer
+import com.ivy.navigation.sharedKey
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.wallet.domain.data.CustomExchangeRateState
@@ -277,6 +280,10 @@ private fun BoxWithConstraintsScope.UI(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            // The opened transaction card grows into this screen.
+            .sharedContainer(screen.sharedKey, UI.shapes.r4)
+            // Opaque, so the screen covers what's behind while it grows out of the card.
+            .background(UI.colors.pure)
             .statusBarsPadding()
             .navigationBarsPadding()
             .verticalScroll(scrollState)

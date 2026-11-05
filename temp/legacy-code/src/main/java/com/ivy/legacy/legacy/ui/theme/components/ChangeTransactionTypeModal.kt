@@ -1,5 +1,10 @@
 package com.ivy.wallet.ui.theme.components
 
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.contentColor
+import com.ivy.design.system.appearance.get
+import com.ivy.wallet.ui.theme.gradientIncome
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
@@ -31,7 +36,6 @@ import com.ivy.design.l0_system.style
 import com.ivy.legacy.IvyWalletPreview
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Gradient
-import com.ivy.wallet.ui.theme.GradientGreen
 import com.ivy.wallet.ui.theme.GradientTransfer
 import com.ivy.wallet.ui.theme.White
 import com.ivy.wallet.ui.theme.modal.IvyModal
@@ -78,8 +82,8 @@ fun BoxWithConstraintsScope.ChangeTransactionTypeModal(
         TransactionTypeButton(
             transactionType = TransactionType.INCOME,
             selected = transactionType == TransactionType.INCOME,
-            selectedGradient = GradientGreen,
-            textSelectedColor = White
+            selectedGradient = gradientIncome(),
+            textSelectedColor = FernTheme.palette[ColorToken.Income].contentColor()
         ) {
             transactionType = TransactionType.INCOME
             save(

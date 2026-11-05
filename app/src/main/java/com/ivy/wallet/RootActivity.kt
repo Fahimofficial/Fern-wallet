@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
@@ -48,6 +49,10 @@ import com.ivy.base.time.TimeProvider
 import com.ivy.design.api.IvyDesign
 import com.ivy.design.api.IvyUI
 import com.ivy.design.system.IvyMaterial3Theme
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernPalette
+import com.ivy.design.system.appearance.get
+import com.ivy.design.system.appearance.resolve
 import com.ivy.domain.RootScreen
 import com.ivy.domain.appicon.AppIcon
 import com.ivy.home.customerjourney.CustomerJourneyCardsProvider
@@ -148,7 +153,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
                 false -> {
                     // Theme-coloured backdrop behind screen transitions: while one screen fades
                     // out and the next fades in, the dark window background must never show.
-                    ThemedBackdrop(appDesign(ivyContext).colors(ivyContext.theme, isSystemInDarkTheme).pure) {
+                    ThemedBackdrop(rootPalette(isSystemInDarkTheme)[ColorToken.Background]) {
                         NavigationRoot(navigation = navigation, onUnhandledBack = ::leaveApp) { screen ->
                             IvyUI(
                                 design = appDesign(ivyContext),
@@ -165,11 +170,9 @@ class RootActivity : AppCompatActivity(), RootScreen {
             }
 
             IvyMaterial3Theme(
-                dark = isDarkThemeEnabled(
-                    ivyDesign = appDesign(ivyContext),
-                    systemDarkTheme = isSystemInDarkTheme
-                ),
-                isTrueBlack = appDesign(ivyContext).context().theme == Theme.AMOLED_DARK
+                dark = isDarkThemeEnabled(appDesign(ivyContext), isSystemInDarkTheme),
+                isTrueBlack = appDesign(ivyContext).context().theme == Theme.AMOLED_DARK,
+                palette = rootPalette(isSystemInDarkTheme),
             ) {
                 dateTimePicker.Content()
                 if (appLocked == false) UndoOverlay(undoController)
@@ -251,6 +254,15 @@ class RootActivity : AppCompatActivity(), RootScreen {
                 )
             }
         }
+    }
+
+    // The palette outside IvyUI (backdrop, pickers, undo bar), so it matches the screens.
+    @Composable
+    private fun rootPalette(systemDarkTheme: Boolean): FernPalette {
+        val dark = isDarkThemeEnabled(appDesign(ivyContext), systemDarkTheme)
+        val trueBlack = ivyContext.theme == Theme.AMOLED_DARK
+        val appearance = ivyContext.appearance
+        return remember(appearance, dark, trueBlack) { appearance.resolve(dark, trueBlack) }
     }
 
     private fun isDarkThemeEnabled(ivyDesign: IvyDesign, systemDarkTheme: Boolean): Boolean {

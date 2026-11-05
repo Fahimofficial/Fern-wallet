@@ -16,6 +16,7 @@ import com.ivy.base.legacy.Theme
 import com.ivy.base.legacy.appContext
 import com.ivy.design.IvyContext
 import com.ivy.design.api.IvyDesign
+import com.ivy.design.system.appearance.AppearanceSettings
 import com.ivy.design.api.ivyContext
 import com.ivy.design.api.systems.IvyWalletDesign
 import com.ivy.design.l0_system.UI
@@ -63,12 +64,13 @@ fun IvyWalletComponentPreview(
 @Composable
 fun IvyWalletPreview(
     theme: Theme = Theme.LIGHT,
+    appearance: AppearanceSettings = AppearanceSettings.Default,
     content: @Composable BoxWithConstraintsScope.() -> Unit
 ) {
     appContext = rootView().context
     IvyPreview(
         theme = theme,
-        design = appDesign(IvyWalletCtx()),
+        design = appDesign(IvyWalletCtx().also { it.appearance = appearance }),
     ) {
         NavigationRoot(navigation = Navigation()) {
             content()

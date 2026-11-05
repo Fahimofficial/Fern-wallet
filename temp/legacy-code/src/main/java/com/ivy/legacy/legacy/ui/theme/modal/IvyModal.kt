@@ -56,6 +56,9 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.ivy.design.l0_system.UI
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.get
 import com.ivy.design.system.motion.IvyMotion
 import com.ivy.design.utils.rememberInteractionSource
 import com.ivy.design.utils.thenIf
@@ -169,7 +172,7 @@ fun BoxScope.IvyModal(
                 .fillMaxWidth()
                 .statusBarsPadding()
                 .padding(top = 24.dp)
-                .background(UI.colors.pure, UI.shapes.r2Top)
+                .background(FernTheme.palette[ColorToken.Elevated], UI.shapes.r2Top)
                 .drawWithContent {
                     drawContent()
                     // Grabber: tells the user the sheet can be pulled down.
@@ -419,7 +422,8 @@ private fun ModalActionsRow(
                 }
             }
             .gradientCutBackgroundTop(
-                pure = UI.colors.pure,
+                // Fades into the sheet, not the screen behind it.
+                pure = FernTheme.palette[ColorToken.Elevated],
                 density = LocalDensity.current,
                 endY = 16.dp
             )

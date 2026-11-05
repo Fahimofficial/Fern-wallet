@@ -1,5 +1,8 @@
 package com.ivy.home
 
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.get
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Spring
@@ -51,7 +54,6 @@ import com.ivy.navigation.PieChartStatisticScreen
 import com.ivy.navigation.navigation
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Gray
-import com.ivy.wallet.ui.theme.Green
 import com.ivy.wallet.ui.theme.findContrastTextColor
 import com.ivy.wallet.ui.theme.incomeTextColor
 import com.ivy.wallet.ui.theme.components.BalanceRow
@@ -294,7 +296,7 @@ fun CashFlowInfo(
                     currency,
                 ),
                 style = UI.typo.nB2.style(
-                    color = if (cashflow < 0) Gray else incomeTextColor(UI.colors.isLight),
+                    color = if (cashflow < 0) Gray else incomeTextColor(),
                 ),
             )
 
@@ -323,7 +325,7 @@ private fun IncomeExpenses(
 
         HeaderCard(
             icon = R.drawable.ic_income,
-            badgeColor = Green,
+            badgeColor = FernTheme.palette[ColorToken.Income],
             label = stringResource(R.string.income),
             currency = currency,
             amount = monthlyIncome,
@@ -344,7 +346,7 @@ private fun IncomeExpenses(
 
         HeaderCard(
             icon = R.drawable.ic_expense,
-            badgeColor = UI.colors.pureInverse,
+            badgeColor = FernTheme.palette[ColorToken.Expense],
             label = stringResource(R.string.expenses),
             currency = currency,
             amount = monthlyExpenses.absoluteValue,

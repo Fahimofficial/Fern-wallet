@@ -1,5 +1,11 @@
 package com.ivy.piechart
 
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.contentColor
+import com.ivy.design.system.appearance.get
+import com.ivy.wallet.ui.theme.gradientExpenses
+import com.ivy.wallet.ui.theme.gradientIncome
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -19,9 +25,6 @@ import com.ivy.design.l0_system.style
 import com.ivy.legacy.utils.navigationBarInset
 import com.ivy.legacy.utils.toDensityDp
 import com.ivy.ui.R
-import com.ivy.wallet.ui.theme.Gradient
-import com.ivy.wallet.ui.theme.GradientGreen
-import com.ivy.wallet.ui.theme.White
 import com.ivy.wallet.ui.theme.components.ActionsRow
 import com.ivy.wallet.ui.theme.components.CloseButton
 import com.ivy.wallet.ui.theme.components.IvyButton
@@ -51,6 +54,7 @@ fun BoxWithConstraintsScope.PieChartStatisticBottomBar(
         Spacer(Modifier.weight(1f))
 
         val isIncome = type == TransactionType.INCOME
+        val addContent = FernTheme.palette[if (isIncome) ColorToken.Income else ColorToken.Expense].contentColor()
         IvyButton(
             iconStart = R.drawable.ic_plus,
             text = if (isIncome) {
@@ -60,12 +64,12 @@ fun BoxWithConstraintsScope.PieChartStatisticBottomBar(
             } else {
                 stringResource(id = R.string.add_expense)
             },
-            backgroundGradient = if (isIncome) GradientGreen else Gradient.solid(UI.colors.pureInverse),
+            backgroundGradient = if (isIncome) gradientIncome() else gradientExpenses(),
             textStyle = UI.typo.b2.style(
-                color = if (isIncome) White else UI.colors.pure,
+                color = addContent,
                 fontWeight = FontWeight.ExtraBold
             ),
-            iconTint = if (isIncome) White else UI.colors.pure
+            iconTint = addContent
         ) {
             onAdd(type)
         }

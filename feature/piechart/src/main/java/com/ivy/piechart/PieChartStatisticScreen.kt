@@ -61,7 +61,6 @@ import com.ivy.navigation.navigation
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.ui.rememberScrollPositionListState
-import com.ivy.wallet.ui.theme.GradientGreen
 import com.ivy.wallet.ui.theme.Gray
 import com.ivy.wallet.ui.theme.Green
 import com.ivy.wallet.ui.theme.IvyDark
@@ -79,6 +78,7 @@ import com.ivy.wallet.ui.theme.components.ItemIconMDefaultIcon
 import com.ivy.wallet.ui.theme.components.IvyOutlinedButton
 import com.ivy.wallet.ui.theme.findContrastTextColor
 import com.ivy.wallet.ui.theme.gradientExpenses
+import com.ivy.wallet.ui.theme.gradientIncome
 import com.ivy.wallet.ui.theme.modal.ChoosePeriodModal
 import com.ivy.wallet.ui.theme.pureBlur
 import com.ivy.wallet.ui.theme.toComposeColor
@@ -318,7 +318,7 @@ private fun Header(
                 val backgroundGradient = if (transactionType == TransactionType.EXPENSE) {
                     gradientExpenses()
                 } else {
-                    GradientGreen
+                    gradientIncome()
                 }
                 CircleButtonFilledGradient(
                     modifier = Modifier

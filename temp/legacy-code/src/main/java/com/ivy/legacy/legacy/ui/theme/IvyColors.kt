@@ -12,7 +12,12 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
+import androidx.compose.ui.graphics.lerp
 import com.ivy.design.l0_system.UI
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.get
+import com.ivy.design.system.appearance.readableOn
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 val White = Color(0xFFFAFAFA)
@@ -96,20 +101,37 @@ val GradientGreen = Gradient(Green, Color(0xFF2ED6AC))
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 val GradientOrangeRevert = Gradient(Color(0xFFF2CD9E), Orange)
 
+/** Primary buttons and selection: the user's accent colour (Settings > Appearance). */
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-val GradientIvy = Gradient(Ivy, Color(0xFF1C9878))
+val GradientIvy: Gradient
+    @Composable get() = paletteGradient(ColorToken.Accent)
 
 /**
- * Income color for *text*. The bright [Green] fails WCAG contrast on light surfaces
- * (~1.9:1), so a deeper green is used in light themes.
+ * Income colour for *text*: the income colour, deepened on light surfaces until it reaches
+ * WCAG AA (the bright default green is only ~2:1 on white).
  */
-fun incomeTextColor(isLight: Boolean): Color = if (isLight) IncomeTextLight else Green
+@Composable
+fun incomeTextColor(): Color = FernTheme.palette[ColorToken.Income].readableOn(UI.colors.pure, TextContrast)
 
-private val IncomeTextLight = Color(0xFF077D59)
+/** Semantic colour for account transfers (distinct from the brand and from income). */
+val TransferBlue: Color
+    @Composable get() = FernTheme.palette[ColorToken.Transfer].readableOn(UI.colors.pure)
+val GradientTransfer: Gradient
+    @Composable get() = paletteGradient(ColorToken.Transfer)
 
-/** Semantic color for account transfers (distinct from the green brand and income). */
-val TransferBlue = Color(0xFF3D6FE0)
-val GradientTransfer = Gradient(TransferBlue, Color(0xFF4F7FEA))
+/** Fill for income badges and buttons. */
+@Composable
+fun gradientIncome(): Gradient = paletteGradient(ColorToken.Income)
+
+/** A subtle, near-flat gradient of a palette colour, the style of the original constants. */
+@Composable
+fun paletteGradient(token: ColorToken): Gradient {
+    val color = FernTheme.palette[token]
+    return Gradient(color, lerp(color, Color.White, GradientLift))
+}
+
+private const val TextContrast = 4.5f
+private const val GradientLift = 0.08f
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 fun Modifier.gradientCutBackgroundTop(
@@ -156,7 +178,7 @@ fun mediumBlur() = UI.colors.medium.copy(alpha = 0.95f)
 /** Expenses are shown in a calm, solid ink color rather than an alarming red or a muddy gradient. */
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
-fun gradientExpenses(): Gradient = Gradient(UI.colors.pureInverse, UI.colors.pureInverse)
+fun gradientExpenses(): Gradient = Gradient.solid(FernTheme.palette[ColorToken.Expense])
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 data class Gradient(

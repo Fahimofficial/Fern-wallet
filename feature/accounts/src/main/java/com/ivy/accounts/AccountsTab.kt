@@ -58,8 +58,10 @@ import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.legacy.utils.rememberSwipeListenerState
 import com.ivy.navigation.CreditCardDetailsScreen
 import com.ivy.navigation.EditCreditCardScreen
+import com.ivy.navigation.SharedKeys
 import com.ivy.navigation.TransactionsScreen
 import com.ivy.navigation.navigation
+import com.ivy.navigation.sharedContainer
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.ui.rememberScrollPositionListState
@@ -304,7 +306,11 @@ private fun AccountCard(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
+            // Grows into the account's screen (its coloured header) when opened.
+            .sharedContainer(SharedKeys.account(accountData.account.id.value), UI.shapes.r4)
             .clip(UI.shapes.r4)
+            // Opaque so nothing shows through while the card moves above the screens.
+            .background(UI.colors.pure)
             .border(1.dp, UI.colors.medium, UI.shapes.r4)
             .clickable(
                 onClick = onClick

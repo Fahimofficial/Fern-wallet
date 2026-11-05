@@ -32,8 +32,6 @@ import com.ivy.wallet.domain.data.TransactionHistoryDateDivider
 import com.ivy.wallet.ui.theme.Black
 import com.ivy.wallet.ui.theme.Gradient
 import com.ivy.wallet.ui.theme.Gray
-import com.ivy.wallet.ui.theme.Orange
-import com.ivy.wallet.ui.theme.Red
 import com.ivy.wallet.ui.theme.White
 import com.ivy.wallet.ui.theme.components.IvyButton
 import com.ivy.wallet.ui.theme.components.IvyIcon
@@ -128,7 +126,7 @@ private fun LazyListScope.upcomingSection(
                 expanded = upcoming.expanded,
                 setExpanded = setExpanded,
                 title = stringRes(R.string.upcoming),
-                titleColor = Orange,
+                titleColor = UI.colors.orange,
                 baseCurrency = baseData.baseCurrency,
                 income = upcoming.stats.income.toDouble(),
                 expenses = upcoming.stats.expense.abs().toDouble()
@@ -170,7 +168,7 @@ private fun LazyListScope.overdueSection(
                 expanded = overdue.expanded,
                 setExpanded = setExpanded,
                 title = stringRes(R.string.overdue),
-                titleColor = Red,
+                titleColor = UI.colors.red,
                 baseCurrency = baseData.baseCurrency,
                 income = overdue.stats.income.toDouble(),
                 expenses = overdue.stats.expense.abs().toDouble()
