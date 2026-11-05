@@ -8,7 +8,9 @@ import com.ivy.base.legacy.SharedPrefs
 import com.ivy.base.legacy.Theme
 import com.ivy.base.legacy.stringRes
 import com.ivy.base.model.TransactionType
+import com.ivy.data.datasource.AppearanceDataSource
 import com.ivy.data.db.dao.read.SettingsDao
+import com.ivy.design.system.appearance.decodeAppearance
 import com.ivy.data.repository.LegalRepository
 import com.ivy.frp.test.TestIdlingResource
 import com.ivy.legacy.IvyWalletCtx
@@ -45,6 +47,7 @@ class RootViewModel @Inject constructor(
     private val migrationsManager: MigrationsManager,
     private val legalRepo: LegalRepository,
     private val creditCardReminderScheduler: CreditCardReminderScheduler,
+    private val appearanceDataSource: AppearanceDataSource,
 ) : ViewModel() {
 
     companion object {
@@ -77,6 +80,7 @@ class RootViewModel @Inject constructor(
             ioThread {
                 val theme = settingsDao.findAll().firstOrNull()?.theme
                     ?: if (systemDarkMode) Theme.DARK else Theme.LIGHT
+                ivyContext.appearance = decodeAppearance(appearanceDataSource.get())
                 ivyContext.switchTheme(theme)
 
                 ivyContext.initStartDayOfMonthInMemory(sharedPrefs = sharedPrefs)

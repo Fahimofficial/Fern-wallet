@@ -143,6 +143,8 @@ data object ContributorsScreen : Screen
 /** "Support my work": Ko-fi, UPI (with an on-device QR code) and project links. */
 data object SupportScreen : Screen
 
+data object AppearanceScreen : Screen
+
 data object ReleasesScreen : Screen
 
 data object DisclaimerScreen : Screen

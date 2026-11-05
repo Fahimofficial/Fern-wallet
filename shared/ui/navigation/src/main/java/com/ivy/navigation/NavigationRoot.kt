@@ -5,6 +5,8 @@ import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.animation.core.SeekableTransitionState
@@ -19,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ivy.design.system.motion.IvyMotion
@@ -51,6 +54,7 @@ fun AnimatedContentTransitionScope<NavEntry>.defaultScreenTransition(): ContentT
  *
  * @param onUnhandledBack called when a screen's back override declines and there is nowhere to go.
  */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @SuppressLint("ComposeModifierMissing")
 @Composable
 fun NavigationRoot(
@@ -80,34 +84,52 @@ fun NavigationRoot(
             }
             PredictiveBack(navigation, seekState, onUnhandledBack)
 
-            rememberTransition(seekState, label = "screen").AnimatedContent(
-                transitionSpec = transitionSpec,
-                contentKey = { it.id },
-            ) { shown ->
-                // Legacy screens keep using the Activity's ViewModels (their historic behaviour).
-                // Every other screen gets ViewModels of its own, kept while it's on the back stack.
-                if (!shown.screen.isLegacy && stores != null && parentOwner != null) {
-                    val owner = remember(shown, stores, parentOwner) {
-                        EntryViewModelStoreOwner(stores.storeFor(shown.id), parentOwner)
-                    }
-                    DisposableEffect(shown, stores) {
-                        onDispose {
-                            // Runs after the exit transition. Release only if it can't be returned to.
-                            if (!navigation.isAlive(shown)) stores.clear(shown.id)
+            // Lets elements of the outgoing and incoming screen connect (see sharedContainer).
+            SharedTransitionLayout {
+                CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                    rememberTransition(seekState, label = "screen").AnimatedContent(
+                        transitionSpec = transitionSpec,
+                        contentKey = { it.id },
+                    ) { shown ->
+                        CompositionLocalProvider(LocalScreenAnimationScope provides this) {
+                            ScreenContent(shown, navigation, stores, parentOwner, navGraph)
                         }
-                    }
-                    CompositionLocalProvider(
-                        LocalViewModelStoreOwner provides owner,
-                        LocalHostScreen provides shown.screen,
-                    ) {
-                        navGraph(shown.screen)
-                    }
-                } else {
-                    CompositionLocalProvider(LocalHostScreen provides shown.screen) {
-                        navGraph(shown.screen)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ScreenContent(
+    shown: NavEntry,
+    navigation: Navigation,
+    stores: ScreenViewModelStores?,
+    parentOwner: ViewModelStoreOwner?,
+    navGraph: @Composable (screen: Screen?) -> Unit,
+) {
+    // Legacy screens keep using the Activity's ViewModels (their historic behaviour).
+    // Every other screen gets ViewModels of its own, kept while it's on the back stack.
+    if (!shown.screen.isLegacy && stores != null && parentOwner != null) {
+        val owner = remember(shown, stores, parentOwner) {
+            EntryViewModelStoreOwner(stores.storeFor(shown.id), parentOwner)
+        }
+        DisposableEffect(shown, stores) {
+            onDispose {
+                // Runs after the exit transition. Release only if it can't be returned to.
+                if (!navigation.isAlive(shown)) stores.clear(shown.id)
+            }
+        }
+        CompositionLocalProvider(
+            LocalViewModelStoreOwner provides owner,
+            LocalHostScreen provides shown.screen,
+        ) {
+            navGraph(shown.screen)
+        }
+    } else {
+        CompositionLocalProvider(LocalHostScreen provides shown.screen) {
+            navGraph(shown.screen)
         }
     }
 }

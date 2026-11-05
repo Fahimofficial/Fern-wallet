@@ -1,5 +1,8 @@
 package com.ivy.legacy.legacy.ui.theme.components
 
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.get
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -28,10 +31,6 @@ import com.ivy.design.utils.thenIf
 import com.ivy.legacy.IvyWalletComponentPreview
 import com.ivy.legacy.utils.format
 import com.ivy.ui.R
-import com.ivy.wallet.ui.theme.Green
-import com.ivy.wallet.ui.theme.Ivy
-import com.ivy.wallet.ui.theme.Orange
-import com.ivy.wallet.ui.theme.Red
 import com.ivy.wallet.ui.theme.White
 import com.ivy.wallet.ui.theme.components.IvyIcon
 import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB2Row
@@ -82,6 +81,11 @@ fun BudgetBattery(
         else -> White
     }
 
+    val palette = FernTheme.palette
+    val progressColor = palette[ColorToken.BudgetProgress]
+    val warningColor = palette[ColorToken.Upcoming]
+    val overColor = palette[ColorToken.Overdue]
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -90,19 +94,13 @@ fun BudgetBattery(
             .drawBehind {
                 drawRect(
                     color = when {
-                        percentSpent <= 0.25 -> {
-                            Green
-                        }
+                        percentSpent <= 0.25 -> progressColor
 
-                        percentSpent <= 0.50 -> {
-                            Ivy
-                        }
+                        percentSpent <= 0.50 -> progressColor
 
-                        percentSpent <= 0.75 -> {
-                            Orange
-                        }
+                        percentSpent <= 0.75 -> warningColor
 
-                        else -> Red
+                        else -> overColor
                     },
                     size = size.copy(
                         width = (size.width * percentSpent).toFloat()

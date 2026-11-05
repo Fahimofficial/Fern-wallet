@@ -53,17 +53,18 @@ import com.ivy.legacy.utils.toDensityDp
 import com.ivy.legacy.utils.toDensityPx
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Gradient
-import com.ivy.wallet.ui.theme.GradientGreen
-import com.ivy.wallet.ui.theme.GradientIvy
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.contentColor
+import com.ivy.design.system.appearance.get
+import com.ivy.wallet.ui.theme.gradientIncome
+import com.ivy.wallet.ui.theme.paletteGradient
 import com.ivy.wallet.ui.theme.GradientTransfer
-import com.ivy.wallet.ui.theme.Ivy
-import com.ivy.wallet.ui.theme.White
 import com.ivy.wallet.ui.theme.components.IvyCircleButton
 import com.ivy.wallet.ui.theme.components.IvyIcon
 import com.ivy.wallet.ui.theme.components.IvyOutlinedButton
 import com.ivy.wallet.ui.theme.gradientExpenses
 import com.ivy.wallet.ui.theme.modal.AddModalBackHandling
-import com.ivy.wallet.ui.theme.pureBlur
 import java.util.UUID
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -87,6 +88,7 @@ import com.ivy.design.system.motion.pressScale
 import kotlinx.coroutines.launch
 
 private const val MenuVisibleThreshold = 0.01f
+private const val NavBarAlpha = 0.95f
 
 // What the FAB does right now, for screen readers.
 private fun fabLabel(tab: MainTab, expanded: Boolean): Int = when {
@@ -151,7 +153,7 @@ fun BoxWithConstraintsScope.BottomBar(
         modifier = Modifier
             .fillMaxWidth()
             .align(Alignment.BottomCenter)
-            .background(pureBlur())
+            .background(FernTheme.palette[ColorToken.NavBar].copy(alpha = NavBarAlpha))
             .graphicsLayer { alpha = (1f - buttonsShown.value).coerceIn(0f, 1f) }
             .navigationBarsPadding()
             .clickableNoIndication(rememberInteractionSource()) {
@@ -163,7 +165,7 @@ fun BoxWithConstraintsScope.BottomBar(
             icon = R.drawable.ic_home,
             name = stringResource(R.string.home),
             selected = tab == MainTab.HOME,
-            selectedColor = Ivy
+            selectedColor = FernTheme.palette[ColorToken.NavSelected]
         ) {
             selectTab(MainTab.HOME)
         }
@@ -174,7 +176,7 @@ fun BoxWithConstraintsScope.BottomBar(
             icon = R.drawable.ic_accounts,
             name = stringResource(R.string.accounts),
             selected = tab == MainTab.ACCOUNTS,
-            selectedColor = Ivy
+            selectedColor = FernTheme.palette[ColorToken.NavSelected]
         ) {
             selectTab(MainTab.ACCOUNTS)
         }
@@ -303,19 +305,16 @@ fun BoxWithConstraintsScope.BottomBar(
         contentDescription = stringResource(fabLabel(tab, expanded)),
         backgroundGradient = when (tab) {
             MainTab.HOME -> {
-                if (!expanded) GradientIvy else Gradient.solid(UI.colors.gray)
+                if (!expanded) paletteGradient(ColorToken.Fab) else Gradient.solid(UI.colors.gray)
             }
 
             // One primary-action color across tabs (was purple on Home, green on Accounts).
             MainTab.ACCOUNTS -> {
-                GradientIvy
+                paletteGradient(ColorToken.Fab)
             }
         },
         hasShadow = !expanded,
-        tint = when (tab) {
-            MainTab.HOME -> White
-            MainTab.ACCOUNTS -> White
-        }
+        tint = if (expanded) UI.colors.gray.contentColor() else FernTheme.palette[ColorToken.Fab].contentColor()
     ) {
         when (tab) {
             MainTab.HOME -> {
@@ -448,8 +447,8 @@ private fun AddIncomeButton(
             .zIndex(200f),
         icon = R.drawable.ic_income,
         contentDescription = stringResource(R.string.add_income),
-        backgroundGradient = GradientGreen,
-        tint = White,
+        backgroundGradient = gradientIncome(),
+        tint = FernTheme.palette[ColorToken.Income].contentColor(),
         onClick = onAddIncome
     )
 
@@ -536,7 +535,7 @@ private fun AddExpenseButton(
         contentDescription = stringResource(R.string.add_expense),
         backgroundGradient = gradientExpenses(),
         horizontalGradient = false,
-        tint = White,
+        tint = FernTheme.palette[ColorToken.Expense].contentColor(),
         onClick = onAddExpense
     )
 
@@ -623,7 +622,7 @@ private fun AddTransferButton(
         icon = R.drawable.ic_transfer,
         contentDescription = stringResource(R.string.transfer),
         backgroundGradient = GradientTransfer,
-        tint = White,
+        tint = FernTheme.palette[ColorToken.Transfer].contentColor(),
         onClick = onAddTransfer
     )
 
@@ -686,7 +685,7 @@ private fun RowScope.Tab(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val tint by animateColorAsState(
-        targetValue = if (selected) selectedColor else UI.colors.pureInverse,
+        targetValue = if (selected) selectedColor else FernTheme.palette[ColorToken.NavUnselected],
         animationSpec = IvyMotion.standard(IvyMotion.Duration.Short),
         label = "tab_tint",
     )

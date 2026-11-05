@@ -1,5 +1,8 @@
 package com.ivy.legacy.ui.component
 
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.get
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -30,7 +33,6 @@ import com.ivy.legacy.utils.format
 import com.ivy.ui.R
 import com.ivy.wallet.domain.data.IvyCurrency
 import com.ivy.wallet.ui.theme.Gradient
-import com.ivy.wallet.ui.theme.Green
 import com.ivy.wallet.ui.theme.MediumBlack
 import com.ivy.wallet.ui.theme.MediumWhite
 import com.ivy.wallet.ui.theme.components.IvyButton
@@ -183,7 +185,7 @@ private fun RowScope.HeaderCard(
         Spacer(Modifier.height(24.dp))
 
         if (addButtonText != null) {
-            val addButtonBackground = if (isIncome) Green else contrastColor
+            val addButtonBackground = if (isIncome) FernTheme.palette[ColorToken.Income] else contrastColor
             IvyButton(
                 modifier = Modifier
                     .fillMaxWidth()

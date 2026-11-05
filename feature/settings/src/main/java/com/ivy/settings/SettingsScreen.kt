@@ -53,6 +53,7 @@ import com.ivy.navigation.FeaturesScreen
 import com.ivy.navigation.ImportScreen
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.ReleasesScreen
+import com.ivy.navigation.AppearanceScreen
 import com.ivy.navigation.SupportScreen
 import com.ivy.navigation.navigation
 import com.ivy.navigation.screenScopedViewModel
@@ -272,6 +273,17 @@ private fun BoxWithConstraintsScope.UI(
             SettingsSectionDivider(text = stringResource(R.string.app_settings))
 
             Spacer(Modifier.height(16.dp))
+
+            SettingsDefaultButton(
+                icon = R.drawable.ic_vue_design_color_swatch,
+                iconPadding = 6.dp,
+                text = stringResource(R.string.appearance),
+                description = stringResource(R.string.appearance_entry_description),
+            ) {
+                nav.navigateTo(AppearanceScreen)
+            }
+
+            Spacer(Modifier.height(12.dp))
 
             AppThemeButton(
                 icon = when (theme) {

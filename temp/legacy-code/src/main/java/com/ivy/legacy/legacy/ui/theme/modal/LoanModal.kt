@@ -580,6 +580,7 @@ private fun RowScope.SelectorButton(
     onClick: () -> Unit
 ) {
     val rFull = UI.shapes.rFull
+    val selectedBrush = GradientIvy.asHorizontalBrush()
     Text(
         modifier = Modifier
             .weight(1f)
@@ -589,7 +590,7 @@ private fun RowScope.SelectorButton(
             }
             .padding(vertical = 8.dp)
             .thenIf(selected) {
-                background(GradientIvy.asHorizontalBrush(), rFull)
+                background(selectedBrush, rFull)
             }
             .padding(vertical = 8.dp),
         text = label,
