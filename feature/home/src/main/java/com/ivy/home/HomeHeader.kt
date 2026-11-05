@@ -58,10 +58,21 @@ import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Gray
 import com.ivy.wallet.ui.theme.findContrastTextColor
 import com.ivy.wallet.ui.theme.incomeTextColor
-import com.ivy.wallet.ui.theme.components.BalanceRow
 import com.ivy.wallet.ui.theme.components.BalanceRowMini
 import com.ivy.wallet.ui.theme.components.IvyIcon
-import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.sp
+import com.ivy.design.system.motion.AnimatedAmountText
+import com.ivy.legacy.utils.shortenAmount
+import com.ivy.legacy.utils.shouldShortAmount
 import kotlin.math.absoluteValue
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -283,6 +294,7 @@ fun CashFlowInfo(
     onHiddenBalanceClick: () -> Unit,
     modifier: Modifier = Modifier,
     onCashflowClick: () -> Unit = {},
+    onToggleHideBalance: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -294,21 +306,13 @@ fun CashFlowInfo(
                 },
             ),
     ) {
-        BalanceRow(
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
-                    if (hideBalance) {
-                        onHiddenBalanceClick()
-                    } else {
-                        onBalanceClick()
-                    }
-                }
-                .testTag("home_balance"),
+        HomeBalance(
             currency = currency,
             balance = balance,
-            shortenBigNumbers = true,
-            hiddenMode = hideBalance
+            hidden = hideBalance,
+            onHiddenClick = onHiddenBalanceClick,
+            onOpenDetails = onBalanceClick,
+            onToggleHidden = onToggleHideBalance,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -342,6 +346,67 @@ fun CashFlowInfo(
         }
     }
 }
+
+/**
+ * The big balance. It counts to each new value; a tap switches between compact ("114.64k") and
+ * exact, a long press (or the TalkBack action) opens the balance details, and the eye hides it.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun HomeBalance(
+    currency: String,
+    balance: Double,
+    hidden: Boolean,
+    onHiddenClick: () -> Unit,
+    onOpenDetails: () -> Unit,
+    onToggleHidden: () -> Unit,
+) {
+    var compact by rememberSaveable { mutableStateOf(true) }
+    val short = compact && shouldShortAmount(balance)
+    val format = remember(currency, short) {
+        { value: Double -> "$currency ${if (short) shortenAmount(value) else value.format(currency)}" }
+    }
+    val detailsLabel = stringResource(R.string.balance_details)
+    val toggleLabel = stringResource(if (compact) R.string.show_exact_amount else R.string.show_compact_amount)
+    Row(
+        modifier = Modifier.padding(start = 20.dp, end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .combinedClickable(
+                    interactionSource = rememberInteractionSource(),
+                    indication = null,
+                    role = Role.Button,
+                    onClickLabel = if (hidden) null else toggleLabel,
+                    onLongClickLabel = detailsLabel,
+                    onLongClick = onOpenDetails,
+                    onClick = { if (hidden) onHiddenClick() else compact = !compact },
+                )
+                .semantics { customActions = listOf(CustomAccessibilityAction(detailsLabel) { onOpenDetails(); true }) }
+                .testTag("home_balance"),
+        ) {
+            val style = UI.typo.nH1.style(fontWeight = FontWeight.ExtraBold, color = UI.colors.pureInverse)
+            if (hidden) {
+                Text(text = "$currency ****", style = style)
+            } else {
+                // Exact amounts of 7+ digits don't fit at 40sp on a phone: step down instead of wrapping.
+                val fitted = if (format(balance).length > ExactBalanceMaxChars) style.copy(fontSize = 30.sp) else style
+                AnimatedAmountText(amount = balance, format = format, style = fitted)
+            }
+        }
+        IconButton(onClick = onToggleHidden) {
+            IvyIcon(
+                icon = if (hidden) R.drawable.ic_hidden else R.drawable.ic_visible,
+                tint = UI.colors.gray,
+                contentDescription = stringResource(if (hidden) R.string.show_balance else R.string.hide_balance),
+            )
+        }
+    }
+}
+
+private const val ExactBalanceMaxChars = 13
 
 @Composable
 private fun CashflowChip(
@@ -488,13 +553,21 @@ private fun RowScope.HeaderCard(
 
         Spacer(Modifier.height(10.dp))
 
-        // AmountCurrencyB1 emits amount + currency as siblings: keep them on one baseline.
         Row(verticalAlignment = Alignment.CenterVertically) {
-            AmountCurrencyB1(
+            val short = shouldShortAmount(amount)
+            AnimatedAmountText(
+                modifier = Modifier.alignByBaseline(),
                 amount = amount,
-                currency = currency,
-                textColor = UI.colors.pureInverse,
-                shortenBigNumbers = true,
+                format = remember(currency, short) {
+                    { value: Double -> if (short) shortenAmount(value) else value.format(currency) }
+                },
+                style = UI.typo.nB1.style(fontWeight = FontWeight.Bold, color = UI.colors.pureInverse),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                modifier = Modifier.alignByBaseline(),
+                text = currency,
+                style = UI.typo.nB1.style(fontWeight = FontWeight.Normal, color = UI.colors.pureInverse),
             )
         }
     }

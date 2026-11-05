@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import com.ivy.design.system.motion.MotionPreferences
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -103,6 +105,7 @@ import kotlinx.coroutines.launch
 private const val MenuVisibleThreshold = 0.01f
 private const val NavBarAlpha = 0.95f
 private const val NavBarZIndex = 50f
+private const val TabIconPressedScale = 0.8f
 private val NavScrimHeight = 24.dp
 
 // What the FAB does right now, for screen readers.
@@ -802,7 +805,21 @@ private fun RowScope.Tab(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // A small spring bounce when this tab becomes selected (not on first show).
+        val iconScale = remember { Animatable(1f) }
+        var wasSelected by remember { mutableStateOf(selected) }
+        LaunchedEffect(selected) {
+            if (selected && !wasSelected && !MotionPreferences.reduceMotion) {
+                iconScale.snapTo(TabIconPressedScale)
+                iconScale.animateTo(1f, IvyMotion.Springs.bouncy())
+            }
+            wasSelected = selected
+        }
         IvyIcon(
+            modifier = Modifier.graphicsLayer {
+                scaleX = iconScale.value
+                scaleY = iconScale.value
+            },
             icon = icon,
             tint = tint,
             // The label text is only visible when selected; otherwise the icon carries the name.

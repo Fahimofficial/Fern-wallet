@@ -23,6 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +50,8 @@ import com.ivy.legacy.data.model.TimePeriod
 import com.ivy.legacy.ivyWalletCtx
 import com.ivy.legacy.ui.component.transaction.TransactionsDividerLine
 import com.ivy.legacy.ui.component.transaction.transactions
+import com.ivy.legacy.ui.component.transaction.HistoryMotion
+import kotlinx.coroutines.delay
 import com.ivy.legacy.utils.horizontalSwipeListener
 import com.ivy.legacy.utils.rememberSwipeListenerState
 import com.ivy.legacy.utils.verticalSwipeListener
@@ -235,6 +238,8 @@ fun BoxWithConstraintsScope.HomeUi(
                 skipAllModalVisible = true
             },
             onBarsVisibleChange = onBarsVisibleChange,
+            onDeleteTransaction = { onEvent(HomeEvent.DeleteTransaction(it)) },
+            onToggleHideBalance = { onEvent(HomeEvent.ToggleHideBalance) },
         )
     }
 
@@ -340,9 +345,34 @@ fun HomeLazyColumn(
     onSkipAllTransactions: (List<Transaction>) -> Unit,
     modifier: Modifier = Modifier,
     onBarsVisibleChange: (Boolean) -> Unit = {},
+    onDeleteTransaction: (Transaction) -> Unit = {},
+    onToggleHideBalance: () -> Unit = {},
 ) {
     val ivyContext = ivyWalletCtx()
     val nav = navigation()
+
+    // The entrance marks rows arriving from a load. Rows already there on the first frame
+    // (screenshots, previews) are shown settled.
+    val inspection = LocalInspectionMode.current
+    val motion = remember {
+        HistoryMotion(entrancePending = !homeEntrancePlayed && !inspection && history.isEmpty())
+    }
+    LaunchedEffect(history.isNotEmpty()) {
+        if (history.isNotEmpty() && motion.entrancePending) {
+            delay(HistoryMotion.EntranceMillis.toLong())
+            motion.entrancePending = false
+            homeEntrancePlayed = true
+        }
+    }
+    // The new month's rows arrive from the side the user moved to (earlier month: from the left).
+    var shownPeriod by remember { mutableStateOf(period) }
+    LaunchedEffect(history) {
+        if (period == shownPeriod) return@LaunchedEffect
+        val from = shownPeriod.monthIndex()
+        val to = period.monthIndex()
+        shownPeriod = period
+        if (from != null && to != null && from != to) motion.slideIn(fromLeft = to < from)
+    }
 
     val currentOnSetExpand by rememberUpdatedState(onSetExpand)
     val currentOnBarsVisibleChange by rememberUpdatedState(onBarsVisibleChange)
@@ -403,6 +433,7 @@ fun HomeLazyColumn(
                 hideIncome = hideIncome,
                 onHiddenIncomeClick = onHiddenIncomeClick,
                 onCashflowClick = { nav.navigateTo(ReportScreen) },
+                onToggleHideBalance = onToggleHideBalance,
             )
         }
         item {
@@ -439,7 +470,9 @@ fun HomeLazyColumn(
             shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions,
             lastItemSpacer = 0.dp,
             onSkipTransaction = onSkipTransaction,
-            onSkipAllTransactions = onSkipAllTransactions
+            onSkipAllTransactions = onSkipAllTransactions,
+            motion = motion,
+            onDeleteTransaction = onDeleteTransaction,
         )
     }
 }
@@ -448,6 +481,17 @@ fun HomeLazyColumn(
 // navigation bar is already excluded by Home's systemBarsPadding.
 private val BottomBarClearance = 104.dp
 private const val BarsToggleDeltaPx = 4f
+
+// shortcut: process-wide, so the entrance plays once per app start, not on every return to Home
+// (the screen's own state doesn't survive navigating away); move to saved state if that changes.
+private var homeEntrancePlayed = false
+
+private fun TimePeriod.monthIndex(): Int? {
+    val month = month ?: return null
+    return (year ?: return null) * MonthsInYear + month.monthValue
+}
+
+private const val MonthsInYear = 12
 
 /** Which overlay to show on top of the Home sample (screenshots / previews). */
 enum class HomeSampleOverlay { None, PeriodPicker, MoreMenu }

@@ -837,4 +837,8 @@
     <string name="appearance_token_savings_description">Savings goal on Home</string>
     <string name="select_month">Choose month</string>
     <string name="home_add_short">Add</string>
+    <string name="show_balance">Show balance</string>
+    <string name="balance_details">Balance details</string>
+    <string name="show_exact_amount">Show exact amount</string>
+    <string name="show_compact_amount">Show compact amount</string>
 </resources>

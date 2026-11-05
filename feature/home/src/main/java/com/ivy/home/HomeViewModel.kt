@@ -65,6 +65,13 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import javax.inject.Inject
 import com.ivy.data.DataObserver
+import com.ivy.base.legacy.SharedPrefs
+import com.ivy.base.legacy.refreshWidget
+import com.ivy.data.model.TransactionId
+import com.ivy.data.repository.TransactionRepository
+import com.ivy.ui.R
+import com.ivy.ui.undo.UndoController
+import com.ivy.widget.balance.WalletBalanceWidgetReceiver
 import com.ivy.data.DataWriteEvent
 
 @Stable
@@ -96,6 +103,9 @@ class HomeViewModel @Inject constructor(
     private val timeConverter: TimeConverter,
     private val features: Features,
     private val dataObserver: DataObserver,
+    private val transactionRepo: TransactionRepository,
+    private val undoController: UndoController,
+    private val sharedPrefs: SharedPrefs,
 ) : ComposeViewModel<HomeState, HomeEvent>() {
     init {
         // e.g. a deleted transaction restored by Undo while Home is already showing.
@@ -265,6 +275,8 @@ class HomeViewModel @Inject constructor(
                 is HomeEvent.DismissCustomerJourneyCard -> dismissCustomerJourneyCard(event.card)
                 is HomeEvent.SetExpanded -> setExpanded(event.expanded)
                 HomeEvent.Refresh -> start()
+                is HomeEvent.DeleteTransaction -> deleteTransaction(event.transaction)
+                HomeEvent.ToggleHideBalance -> toggleHideBalance()
             }
         }
     }
@@ -437,6 +449,25 @@ class HomeViewModel @Inject constructor(
             ivyContext.selectMainTab(MainTab.ACCOUNTS)
             nav.navigateTo(MainScreen)
         }
+    }
+
+    // Same restorable delete + Undo as the edit screen.
+    private suspend fun deleteTransaction(transaction: Transaction) {
+        val deleted = transactionRepo.deleteByIdRestorable(TransactionId(transaction.id))
+        refreshWidget(WalletBalanceWidgetReceiver::class.java)
+        reload()
+        if (deleted != null) {
+            undoController.show(text = R.string.transaction_deleted) {
+                deleted.restore()
+                refreshWidget(WalletBalanceWidgetReceiver::class.java)
+                dataObserver.post(DataWriteEvent.TransactionsChanged)
+            }
+        }
+    }
+
+    private suspend fun toggleHideBalance() {
+        hideBalance = !hideBalance
+        ioThread { sharedPrefs.putBoolean(SharedPrefs.HIDE_CURRENT_BALANCE, hideBalance) }
     }
 
     private suspend fun onHiddenBalanceClick() {

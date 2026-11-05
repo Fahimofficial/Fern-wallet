@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -54,7 +55,10 @@ fun LazyListScope.transactions(
     setUpcomingExpanded: (Boolean) -> Unit,
     setOverdueExpanded: (Boolean) -> Unit,
     onSkipTransaction: (Transaction) -> Unit = {},
-    onSkipAllTransactions: (List<Transaction>) -> Unit = {}
+    onSkipAllTransactions: (List<Transaction>) -> Unit = {},
+    // Home only: entrance/month motion, and swipe rows (edit/delete) when a delete is given.
+    motion: HistoryMotion? = null,
+    onDeleteTransaction: ((Transaction) -> Unit)? = null,
 ) {
     upcomingSection(
         baseData = baseData,
@@ -82,7 +86,9 @@ fun LazyListScope.transactions(
         history = history,
         shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions,
         dateDividerMarginTop = dateDividerMarginTop,
-        onPayOrGet = onPayOrGet
+        onPayOrGet = onPayOrGet,
+        motion = motion,
+        onDeleteTransaction = onDeleteTransaction,
     )
 
     if (
@@ -252,12 +258,14 @@ private fun LazyListScope.historySection(
     shouldShowAccountSpecificColorInTransactions: Boolean,
     dateDividerMarginTop: Dp? = null,
 
-    onPayOrGet: (Transaction) -> Unit
+    onPayOrGet: (Transaction) -> Unit,
+    motion: HistoryMotion?,
+    onDeleteTransaction: ((Transaction) -> Unit)?,
 ) {
     if (history.isNotEmpty()) {
-        items(
+        itemsIndexed(
             items = history,
-            key = {
+            key = { _, it ->
                 when (it) {
                     is Transaction -> it.id.toString()
                     is TransactionHistoryDateDivider -> it.date.toString()
@@ -265,34 +273,45 @@ private fun LazyListScope.historySection(
                 }
             },
             // Cards and date dividers have different layouts: let Compose reuse each with its own kind.
-            contentType = {
+            contentType = { _, it ->
                 when (it) {
                     is TransactionHistoryDateDivider -> ContentTypeDateDivider
                     else -> ContentTypeTransaction
                 }
             }
-        ) {
+        ) { index, it ->
             when (it) {
                 is Transaction -> {
                     val nav = navigation()
+                    val card = @Composable {
+                        TransactionCard(
+                            baseData = baseData,
 
-                    TransactionCard(
-                        modifier = Modifier.animateHistoryItem(this),
-                        baseData = baseData,
-
-                        transaction = it,
-                        shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions,
-                        onPayOrGet = onPayOrGet
-                    ) { trn ->
-                        onTransactionClick(
-                            nav = nav,
-                            transaction = trn
-                        )
+                            transaction = it,
+                            shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions,
+                            onPayOrGet = onPayOrGet
+                        ) { trn ->
+                            onTransactionClick(
+                                nav = nav,
+                                transaction = trn
+                            )
+                        }
+                    }
+                    AnimatedItem(Modifier.animateHistoryItem(this).historyMotion(motion, index)) {
+                        if (onDeleteTransaction != null) {
+                            SwipeableTransaction(
+                                onEdit = { onTransactionClick(nav, it) },
+                                onDelete = { onDeleteTransaction(it) },
+                                content = card,
+                            )
+                        } else {
+                            card()
+                        }
                     }
                 }
 
                 is TransactionHistoryDateDivider -> {
-                    AnimatedItem(Modifier.animateHistoryItem(this)) {
+                    AnimatedItem(Modifier.animateHistoryItem(this).historyMotion(motion, index)) {
                     HistoryDateDivider(
                         date = it.date,
                         spacerTop = dateDividerMarginTop
