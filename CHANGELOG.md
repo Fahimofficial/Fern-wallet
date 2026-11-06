@@ -7,6 +7,36 @@ Release notes for published builds are generated on the
 
 First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 
+### Fixes, connected motion, account logos and backgrounds
+Root causes are in `PLAN.md`.
+
+- **Hub chevron:** taps work again; it was under Home's root, which took every touch. The
+  chevron now sits above the tabs, and a tap or a drag opens and closes the hub. On Accounts it
+  fades out and ignores touches.
+- **System back:** it no longer stops working after using the transaction editor or an account.
+  A modal that closed out of order left its back handler behind, and that handler swallowed
+  back everywhere.
+- **Nav bar:** now opaque, with a taller scrim, so list text no longer shows through the labels.
+- **Screen motion:**
+  - A screen enters in 300 ms and leaves in 200 ms. The screen behind scales down and dims
+    instead of vanishing.
+  - A card opening into a screen is driven only by the shared bounds, and its corners morph.
+  - Predictive back scrubs all of it.
+- **Opening an account:** the first frame already has the account's colour. The data arrives in
+  one update, and the history list appears once the screen has landed (placeholders until then).
+- **Account logos:**
+  - 48 brands and 8 generic icons, with search and categories, plus your own image (Photo
+    Picker, no permission needed).
+  - 16 brand glyphs come from Simple Icons. The rest are initials (see `LOGO_LICENSES.md`).
+    This replaces the earlier note that no bank or network logos are bundled.
+- **Account backgrounds:** None, Solid, Gradient (presets or custom colours, plus an angle) or
+  Image (with a dim slider), with a live preview. Text always reaches 4.5:1 contrast.
+- **Settings > Appearance > Use account colours on transactions** (off by default): account
+  chips take the account's colour and logo, and transfers blend From to To. The setting is read
+  once for the whole app.
+- **Database 131 to 132:** an additive migration with nullable columns, so existing accounts
+  look the same. Old backups still import. Uploaded images aren't part of backups.
+
 ### UI polish, motion and micro-interactions
 All motion uses the shared `IvyMotion` tokens (150/250/300 ms, M3 easings, springs). With
 "Remove animations" on, every animation finishes at once or is skipped: Compose follows the

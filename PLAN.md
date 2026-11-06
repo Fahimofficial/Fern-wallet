@@ -126,4 +126,8 @@ Static analysis, unverified on a device.
 
 ## Logos shipped as initials (no clean licence)
 
-Filled in during phase 5, once each entry in the Simple Icons data has been checked.
+16 of the 48 brands have a bundled glyph; the other 32 show their initials on the brand
+colour, with no artwork bundled. Sources and licences are in `LOGO_LICENSES.md`.
+
+- **Not in Simple Icons (25):** SBI, Kotak Mahindra Bank, IDFC FIRST Bank, IndusInd Bank, Yes Bank, Canara Bank, Punjab National Bank, Bank of Baroda, Union Bank of India, Bank of India, IDBI Bank, Federal Bank, AU Small Finance Bank, slice, Jupiter, UPI, BHIM, Amazon Pay, CRED, MobiKwik, Freecharge, Groww, Upstox, RuPay, Citi.
+- **Simple Icons entry restricted by brand guidelines or a marketing/brand source (7):** Mastercard, PayPal, Apple Pay, Wise, Revolut, HSBC, Venmo.
