@@ -17,6 +17,37 @@ One-time setup:
 
 The Play upload uses the AAB already signed and verified by `release.yml`; it does not have access to the APK release-signing secrets.
 
+### Narrow Workload Identity Federation trust
+
+Configure the OIDC provider to map these GitHub claims:
+
+```
+google.subject=assertion.sub
+attribute.repository=assertion.repository
+attribute.ref=assertion.ref
+attribute.environment=assertion.environment
+```
+
+Set the provider condition to require all three values:
+`assertion.repository == 'Fahimofficial/Fern-wallet'`,
+`assertion.ref == 'refs/heads/main'`, and
+`assertion.environment == 'play-store'`.
+
+Grant the Google service account `roles/iam.workloadIdentityUser` to the provider's
+`principalSet` for this repository. The `PLAY_WIF_PROVIDER` variable must contain the full
+provider resource name:
+`projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/POOL_ID/providers/PROVIDER_ID`.
+Do not grant this identity broad project-owner permissions.
+
+### App signing compatibility
+
+Google Play App Signing uses a separate app-signing key to sign APKs delivered to users; the
+key that signs the AAB is the upload key. When enrolling, preserve the existing Fern signing
+certificate as the Play app-signing key if users who installed Fern from GitHub must be able to
+update that installation through Play. Configure the AAB upload certificate in Play Console as
+the accepted upload key. Test the first release with internal testing before production.
+
+
 ## F-Droid status
 
 This source tree is not currently ready for the official F-Droid repository. It includes Google Play-only dependencies (Play In-App Updates, Play review, Play Services Tasks, and the Play Services coroutine bridge). F-Droid's main repository requires free/open-source software and does not accept proprietary Google Play Services dependencies.
