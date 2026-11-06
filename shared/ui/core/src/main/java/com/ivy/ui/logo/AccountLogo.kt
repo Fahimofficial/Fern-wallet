@@ -44,6 +44,7 @@ fun hasAccountLogo(logoKey: String?, customLogoPath: String?): Boolean =
  * Glyphs and text pick black or white for contrast with what's under them.
  * @param contentDescription null when the account name is already next to it (chips, cards).
  */
+@Suppress("LongParameterList")
 @Composable
 fun AccountLogo(
     logoKey: String?,
