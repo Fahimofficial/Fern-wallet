@@ -521,7 +521,7 @@ private fun TransactionBadge(
 
         val contrastColor = findContrastTextColor(backgroundColor)
 
-        ChipIcon(account = logo, iconName = icon, defaultIcon = defaultIcon, tint = contrastColor)
+        TransactionAccountChipIcon(account = logo, iconName = icon, defaultIcon = defaultIcon, tint = contrastColor)
 
         SpacerHor(width = 4.dp)
 
@@ -590,7 +590,7 @@ private fun TransferHeader(
 
         val accountContrastColor = if (colored) findContrastTextColor(fromColor) else UI.colors.pureInverse
 
-        ChipIcon(
+        TransactionAccountChipIcon(
             account = account?.takeIf { colored },
             iconName = account?.icon,
             defaultIcon = R.drawable.ic_custom_account_s,
@@ -618,7 +618,7 @@ private fun TransferHeader(
 
         val toAccountContrastColor = if (colored) findContrastTextColor(toColor) else UI.colors.pureInverse
 
-        ChipIcon(
+        TransactionAccountChipIcon(
             account = toAccount?.takeIf { colored },
             iconName = toAccount?.icon,
             defaultIcon = R.drawable.ic_custom_account_s,
@@ -644,7 +644,7 @@ private fun TransferHeader(
 
 /** The account's logo when [account] is given and has one, else the plain icon. */
 @Composable
-private fun ChipIcon(account: Account?, iconName: String?, @DrawableRes defaultIcon: Int, tint: Color) {
+private fun TransactionAccountChipIcon(account: Account?, iconName: String?, @DrawableRes defaultIcon: Int, tint: Color) {
     if (account != null) {
         AccountMark(
             appearance = account.appearance,
