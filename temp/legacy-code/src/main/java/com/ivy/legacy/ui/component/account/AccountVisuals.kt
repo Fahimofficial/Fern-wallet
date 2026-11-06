@@ -32,6 +32,7 @@ val LocalAccountMediaStore = staticCompositionLocalOf<AccountMediaStore?> { null
  * The account's logo when it has one, otherwise its classic icon tinted with [tint]. Both take a
  * [size] square, so swapping one for the other never moves the text next to it.
  */
+@Suppress("LongParameterList")
 @Composable
 fun AccountMark(
     appearance: AccountAppearance,
