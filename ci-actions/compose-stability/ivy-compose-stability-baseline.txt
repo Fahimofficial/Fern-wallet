@@ -118,3 +118,11 @@ com.ivy.wallet.ui.theme.<get-TransferBlue>
 com.ivy.wallet.ui.theme.<get-GradientTransfer>
 com.ivy.wallet.ui.theme.gradientIncome
 com.ivy.wallet.ui.theme.paletteGradient
+com.ivy.legacy.ui.component.account.accountBackground
+com.ivy.legacy.ui.component.account.rememberImagePicker
+com.ivy.legacy.ui.component.transaction.historyMotion
+com.ivy.legacy.ui.component.transaction.returnPulse
+com.ivy.legacy.ui.component.transaction.untitledText
+com.ivy.main.rememberTouchExplorationEnabled
+com.ivy.navigation.recedeBehindNewer
+com.ivy.navigation.screenEnterSettled
