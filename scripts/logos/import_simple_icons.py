@@ -182,11 +182,15 @@ md = ["# Logo licences", "",
       "Every other brand is shown as its initials on a brand colour, and no artwork is bundled for it.", "",
       "## Bundled brand glyphs", "",
       "| Brand | File | From | Upstream source | Licence |", "|---|---|---|---|---|"]
+def markdown_urls(value):
+    return re.sub(r"(https?://[^\\s|]+)", r"<\\1>", value)
+
+
 for (n, f, frm, src, lic) in licenses:
-    md.append(f"| {n} | `shared/ui/core/src/main/res/drawable/{f}` | {frm} | {src} | {lic} |")
+    md.append(f"| {n} | `shared/ui/core/src/main/res/drawable/{f}` | {frm} | {markdown_urls(src)} | {lic} |")
 md += ["", "## Shown as initials (no artwork bundled)", "", "| Brand | Why |", "|---|---|"]
 for (n, why) in initials:
-    md.append(f"| {n} | {why} |")
+    md.append(f"| {n} | {markdown_urls(why)} |")
 md += ["", "## Generic icons", "",
        "Cash (`Payments`), Wallet (`AccountBalanceWallet`), Bank (`AccountBalance`), Card (`Payment`),",
        "Credit card (`CreditCard`), Piggy bank (`Savings`), Savings (`Toll`) and Investment (`ShowChart`)",
