@@ -295,6 +295,7 @@ fun BoxWithConstraintsScope.MoreMenu(
  * the 40dp circle), and touch slop decides which one gets the gesture; nothing consumes events
  * by hand.
  */
+@Suppress("LongParameterList")
 @Composable
 private fun QuickAccessHubButton(
     expanded: Boolean,
