@@ -277,7 +277,7 @@ fun BoxWithConstraintsScope.EditBottomSheet(
             )
             .consumeClicks(rememberInteractionSource())
     ) {
-        DragHandle(
+        AccountSelectionDragHandle(
             expanded = expanded,
             onToggle = {
                 hideKeyboard(rootView)
@@ -591,7 +591,7 @@ private fun SheetHeader(
                     modifier = Modifier.padding(start = 20.dp, end = 24.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    SwapConnector(enabled = selectedAccount != null && toAccount != null, onSwap = onSwapAccounts)
+                    AccountSwapConnector(enabled = selectedAccount != null && toAccount != null, onSwap = onSwapAccounts)
                     Spacer(Modifier.width(4.dp))
                     // With From chosen and To still empty, To is the next step: say so in the accent.
                     val toPending = selectedAccount != null && toAccount == null
@@ -745,7 +745,7 @@ private fun Account(
 
 /** Grab handle: drag the sheet, or tap (TalkBack: activate) to show or hide the accounts. */
 @Composable
-private fun DragHandle(expanded: Boolean, onToggle: () -> Unit) {
+private fun AccountSelectionDragHandle(expanded: Boolean, onToggle: () -> Unit) {
     val label = stringResource(if (expanded) R.string.collapse else R.string.expand)
     Box(
         modifier = Modifier
@@ -767,7 +767,7 @@ private const val HandleAlpha = 0.5f
 
 /** The From → To arrow, which is also the swap button: it turns half a turn per swap. */
 @Composable
-private fun SwapConnector(enabled: Boolean, onSwap: () -> Unit) {
+private fun AccountSwapConnector(enabled: Boolean, onSwap: () -> Unit) {
     var turns by remember { mutableIntStateOf(0) }
     val rotation by animateFloatAsState(
         targetValue = 90f + turns * 180f,
