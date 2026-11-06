@@ -879,4 +879,16 @@
     <string name="logo_category_generic">Generic</string>
     <string name="logo_upload_failed">That image couldn\'t be read. Try another one.</string>
     <string name="account_logo_description">%1$s logo</string>
+    <string name="account_background">Background</string>
+    <string name="account_background_none">None</string>
+    <string name="account_background_solid">Solid</string>
+    <string name="account_background_gradient">Gradient</string>
+    <string name="account_background_image">Image</string>
+    <string name="account_background_presets">Presets</string>
+    <string name="account_background_start">Start colour</string>
+    <string name="account_background_end">End colour</string>
+    <string name="account_background_angle">Angle: %1$d°</string>
+    <string name="account_background_choose_image">Choose image</string>
+    <string name="account_background_replace_image">Replace image</string>
+    <string name="account_background_dim">Dim (keeps text readable)</string>
 </resources>

@@ -1,5 +1,10 @@
 package com.ivy.wallet.ui.theme.modal.edit
 
+import androidx.compose.foundation.layout.size
+import com.ivy.data.model.AccountBackgroundStyle
+import com.ivy.legacy.ui.component.account.AccountBackgroundSheet
+import com.ivy.legacy.ui.component.account.accountBackground
+import com.ivy.legacy.ui.component.account.accountPaint
 import android.widget.Toast
 import com.ivy.legacy.ui.component.account.rememberImagePicker
 import androidx.compose.runtime.rememberCoroutineScope
@@ -14,6 +19,7 @@ import com.ivy.ui.logo.hasAccountLogo
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -107,6 +113,7 @@ fun BoxWithConstraintsScope.AccountModal(
     // Images imported while this modal is open; the ones not kept are deleted when it closes.
     val importedFiles = remember(modal) { mutableListOf<String>() }
     var logoPickerVisible by remember(modal) { mutableStateOf(false) }
+    var backgroundSheetVisible by remember(modal) { mutableStateOf(false) }
 
     var amountModalVisible by remember { mutableStateOf(false) }
     var currencyModalVisible by remember { mutableStateOf(false) }
@@ -135,6 +142,23 @@ fun BoxWithConstraintsScope.AccountModal(
                 } else {
                     importedFiles += path
                     appearance = appearance.copy(customLogoPath = path)
+                }
+            }
+        }
+    }
+
+    val pickBackground = rememberImagePicker { uri ->
+        if (mediaStore != null) {
+            scope.launch {
+                val path = mediaStore.importBackground(uri)
+                if (path == null) {
+                    Toast.makeText(context, R.string.logo_upload_failed, Toast.LENGTH_SHORT).show()
+                } else {
+                    importedFiles += path
+                    appearance = appearance.copy(
+                        backgroundStyle = AccountBackgroundStyle.Image,
+                        backgroundImagePath = path,
+                    )
                 }
             }
         }
@@ -209,6 +233,10 @@ fun BoxWithConstraintsScope.AccountModal(
             name = nameTextFieldValue.text,
             color = color,
         ) { logoPickerVisible = true }
+
+        Spacer(Modifier.height(8.dp))
+
+        BackgroundRow(appearance = appearance, color = color) { backgroundSheetVisible = true }
 
         Spacer(Modifier.height(24.dp))
 
@@ -302,6 +330,18 @@ fun BoxWithConstraintsScope.AccountModal(
                 }
             },
             onDismiss = { logoPickerVisible = false },
+        )
+    }
+
+    if (backgroundSheetVisible) {
+        AccountBackgroundSheet(
+            appearance = appearance,
+            accountName = nameTextFieldValue.text,
+            accountColor = color,
+            surface = UI.colors.medium,
+            onChange = { appearance = it },
+            onPickImage = pickBackground,
+            onDismiss = { backgroundSheetVisible = false },
         )
     }
 
@@ -411,6 +451,35 @@ private fun LogoRow(
                 style = UI.typo.b2.style(color = Gray, fontWeight = FontWeight.SemiBold),
             )
         }
+    }
+}
+
+/** "Background" with a swatch of the current one; opens the background sheet. */
+@Composable
+private fun BackgroundRow(appearance: AccountAppearance, color: Color, onClick: () -> Unit) {
+    val surface = UI.colors.medium
+    val paint = remember(appearance, color, surface) { accountPaint(appearance, color, surface) }
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(UI.shapes.r4)
+            .background(surface, UI.shapes.r4)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 12.dp)
+            .testTag("account_modal_background"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = stringResource(R.string.account_background),
+            style = UI.typo.b2.style(fontWeight = FontWeight.Bold),
+        )
+        Box(
+            Modifier
+                .size(width = 56.dp, height = 32.dp)
+                .clip(UI.shapes.rFull)
+                .accountBackground(paint)
+        )
     }
 }
 

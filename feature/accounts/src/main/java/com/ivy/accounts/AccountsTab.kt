@@ -1,5 +1,8 @@
 package com.ivy.accounts
 
+import com.ivy.legacy.ui.component.account.AccountPaint
+import com.ivy.legacy.ui.component.account.accountBackground
+import com.ivy.legacy.ui.component.account.accountPaint
 import com.ivy.legacy.ui.component.account.AccountMark
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,8 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,8 +74,6 @@ import com.ivy.wallet.ui.theme.components.BalanceRow
 import com.ivy.wallet.ui.theme.components.BalanceRowMini
 import com.ivy.wallet.ui.theme.components.ReorderButton
 import com.ivy.wallet.ui.theme.components.ReorderModalSingleType
-import com.ivy.wallet.ui.theme.dynamicContrast
-import com.ivy.wallet.ui.theme.findContrastTextColor
 import com.ivy.wallet.ui.theme.toComposeColor
 import kotlinx.collections.immutable.persistentListOf
 import java.util.UUID
@@ -317,7 +318,12 @@ private fun AccountCard(
             )
     ) {
         val account = accountData.account
-        val contrastColor = findContrastTextColor(account.color.value.toComposeColor())
+        val surface = UI.colors.medium
+        val accountColor = account.color.value.toComposeColor()
+        val paint = remember(account.appearance, accountColor, surface) {
+            accountPaint(account.appearance, accountColor, surface)
+        }
+        val contrastColor = paint.ink
         val currency = account.asset.code
 
         AccountHeader(
@@ -325,6 +331,7 @@ private fun AccountCard(
             currency = currency,
             baseCurrency = baseCurrency,
             contrastColor = contrastColor,
+            paint = paint,
             onBalanceClick = onBalanceClick
         )
 
@@ -350,6 +357,7 @@ private fun AccountHeader(
     currency: String,
     baseCurrency: String,
     contrastColor: Color,
+    paint: AccountPaint,
     onBalanceClick: () -> Unit
 ) {
     val account = accountData.account
@@ -357,7 +365,8 @@ private fun AccountHeader(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(account.color.value.toComposeColor(), UI.shapes.r4Top)
+            .clip(UI.shapes.r4Top)
+            .accountBackground(paint)
     ) {
         Spacer(Modifier.height(16.dp))
 
@@ -392,7 +401,7 @@ private fun AccountHeader(
                 Text(
                     text = stringResource(R.string.excluded),
                     style = UI.typo.c.style(
-                        color = account.color.value.toComposeColor().dynamicContrast()
+                        color = paint.secondaryInk
                     )
                 )
             }
@@ -424,7 +433,7 @@ private fun AccountHeader(
                         onBalanceClick()
                     }
                     .testTag("baseCurrencyEquivalent"),
-                textColor = account.color.value.toComposeColor().dynamicContrast(),
+                textColor = paint.secondaryInk,
                 currency = baseCurrency,
                 balance = accountData.balanceBaseCurrency!!,
                 currencyUpfront = false

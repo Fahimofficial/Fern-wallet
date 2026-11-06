@@ -1,5 +1,8 @@
 package com.ivy.transactions
 
+import com.ivy.legacy.ui.component.account.accountBackground
+import com.ivy.legacy.ui.component.account.accountPaint
+import com.ivy.legacy.ui.component.account.primaryColors
 import com.ivy.ui.logo.AccountLogo
 import com.ivy.ui.logo.hasAccountLogo
 import androidx.compose.ui.graphics.graphicsLayer
@@ -274,6 +277,8 @@ private fun BoxWithConstraintsScope.UI(
 ) {
     val ivyContext = ivyWalletCtx()
     val itemColor = (account?.color ?: category?.color?.value)?.toComposeColor() ?: Gray
+    // Behind the rounded list top and the status bar: blends with the header's background.
+    val backdropColor = account?.appearance?.primaryColors(itemColor)?.first() ?: itemColor
 
     var categoryModalData: CategoryModalData? by remember { mutableStateOf(null) }
     var accountModalData: AccountModalData? by remember { mutableStateOf(null) }
@@ -283,7 +288,7 @@ private fun BoxWithConstraintsScope.UI(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(itemColor)
+            .background(backdropColor)
             .thenIf(!initWithTransactions) {
                 horizontalSwipeListener(
                     sensitivity = 150,
@@ -658,7 +663,11 @@ private fun Header(
     showAccountModal: () -> Unit,
     treatTransfersAsIncomeExpense: Boolean = false,
 ) {
-    val contrastColor = findContrastTextColor(itemColor)
+    val accountPaint = account?.let {
+        val surface = UI.colors.medium
+        remember(it.appearance, itemColor, surface) { accountPaint(it.appearance, itemColor, surface) }
+    }
+    val contrastColor = accountPaint?.ink ?: findContrastTextColor(itemColor)
 
     val darkColor = isDarkColor(itemColor)
     // A window side effect: once per colour, not on every recomposition of the header.
@@ -669,7 +678,9 @@ private fun Header(
         modifier = Modifier
             // The account card the user tapped grows into this header.
             .sharedContainer(screen.sharedKey, RectangleShape)
-            .background(itemColor)
+            .then(
+                if (accountPaint != null) Modifier.accountBackground(accountPaint) else Modifier.background(itemColor)
+            )
     ) {
         Spacer(Modifier.height(20.dp))
 
@@ -723,7 +734,7 @@ private fun Header(
                     .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                         onBalanceClick()
                     },
-                textColor = itemColor.dynamicContrast(),
+                textColor = accountPaint?.secondaryInk ?: itemColor.dynamicContrast(),
                 currency = baseCurrency,
                 balance = balanceBaseCurrency ?: 0.0,
                 balanceAmountPrefix = if (category != null) {
