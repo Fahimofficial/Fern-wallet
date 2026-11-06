@@ -365,9 +365,9 @@ fun HomeLazyColumn(
     val ivyContext = ivyWalletCtx()
     val nav = navigation()
 
-    // The entrance marks rows arriving from a load. Rows already there on the first frame
-    // (screenshots, previews, a restored screen) are shown settled.
-    val motion = remember { HistoryMotion(entrancePending = !homeEntrancePlayed && history.isEmpty()) }
+    // Track the first Home load independently of the initial list contents. Data may already
+    // be present on the first composition (for example after restoring the screen).
+    val motion = remember { HistoryMotion(entrancePending = !homeEntrancePlayed) }
     LaunchedEffect(history.isNotEmpty()) {
         if (history.isNotEmpty() && motion.entrancePending) {
             delay(HistoryMotion.EntranceMillis.toLong())
