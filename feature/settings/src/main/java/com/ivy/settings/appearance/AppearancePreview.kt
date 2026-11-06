@@ -97,7 +97,7 @@ internal fun AppearancePreview(
             "-42.50",
             card,
             text,
-            chip = { AccountChip(accountColors, background) },
+            chip = { PreviewAccountColorChip(accountColors, background) },
         )
         TransactionRow(R.string.appearance_preview_rent, c(ColorToken.Upcoming), "-950.00", card, text, warning = true)
         Spacer(Modifier.height(10.dp))
@@ -164,7 +164,7 @@ private fun TransactionRow(
 
 /** A transaction's account chip: the account's colour with account colours on, else neutral. */
 @Composable
-private fun AccountChip(accountColors: Boolean, neutral: Color) {
+private fun PreviewAccountColorChip(accountColors: Boolean, neutral: Color) {
     val fill by animateColorAsState(
         if (accountColors) SampleAccountColor else neutral,
         IvyMotion.standard(IvyMotion.Duration.Medium),
