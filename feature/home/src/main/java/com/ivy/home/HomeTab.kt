@@ -116,6 +116,8 @@ fun BoxWithConstraintsScope.HomeUi(
     onBarsVisibleChange: (Boolean) -> Unit = {},
     // Home is kept composed under other tabs; its hub chevron only belongs to Home.
     tabSelected: Boolean = true,
+    // Screenshot/sample surfaces should render settled rows; the real Home tab animates its first load.
+    animateInitialHistory: Boolean = true,
 ) {
     val ivyContext = ivyWalletCtx()
 
@@ -248,6 +250,7 @@ fun BoxWithConstraintsScope.HomeUi(
             onBarsVisibleChange = onBarsVisibleChange,
             onDeleteTransaction = { onEvent(HomeEvent.DeleteTransaction(it)) },
             onToggleHideBalance = { onEvent(HomeEvent.ToggleHideBalance) },
+            animateInitialHistory = animateInitialHistory,
         )
     }
 
@@ -361,13 +364,14 @@ fun HomeLazyColumn(
     onBarsVisibleChange: (Boolean) -> Unit = {},
     onDeleteTransaction: (Transaction) -> Unit = {},
     onToggleHideBalance: () -> Unit = {},
+    animateInitialHistory: Boolean = true,
 ) {
     val ivyContext = ivyWalletCtx()
     val nav = navigation()
 
     // Track the first Home load independently of the initial list contents. Data may already
     // be present on the first composition (for example after restoring the screen).
-    val motion = remember { HistoryMotion(entrancePending = !homeEntrancePlayed) }
+    val motion = remember { HistoryMotion(entrancePending = animateInitialHistory && !homeEntrancePlayed) }
     LaunchedEffect(history.isNotEmpty()) {
         if (history.isNotEmpty() && motion.entrancePending) {
             delay(HistoryMotion.EntranceMillis.toLong())
@@ -595,6 +599,7 @@ fun BoxWithConstraintsScope.HomeSampleUi(
             initialPeriodModalOpen = overlay == HomeSampleOverlay.PeriodPicker,
             initialMoreMenuExpanded = if (overlay == HomeSampleOverlay.MoreMenu) true else null,
             tabSelected = tabSelected,
+            animateInitialHistory = false,
             modifier = modifier,
         )
     }
