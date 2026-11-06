@@ -55,6 +55,7 @@ import com.ivy.ui.R
  * two custom colours plus an angle) or Image (with a dim slider), over a live preview of the card.
  * Changes apply as they're made; the account is saved by the editor's Save.
  */
+@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountBackgroundSheet(
