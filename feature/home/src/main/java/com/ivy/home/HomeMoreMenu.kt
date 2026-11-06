@@ -245,7 +245,7 @@ fun BoxWithConstraintsScope.MoreMenu(
         animationSpec = IvyMotion.standard(IvyMotion.Duration.Short),
         label = "hub_button_visibility",
     )
-    HubButton(
+    QuickAccessHubButton(
         modifier = Modifier
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
@@ -271,7 +271,7 @@ fun BoxWithConstraintsScope.MoreMenu(
                 }
             }
             // Above the tab content (zIndex 1): the Home root used to take every touch here.
-            .zIndex(if (expanded || hub.dragging) 520f else HubButtonZIndex)
+            .zIndex(if (expanded || hub.dragging) 520f else QuickAccessHubButtonZIndex)
             .testTag("home_more_menu_arrow"),
         expanded = expanded,
         enabled = available,
@@ -296,7 +296,7 @@ fun BoxWithConstraintsScope.MoreMenu(
  * by hand.
  */
 @Composable
-private fun HubButton(
+private fun QuickAccessHubButton(
     expanded: Boolean,
     enabled: Boolean,
     progress: () -> Float,
@@ -395,7 +395,7 @@ private class HubExpansion(initial: Float, private val scope: CoroutineScope) {
 private const val HalfOpen = 0.5f
 private const val HiddenScale = 0.8f
 private const val HubOpenRotation = -180f
-private const val HubButtonZIndex = 2f
+private const val QuickAccessHubButtonZIndex = 2f
 private val HubTouchPadding = 4.dp
 
 @Suppress("LongParameterList")
@@ -455,7 +455,7 @@ private fun ColumnScope.Content(
 
     if (topCategory != null) {
         Spacer(Modifier.height(12.dp))
-        Insight(topCategory)
+        TopCategoryInsightCard(topCategory)
     }
 
     Spacer(Modifier.weight(1f))
@@ -625,7 +625,7 @@ private const val HeartBeatScale = 1.25f
 
 /** One fact about this month, in the space below the cards. */
 @Composable
-private fun Insight(topCategory: TopCategory) {
+private fun TopCategoryInsightCard(topCategory: TopCategory) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
