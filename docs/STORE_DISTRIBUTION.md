@@ -48,6 +48,7 @@ key that signs the AAB is the upload key. When enrolling, preserve the existing 
 certificate as the Play app-signing key if users who installed Fern from GitHub must be able to
 update that installation through Play. Configure the AAB upload certificate in Play Console as
 the accepted upload key. Test the first release with internal testing before production.
+Before the first upload, verify in Play Console **App integrity** that the **App signing key certificate SHA-256** matches `RELEASE_CERT_SHA256`. The upload-key fingerprint alone is not sufficient. If the app-signing fingerprint differs, stop: GitHub-installed users may not be able to update through Play.
 
 
 ## F-Droid status
