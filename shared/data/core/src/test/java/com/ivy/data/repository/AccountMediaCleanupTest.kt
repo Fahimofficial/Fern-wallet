@@ -20,6 +20,10 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.util.UUID
 
+private const val OriginalLogoPath = "/media/logo1.png"
+private const val ReplacementLogoPath = "/media/logo2.png"
+private const val BackgroundImagePath = "/media/bg1.jpg"
+
 /** An account's logo and background files go when they're replaced or the account is deleted. */
 class AccountMediaCleanupTest {
     private val dao = FakeAccountDao()
@@ -42,9 +46,9 @@ class AccountMediaCleanupTest {
         includeInBalance = true,
         orderNum = 0.0,
         appearance = AccountAppearance(
-            customLogoPath = "/media/logo1.png",
+            customLogoPath = OriginalLogoPath,
             backgroundStyle = AccountBackgroundStyle.Image,
-            backgroundImagePath = "/media/bg1.jpg",
+            backgroundImagePath = BackgroundImagePath,
         ),
     )
 
@@ -53,16 +57,16 @@ class AccountMediaCleanupTest {
         repository.save(account)
         files.deleted.shouldBeEmpty()
 
-        repository.save(account.copy(appearance = account.appearance.copy(customLogoPath = "/media/logo2.png")))
+        repository.save(account.copy(appearance = account.appearance.copy(customLogoPath = ReplacementLogoPath)))
 
-        files.deleted shouldContainExactly listOf("/media/logo1.png")
+        files.deleted shouldContainExactly listOf(OriginalLogoPath)
     }
 
     @Test
     fun `deleting the account deletes its files`() = runTest {
         repository.save(account)
         repository.deleteById(account.id)
-        files.deleted shouldContainExactly listOf("/media/logo1.png", "/media/bg1.jpg")
+        files.deleted shouldContainExactly listOf(OriginalLogoPath, BackgroundImagePath)
     }
 
     @Test
