@@ -165,7 +165,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
                     // Theme-coloured backdrop behind screen transitions: while one screen fades
                     // out and the next fades in, the dark window background must never show.
                     ThemedBackdrop(rootPalette(isSystemInDarkTheme)[ColorToken.Background]) {
-                      AppLocals {
+                      ProvideAppCompositionLocals {
                         NavigationRoot(navigation = navigation, onUnhandledBack = ::leaveApp) { screen ->
                             IvyUI(
                                 design = appDesign(ivyContext),
@@ -196,7 +196,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
     /** App-wide values every screen reads, each collected once here. */
     @Suppress("FunctionNaming") // a composable
     @Composable
-    private fun AppLocals(content: @Composable () -> Unit) {
+    private fun ProvideAppCompositionLocals(content: @Composable () -> Unit) {
         // "Use account colours on transactions" (it used to be collected per screen); default off.
         val accountColors by remember {
             features.showAccountColorsInTransactions.enabledFlow(applicationContext)
