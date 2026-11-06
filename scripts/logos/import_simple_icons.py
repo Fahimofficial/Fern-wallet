@@ -1,5 +1,4 @@
-"""
-Import account logos from an unpacked `simple-icons` npm package.
+"""Import account logos from an unpacked `simple-icons` npm package.
 
 Usage: python3 scripts/logos/import_simple_icons.py path/to/simple-icons/package
 
