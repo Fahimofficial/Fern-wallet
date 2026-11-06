@@ -126,7 +126,7 @@ fun NavigationRoot(
                             LocalScreenAnimationScope provides this,
                             LocalScreenEnterSettled provides enterSettled,
                         ) {
-                            Box(Modifier.recedeBehindNewer(shown, screens.currentState, screens.targetState, this)) {
+                            Box(Modifier.recedeBehindNewerScreenContent(shown, screens.currentState, screens.targetState, this)) {
                                 ScreenContent(shown, navigation, stores, parentOwner, navGraph)
                             }
                         }
@@ -144,7 +144,7 @@ fun NavigationRoot(
  * phase: receding never recomposes the screen.
  */
 @Composable
-private fun Modifier.recedeBehindNewer(
+private fun Modifier.recedeBehindNewerScreenContent(
     shown: NavEntry,
     current: NavEntry,
     target: NavEntry,
