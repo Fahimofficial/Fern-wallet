@@ -60,15 +60,15 @@ Every other brand is shown as its initials on a brand colour, and no artwork is 
 | Freecharge | not in Simple Icons |
 | Groww | not in Simple Icons |
 | Upstox | not in Simple Icons |
-| Mastercard | brand guidelines restrict use: https://www.mastercard.com/brandcenter/us/en/brand-requirements/mastercard.html |
+| Mastercard | brand guidelines restrict use: <https://www.mastercard.com/brandcenter/us/en/brand-requirements/mastercard.html> |
 | RuPay | not in Simple Icons |
-| PayPal | brand guidelines restrict use: https://newsroom.paypal-corp.com/media-resources |
-| Apple Pay | source is a brand/marketing page: https://developer.apple.com/apple-pay/marketing |
-| Wise | brand guidelines restrict use: https://wise.design/foundations/logo |
-| Revolut | source is a brand/marketing page: https://developer.revolut.com/docs/resources/marketing-assets-guidelines/marketing-guidelines |
+| PayPal | brand guidelines restrict use: <https://newsroom.paypal-corp.com/media-resources> |
+| Apple Pay | source is a brand/marketing page: <https://developer.apple.com/apple-pay/marketing> |
+| Wise | brand guidelines restrict use: <https://wise.design/foundations/logo> |
+| Revolut | source is a brand/marketing page: <https://developer.revolut.com/docs/resources/marketing-assets-guidelines/marketing-guidelines> |
 | Citi | not in Simple Icons |
-| HSBC | brand guidelines restrict use: https://www.hsbc.com/terms-and-conditions |
-| Venmo | brand guidelines restrict use: https://venmo.com/about/brand |
+| HSBC | brand guidelines restrict use: <https://www.hsbc.com/terms-and-conditions> |
+| Venmo | brand guidelines restrict use: <https://venmo.com/about/brand> |
 
 ## Generic icons
 
