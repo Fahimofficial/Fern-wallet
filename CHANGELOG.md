@@ -7,6 +7,75 @@ Release notes for published builds are generated on the
 
 First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 
+### UI polish, motion and micro-interactions
+All motion uses the shared `IvyMotion` tokens (150/250/300 ms, M3 easings, springs). With
+"Remove animations" on, every animation finishes at once or is skipped: Compose follows the
+animator scale, and the stagger, count-up, pulse and confetti effects check `MotionPreferences`.
+See `PLAN.md` for the decisions behind each item.
+
+- **Foundations.** New tokens: stagger and a bouncy spring. `MotionPreferences` is observable
+  state. Haptics gain success and error. New `AnimatedAmountText` and tabular figures for all
+  amount styles. `pressScale` now presses to 0.97 and can lower an elevation while pressed.
+- **Home layout.**
+  - The bottom bar used to be painted over by the list. It now sits above it, with a gradient
+    scrim and bottom padding so the last row clears the bar and the + button.
+  - The bar and + hide while scrolling down and come back on scroll-up. They never hide with
+    TalkBack on.
+  - The + shows "Add" during the first session only.
+  - Days with no income or expense collapse to one line. Day totals are signed and tinted
+    (income, expense or grey).
+  - Untitled rows show the category, or else the time.
+  - Amounts are right-aligned with a smaller currency.
+  - Cashflow is a chip that opens Reports. The month pill has its own caret.
+- **Home motion.**
+  - The balance counts to new values. Tap switches compact/exact. Long-press, or the TalkBack
+    action, opens Balance details. An eye button toggles the saved hide-balance setting.
+  - Income and expense count up.
+  - On month change, rows slide in from the side you moved to.
+  - On first load, rows enter in a stagger.
+  - Swipe a row right to edit or left to delete with Undo. Both are also TalkBack actions.
+  - Nav icons bounce when selected.
+- **Transitions.** After you edit a transaction, its row glows once when you return to the list.
+- **Add/Edit.**
+  - The converted-amount line shows only when the currencies differ.
+  - One style for the selected account chip: colour fill plus a check.
+  - The sheet has a drag handle.
+  - Transfers keep category and tags under "More". A From/To swap button turns half a turn,
+    and "To" is highlighted when it's the next thing to pick.
+  - Save gives a haptic and a progress state.
+- **Quick access.**
+  - Tiles press, tick and enter in a diagonal wave.
+  - A due-count badge on Planned Payments.
+  - The savings bar fills in. Confetti plays once when a goal is reached.
+  - A "most frequent category this month" insight.
+  - The GitHub card shows an open arrow, with the URL on one line.
+  - The Support heart beats once.
+  - Search highlights the query in results.
+- **Appearance.**
+  - The preview stays pinned while the controls scroll.
+  - Colour changes sweep through the preview in a wave.
+  - The theme switch has a sliding thumb, an icon per mode, and an AMOLED hint.
+  - The preset row shows a peek of the next preset with an edge fade, and a fixed label height.
+  - Section Reset fades in and out.
+  - "Due soon" in the preview has a warning icon, so it isn't shown by colour alone.
+  - Reset all asks for confirmation in a summary sheet.
+  - A "Saved on this device" indicator.
+- **Performance.**
+  - Keys and contentType on every Home list item.
+  - Every new composable is skippable (checked in the Compose compiler reports).
+  - Animated values are read in the layout or draw phase.
+  - A baseline profile is compiled into release builds (R8 and resource shrinking unchanged).
+- **Skipped, and why.**
+  - Pull-to-refresh: pulling down on Home opens Quick access, and data reloads after every change.
+  - FAB morphing into a sheet: the radial add menu and its swipe shortcuts stay.
+  - Amount as the hero of the edit screen, and a segmented type switch: both are redesigns of
+    the legacy sheet.
+  - Sparkline, circular-reveal sweep, transfer-icon flip, Macrobenchmark module: low value for
+    their cost.
+  - A save checkmark: it would mean delaying navigation in the ViewModel.
+  - Not profiled on a device: there was no emulator, so frame-time targets are unmeasured and
+    the baseline profile is hand-written, not generated.
+
 ### Support my work
 - New **Settings → Support my work** screen: Ko-fi, UPI (`SimplyFahim@sbi`) with a QR code
   generated on the device, Copy UPI ID, Open UPI app (chooser when several are installed, clear
