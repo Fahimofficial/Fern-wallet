@@ -808,13 +808,20 @@ private fun QuickAccessMainRow(
 }
 
 
+private data class QuickAccessThemeStyle(
+    val icon: Int,
+    val label: String,
+    val backgroundColor: Color,
+    val tint: Color,
+)
+
 @Composable
 private fun QuickAccessThemeButton(
     theme: Theme,
     onSwitchTheme: () -> Unit,
 ) {
     val (icon, label, backgroundColor, tint) = when (theme) {
-        Theme.LIGHT -> Quadruple(
+        Theme.LIGHT -> QuickAccessThemeStyle(
             R.drawable.home_more_menu_light_mode,
             stringResource(R.string.light_mode),
             UI.colors.pure,
@@ -845,8 +852,9 @@ private fun QuickAccessThemeButton(
         label = label,
         backgroundColor = backgroundColor,
         tint = tint,
-        onClick = onSwitchTheme,
-    )
+    ) {
+        onSwitchTheme()
+    }
 }
 
 @Composable
