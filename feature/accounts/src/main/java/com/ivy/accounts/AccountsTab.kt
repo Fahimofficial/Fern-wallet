@@ -1,5 +1,6 @@
 package com.ivy.accounts
 
+import com.ivy.legacy.ui.component.account.AccountMark
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -68,7 +69,6 @@ import com.ivy.ui.rememberScrollPositionListState
 import com.ivy.wallet.ui.theme.Ivy
 import com.ivy.wallet.ui.theme.components.BalanceRow
 import com.ivy.wallet.ui.theme.components.BalanceRowMini
-import com.ivy.wallet.ui.theme.components.ItemIconSDefaultIcon
 import com.ivy.wallet.ui.theme.components.ReorderButton
 import com.ivy.wallet.ui.theme.components.ReorderModalSingleType
 import com.ivy.wallet.ui.theme.dynamicContrast
@@ -366,10 +366,14 @@ private fun AccountHeader(
         ) {
             Spacer(Modifier.width(20.dp))
 
-            ItemIconSDefaultIcon(
+            AccountMark(
+                appearance = account.appearance,
+                name = account.name.value,
+                color = account.color.value.toComposeColor(),
                 iconName = account.icon?.id,
                 defaultIcon = R.drawable.ic_custom_account_s,
-                tint = contrastColor
+                tint = contrastColor,
+                size = 28.dp,
             )
 
             Spacer(Modifier.width(8.dp))

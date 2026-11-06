@@ -863,4 +863,20 @@
     <string name="appearance_reset_summary_light">Custom light colours removed: %1$d</string>
     <string name="appearance_reset_summary_dark">Custom dark colours removed: %1$d</string>
     <string name="appearance_reset_summary_theme">Theme mode, accounts and categories stay as they are.</string>
+    <string name="logo">Logo</string>
+    <string name="logo_upload">Upload</string>
+    <string name="logo_replace_upload">Replace upload</string>
+    <string name="logo_use_initials">Use initials</string>
+    <string name="logo_none">None</string>
+    <string name="logo_search_hint">Search banks, wallets, cards…</string>
+    <string name="logo_no_results">No logo matches. Try another name or upload your own.</string>
+    <string name="logo_category_all">All</string>
+    <string name="logo_category_banks">Banks</string>
+    <string name="logo_category_wallets">UPI &amp; wallets</string>
+    <string name="logo_category_investing">Investing</string>
+    <string name="logo_category_cards">Cards</string>
+    <string name="logo_category_global">Global</string>
+    <string name="logo_category_generic">Generic</string>
+    <string name="logo_upload_failed">That image couldn\'t be read. Try another one.</string>
+    <string name="account_logo_description">%1$s logo</string>
 </resources>

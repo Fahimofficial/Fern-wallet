@@ -1,5 +1,6 @@
 package com.ivy.wallet.ui.edit.core
 
+import com.ivy.legacy.ui.component.account.AccountMark
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
@@ -80,7 +81,6 @@ import com.ivy.wallet.ui.theme.IvyDark
 import com.ivy.wallet.ui.theme.components.ActionsRow
 import com.ivy.wallet.ui.theme.components.BalanceRow
 import com.ivy.wallet.ui.theme.components.CircleButton
-import com.ivy.wallet.ui.theme.components.ItemIconSDefaultIcon
 import com.ivy.wallet.ui.theme.components.IvyButton
 import com.ivy.wallet.ui.theme.components.IvyIcon
 import com.ivy.wallet.ui.theme.findContrastTextColor
@@ -718,10 +718,13 @@ private fun Account(
         if (selected) {
             IvyIcon(icon = R.drawable.ic_check, tint = textColor)
         } else {
-            ItemIconSDefaultIcon(
+            AccountMark(
+                appearance = account.appearance,
+                name = account.name,
+                color = accountColor,
                 iconName = account.icon,
                 defaultIcon = R.drawable.ic_custom_account_s,
-                tint = textColor
+                tint = textColor,
             )
         }
 

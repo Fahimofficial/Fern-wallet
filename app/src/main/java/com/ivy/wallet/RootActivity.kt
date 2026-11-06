@@ -1,5 +1,8 @@
 package com.ivy.wallet
 
+import androidx.compose.runtime.CompositionLocalProvider
+import com.ivy.data.media.AccountMediaStore
+import com.ivy.legacy.ui.component.account.LocalAccountMediaStore
 import android.appwidget.AppWidgetManager
 import android.content.ActivityNotFoundException
 import android.content.ClipData
@@ -107,6 +110,9 @@ class RootActivity : AppCompatActivity(), RootScreen {
     @Inject
     lateinit var undoController: UndoController
 
+    @Inject
+    lateinit var accountMediaStore: AccountMediaStore
+
     private lateinit var createFileLauncher: ActivityResultLauncher<String>
     private lateinit var onFileCreated: (fileUri: Uri) -> Unit
 
@@ -154,6 +160,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
                     // Theme-coloured backdrop behind screen transitions: while one screen fades
                     // out and the next fades in, the dark window background must never show.
                     ThemedBackdrop(rootPalette(isSystemInDarkTheme)[ColorToken.Background]) {
+                      CompositionLocalProvider(LocalAccountMediaStore provides accountMediaStore) {
                         NavigationRoot(navigation = navigation, onUnhandledBack = ::leaveApp) { screen ->
                             IvyUI(
                                 design = appDesign(ivyContext),
@@ -165,6 +172,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
                                 IvyNavGraph(screen)
                             }
                         }
+                      }
                     }
                 }
             }

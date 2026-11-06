@@ -1,5 +1,7 @@
 package com.ivy.transactions
 
+import com.ivy.ui.logo.AccountLogo
+import com.ivy.ui.logo.hasAccountLogo
 import androidx.compose.ui.graphics.graphicsLayer
 import com.ivy.navigation.screenEnterSettled
 import androidx.compose.ui.graphics.RectangleShape
@@ -813,11 +815,21 @@ private fun Item(
     ) {
         when {
             account != null -> {
-                ItemIconMDefaultIcon(
-                    iconName = account.icon,
-                    defaultIcon = R.drawable.ic_custom_account_m,
-                    tint = contrastColor
-                )
+                if (hasAccountLogo(account.appearance.logoKey, account.appearance.customLogoPath)) {
+                    AccountLogo(
+                        logoKey = account.appearance.logoKey,
+                        customLogoPath = account.appearance.customLogoPath,
+                        name = account.name,
+                        color = account.color.toComposeColor(),
+                        size = 36.dp,
+                    )
+                } else {
+                    ItemIconMDefaultIcon(
+                        iconName = account.icon,
+                        defaultIcon = R.drawable.ic_custom_account_m,
+                        tint = contrastColor
+                    )
+                }
 
                 Spacer(Modifier.width(8.dp))
 
