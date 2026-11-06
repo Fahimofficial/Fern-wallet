@@ -239,11 +239,22 @@ private fun untitledText(transaction: Transaction, categories: List<Category>): 
 }
 
 @Composable
-private fun TransactionCardDateAndText(transaction: Transaction, untitledText: String?, highlight: String?) {
+private fun TransactionCardDateAndText(
+    transaction: Transaction,
+    untitledText: String?,
+    highlight: String?,
+) {
     val mark = SpanStyle(
         background = FernTheme.palette[ColorToken.Accent].copy(alpha = HighlightAlpha),
         fontWeight = FontWeight.Black,
     )
+    TransactionDueDateText(transaction)
+    TransactionTitleText(transaction, untitledText, highlight, mark)
+    TransactionDescriptionText(transaction, highlight, mark)
+}
+
+@Composable
+private fun TransactionDueDateText(transaction: Transaction) {
     if (transaction.dueDate != null) {
         Spacer(Modifier.height(12.dp))
         val timeFormatter = LocalTimeFormatter.current
@@ -254,9 +265,7 @@ private fun TransactionCardDateAndText(transaction: Transaction, untitledText: S
                 R.string.due_on,
                 with(timeFormatter) {
                     transaction.dueDate!!.formatLocal(
-                        TimeFormatter.Style.DateOnly(
-                            includeWeekDay = true
-                        )
+                        TimeFormatter.Style.DateOnly(includeWeekDay = true)
                     )
                 }
             ).uppercase(),
@@ -270,13 +279,17 @@ private fun TransactionCardDateAndText(transaction: Transaction, untitledText: S
             )
         )
     }
+}
 
+@Composable
+private fun TransactionTitleText(
+    transaction: Transaction,
+    untitledText: String?,
+    highlight: String?,
+    mark: SpanStyle,
+) {
     if (transaction.title.isNotNullOrBlank()) {
-        Spacer(
-            Modifier.height(
-                if (transaction.dueDate != null) 8.dp else 12.dp
-            )
-        )
+        Spacer(Modifier.height(if (transaction.dueDate != null) 8.dp else 12.dp))
         Text(
             modifier = Modifier.padding(horizontal = 24.dp),
             text = highlightMatches(transaction.title!!, highlight, mark),
@@ -298,7 +311,14 @@ private fun TransactionCardDateAndText(transaction: Transaction, untitledText: S
             overflow = TextOverflow.Ellipsis,
         )
     }
+}
 
+@Composable
+private fun TransactionDescriptionText(
+    transaction: Transaction,
+    highlight: String?,
+    mark: SpanStyle,
+) {
     val description = getTransactionDescription(transaction)
     if (!description.isNullOrBlank()) {
         Spacer(Modifier.height(if (transaction.title.isNotNullOrBlank()) 4.dp else 8.dp))
@@ -314,7 +334,6 @@ private fun TransactionCardDateAndText(transaction: Transaction, untitledText: S
         )
     }
 }
-
 private const val HighlightAlpha = 0.3f
 
 /** [text] with every case-insensitive occurrence of [query] styled with [mark]. */
