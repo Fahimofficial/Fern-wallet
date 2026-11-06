@@ -1,5 +1,7 @@
 package com.ivy.navigation
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.animateFloat
@@ -111,7 +113,19 @@ fun NavigationRoot(
                         transitionSpec = transitionSpec,
                         contentKey = { it.id },
                     ) { shown ->
-                        CompositionLocalProvider(LocalScreenAnimationScope provides this) {
+                        val visibility = transition
+                        // Settled unless this screen is arriving in front (back reveals it at once).
+                        val enterSettled = remember(shown) {
+                            derivedStateOf {
+                                val arrivingInFront = screens.targetState.id == shown.id &&
+                                    screens.currentState.id < shown.id
+                                !arrivingInFront || visibility.currentState == EnterExitState.Visible
+                            }
+                        }
+                        CompositionLocalProvider(
+                            LocalScreenAnimationScope provides this,
+                            LocalScreenEnterSettled provides enterSettled,
+                        ) {
                             Box(Modifier.recedeBehindNewer(shown, screens.currentState, screens.targetState, this)) {
                                 ScreenContent(shown, navigation, stores, parentOwner, navGraph)
                             }
@@ -215,6 +229,17 @@ private fun PredictiveBack(
         }
     }
 }
+
+@SuppressLint("ComposeCompositionLocalUsage")
+private val LocalScreenEnterSettled = staticCompositionLocalOf<State<Boolean>?> { null }
+
+/**
+ * False while the screen is still sliding or growing in front of the previous one; true once it
+ * has landed (and always when it is revealed by back, in previews and in tests). Use it to defer
+ * heavy content, e.g. a long list, so the transition's frames stay cheap.
+ */
+@Composable
+fun screenEnterSettled(): Boolean = LocalScreenEnterSettled.current?.value ?: true
 
 @Composable
 fun navigation(): Navigation {

@@ -1,5 +1,7 @@
 package com.ivy.transactions
 
+import androidx.compose.ui.graphics.graphicsLayer
+import com.ivy.navigation.screenEnterSettled
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -301,6 +303,7 @@ private fun BoxWithConstraintsScope.UI(
         val timeProvider = LocalTimeProvider.current
         val timeConverter = LocalTimeConverter.current
         val timeFormatter = LocalTimeFormatter.current
+        val listReady = screenEnterSettled()
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -311,7 +314,7 @@ private fun BoxWithConstraintsScope.UI(
                 .testTag("item_stats_lazy_column"),
             state = listState,
         ) {
-            item {
+            item(key = "header", contentType = "header") {
                 Header(
                     screen = screen,
                     history = history,
@@ -397,6 +400,14 @@ private fun BoxWithConstraintsScope.UI(
                         }
                     }
                 )
+            }
+
+            if (!listReady) {
+                // Same-size stand-ins while the screen lands; the real rows compose after it.
+                items(count = SkeletonRows, key = { "skeleton-$it" }, contentType = { "skeleton" }) {
+                    SkeletonRow()
+                }
+                return@LazyColumn
             }
 
             choosePeriodModal(
@@ -609,6 +620,20 @@ private fun BoxWithConstraintsScope.DeleteModals(
     }
 }
 
+private const val SkeletonRows = 4
+
+@Composable
+private fun SkeletonRow() {
+    Box(
+        Modifier
+            .padding(horizontal = 16.dp)
+            .padding(top = 10.dp)
+            .fillMaxWidth()
+            .height(96.dp)
+            .background(UI.colors.medium, UI.shapes.r4)
+    )
+}
+
 @Suppress("LongParameterList")
 @Composable
 private fun Header(
@@ -634,7 +659,9 @@ private fun Header(
     val contrastColor = findContrastTextColor(itemColor)
 
     val darkColor = isDarkColor(itemColor)
-    setStatusBarDarkTextCompat(darkText = !darkColor)
+    // A window side effect: once per colour, not on every recomposition of the header.
+    val view = LocalView.current
+    LaunchedEffect(darkColor) { setStatusBarDarkTextCompat(view = view, darkText = !darkColor) }
 
     Column(
         modifier = Modifier
@@ -685,16 +712,18 @@ private fun Header(
             }
         )
 
-        if (currency != baseCurrency && balanceBaseCurrency != null) {
+        if (currency != baseCurrency && baseCurrency.isNotEmpty()) {
+            // Laid out (invisible) before the converted balance is known: no jump when it lands.
             BalanceRowMedium(
                 modifier = Modifier
+                    .graphicsLayer { alpha = if (balanceBaseCurrency == null) 0f else 1f }
                     .padding(start = 32.dp)
                     .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                         onBalanceClick()
                     },
                 textColor = itemColor.dynamicContrast(),
                 currency = baseCurrency,
-                balance = balanceBaseCurrency,
+                balance = balanceBaseCurrency ?: 0.0,
                 balanceAmountPrefix = if (category != null) {
                     balancePrefix(
                         income = income,

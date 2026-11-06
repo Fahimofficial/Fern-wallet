@@ -1,5 +1,6 @@
 package com.ivy.transactions
 
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -41,7 +42,6 @@ import com.ivy.legacy.domain.deprecated.logic.AccountCreator
 import com.ivy.legacy.utils.computationThread
 import com.ivy.legacy.utils.dateNowUTC
 import com.ivy.legacy.utils.ioThread
-import com.ivy.legacy.utils.isNotNullOrBlank
 import com.ivy.legacy.utils.selectEndTextFieldValue
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.TransactionsScreen
@@ -358,16 +358,15 @@ class TransactionsViewModel @Inject constructor(
         }
     }
 
+    // Loads everything first and publishes it in one snapshot: one recomposition when the data
+    // lands, instead of a dozen spread over the screen transition.
+    @Suppress("LongMethod")
     private suspend fun initForAccount(accountId: UUID) {
         val initialAccount = ioThread {
             accountDao.findById(accountId)?.toLegacyDomain() ?: error("account not found")
         }
-        account.value = initialAccount
         val range = period.value.toRange(ivyContext.startDayOfMonth, timeConverter, timeProvider)
-
-        if (initialAccount.currency.isNotNullOrBlank()) {
-            currency.value = initialAccount.currency!!
-        }
+        val accountCurrency = initialAccount.currency?.takeIf { it.isNotBlank() } ?: currency.value
 
         val account = accountRepository.findById(AccountId(accountId)) ?: error("account not found")
 
@@ -376,17 +375,18 @@ class TransactionsViewModel @Inject constructor(
                 account = account
             )
         ).balance.toDouble()
-        balance.doubleValue = balanceValue
-        if (baseCurrency.value != currency.value) {
-            balanceBaseCurrency.value = exchangeAct(
+        val balanceInBase = if (baseCurrency.value != accountCurrency) {
+            exchangeAct(
                 ExchangeAct.Input(
                     data = ExchangeData(
                         baseCurrency = baseCurrency.value,
-                        fromCurrency = currency.value.toOption()
+                        fromCurrency = accountCurrency.toOption()
                     ),
                     amount = balanceValue.toBigDecimal()
                 )
             ).getOrNull()?.toDouble()
+        } else {
+            balanceBaseCurrency.value
         }
 
         val includeTransfersInCalc =
@@ -399,10 +399,8 @@ class TransactionsViewModel @Inject constructor(
                 includeTransfersInCalc = includeTransfersInCalc
             )
         ).incomeExpensePair
-        income.doubleValue = incomeExpensePair.income.toDouble()
-        expenses.doubleValue = incomeExpensePair.expense.toDouble()
 
-        history.value = (
+        val historyValue = (
             accTrnsAct then {
                 trnsWithDateDivsAct(
                     LegacyTrnsWithDateDivsAct.Input(
@@ -424,38 +422,46 @@ class TransactionsViewModel @Inject constructor(
             )
         ).toImmutableList()
 
-        // Upcoming
-        upcomingIncome.doubleValue = ioThread {
-            accountLogic.calculateUpcomingIncome(initialAccount, range)
-        }
-
-        upcomingExpenses.doubleValue = ioThread {
-            accountLogic.calculateUpcomingExpenses(initialAccount, range)
-        }
-
-        upcoming.value = ioThread {
+        val due = ioThread {
             with(transactionMapper) {
-                accountLogic.upcoming(initialAccount, range).map { it.toEntity().toLegacyDomain() }
-            }.toImmutableList()
-        }
-
-        // Overdue
-        overdueIncome.doubleValue = ioThread {
-            accountLogic.calculateOverdueIncome(initialAccount, range)
-        }
-
-        overdueExpenses.doubleValue = ioThread {
-            accountLogic.calculateOverdueExpenses(initialAccount, range)
-        }
-
-        overdue.value = ioThread {
-            with(transactionMapper) {
-                accountLogic.overdue(initialAccount, range).map {
-                    it.toEntity().toLegacyDomain()
-                }.toImmutableList()
+                DueValues(
+                    upcomingIncome = accountLogic.calculateUpcomingIncome(initialAccount, range),
+                    upcomingExpenses = accountLogic.calculateUpcomingExpenses(initialAccount, range),
+                    upcoming = accountLogic.upcoming(initialAccount, range)
+                        .map { it.toEntity().toLegacyDomain() }.toImmutableList(),
+                    overdueIncome = accountLogic.calculateOverdueIncome(initialAccount, range),
+                    overdueExpenses = accountLogic.calculateOverdueExpenses(initialAccount, range),
+                    overdue = accountLogic.overdue(initialAccount, range)
+                        .map { it.toEntity().toLegacyDomain() }.toImmutableList(),
+                )
             }
         }
+
+        Snapshot.withMutableSnapshot {
+            this.account.value = initialAccount
+            currency.value = accountCurrency
+            balance.doubleValue = balanceValue
+            balanceBaseCurrency.value = balanceInBase
+            income.doubleValue = incomeExpensePair.income.toDouble()
+            expenses.doubleValue = incomeExpensePair.expense.toDouble()
+            history.value = historyValue
+            upcomingIncome.doubleValue = due.upcomingIncome
+            upcomingExpenses.doubleValue = due.upcomingExpenses
+            upcoming.value = due.upcoming
+            overdueIncome.doubleValue = due.overdueIncome
+            overdueExpenses.doubleValue = due.overdueExpenses
+            overdue.value = due.overdue
+        }
     }
+
+    private class DueValues(
+        val upcomingIncome: Double,
+        val upcomingExpenses: Double,
+        val upcoming: ImmutableList<Transaction>,
+        val overdueIncome: Double,
+        val overdueExpenses: Double,
+        val overdue: ImmutableList<Transaction>,
+    )
 
     private suspend fun initForCategory(categoryId: UUID, accountFilterList: List<UUID>) {
         val accountFilterSet = accountFilterList.toSet()
@@ -867,6 +873,12 @@ class TransactionsViewModel @Inject constructor(
         startedFor = screen
         if (reset) {
             reset()
+            // The first frame already has the account's colour and name (from the in-memory
+            // cache Home keeps), so the opening card grows into the right header, not a grey one.
+            screen.accountId?.let { id -> ivyContext.accountMap[id] }?.let { cached ->
+                account.value = cached
+                cached.currency?.takeIf { it.isNotBlank() }?.let { currency.value = it }
+            }
         }
 
         viewModelScope.launch {
@@ -874,7 +886,8 @@ class TransactionsViewModel @Inject constructor(
 
             val baseCurrencyValue = baseCurrencyAct(Unit)
             baseCurrency.value = baseCurrencyValue
-            currency.value = baseCurrency.value
+            // An account's currency is set with its data; resetting it here made the header flicker.
+            if (screen.accountId == null || currency.value.isBlank()) currency.value = baseCurrency.value
 
             categories.value = categoryRepository.findAll().toImmutableList()
             accounts.value = accountsAct(Unit)
