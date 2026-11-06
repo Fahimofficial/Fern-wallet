@@ -1,5 +1,6 @@
 package com.ivy.transaction
 
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -306,7 +307,7 @@ private fun BoxWithConstraintsScope.UI(
         modifier = Modifier
             .fillMaxSize()
             // The opened transaction card grows into this screen.
-            .sharedContainer(screen.sharedKey, UI.shapes.r4)
+            .sharedContainer(screen.sharedKey, RectangleShape)
             // Opaque, so the screen covers what's behind while it grows out of the card.
             .background(UI.colors.pure)
             .statusBarsPadding()

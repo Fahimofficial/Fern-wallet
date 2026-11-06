@@ -1,5 +1,6 @@
 package com.ivy.transactions
 
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -638,7 +639,7 @@ private fun Header(
     Column(
         modifier = Modifier
             // The account card the user tapped grows into this header.
-            .sharedContainer(screen.sharedKey, UI.shapes.r4)
+            .sharedContainer(screen.sharedKey, RectangleShape)
             .background(itemColor)
     ) {
         Spacer(Modifier.height(20.dp))

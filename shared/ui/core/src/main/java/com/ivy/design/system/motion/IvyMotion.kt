@@ -35,8 +35,14 @@ object IvyMotion {
         /** Content inside a screen: expand/collapse, tab switch, list updates. */
         const val Medium = 250
 
-        /** Whole-screen navigation. */
+        /** Whole-screen navigation: a screen arriving. */
         const val Long = 300
+
+        /** Whole-screen navigation: a screen leaving (exits are quicker than entrances). */
+        const val Exit = 200
+
+        /** Nothing in the app animates for longer than this. */
+        const val Max = 350
     }
 
     /** List entrance: each item starts [StepMillis] after the previous one, only the first [MaxItems]. */
@@ -112,28 +118,66 @@ object IvyMotion {
         tween<T>(durationMillis = duration, easing = easing)
 
     /**
-     * Shared-axis (X) navigation between screens. Forward moves content left, back moves it right.
-     * The outgoing screen fades out quickly and the incoming one fades in a moment later, so the
-     * two screens never fight for attention and no in-between frame is empty.
+     * Navigation between screens. The screen in front moves (forward: slides in 8% from the
+     * right and fades in over [Duration.Long]; back: slides out and fades over [Duration.Exit]).
+     * The screen behind it never vanishes: it stays put while the host scales and dims it (see
+     * `NavigationRoot`), so the two read as layers, and back runs the same path in reverse.
+     *
+     * @param container the front screen grows out of an element of the screen behind (container
+     * transform): the shared bounds drive that motion, so the screen itself only fades.
      */
-    fun screenEnter(forward: Boolean): EnterTransition =
-        slideInHorizontally(enterSpec<IntOffset>(Duration.Long)) { width ->
+    fun screenTransform(forward: Boolean, container: Boolean = false): ContentTransform =
+        if (forward) {
+            ContentTransform(
+                targetContentEnter = if (container) {
+                    fadeIn(enterSpec(Duration.Short))
+                } else {
+                    slideInHorizontally(enterSpec<IntOffset>(Duration.Long)) { (it * SlideFraction).toInt() } +
+                        fadeIn(enterSpec(Duration.Long))
+                },
+                // Stays fully drawn (alpha 1 -> 1) for the whole transition; the host recedes it.
+                initialContentExit = fadeOut(enterSpec(Duration.Long), targetAlpha = 1f),
+                sizeTransform = NoSizeAnimation,
+            )
+        } else {
+            ContentTransform(
+                targetContentEnter = EnterTransition.None,
+                initialContentExit = if (container) {
+                    fadeOut(exitSpec(Duration.Exit))
+                } else {
+                    slideOutHorizontally(exitSpec<IntOffset>(Duration.Exit)) { (it * SlideFraction).toInt() } +
+                        fadeOut(exitSpec(Duration.Exit))
+                },
+                // The leaving screen stays on top of the one it reveals.
+                targetContentZIndex = -1f,
+                sizeTransform = NoSizeAnimation,
+            )
+        }
+
+    /**
+     * Shared-axis (X) between sibling steps that replace each other with no layer behind
+     * (onboarding): the outgoing step fades out quickly, the incoming one fades in a moment later.
+     */
+    fun sharedAxisX(forward: Boolean): ContentTransform = ContentTransform(
+        targetContentEnter = slideInHorizontally(enterSpec<IntOffset>(Duration.Long)) { width ->
             val offset = (width * SlideFraction).toInt()
             if (forward) offset else -offset
-        } + fadeIn(enterSpec(Duration.Long - FadeOutDuration, delay = FadeOutDuration, easing = Easings.Standard))
-
-    fun screenExit(forward: Boolean): ExitTransition =
-        slideOutHorizontally(exitSpec<IntOffset>(Duration.Long, easing = Easings.Standard)) { width ->
+        } + fadeIn(enterSpec(Duration.Long - FadeOutDuration, delay = FadeOutDuration, easing = Easings.Standard)),
+        initialContentExit = slideOutHorizontally(
+            exitSpec<IntOffset>(Duration.Long, easing = Easings.Standard)
+        ) { width ->
             val offset = (width * SlideFraction).toInt()
             if (forward) -offset else offset
-        } + fadeOut(exitSpec(FadeOutDuration))
-
-    fun screenTransform(forward: Boolean): ContentTransform = ContentTransform(
-        targetContentEnter = screenEnter(forward),
-        initialContentExit = screenExit(forward),
-        // Screens are full size: never animate the container's size.
+        } + fadeOut(exitSpec(FadeOutDuration)),
         sizeTransform = NoSizeAnimation,
     )
+
+    /** How far the screen behind recedes: scale and black-scrim alpha when fully covered. */
+    const val RecededScale = 0.94f
+    const val RecededDim = 0.32f
+
+    /** Timing of the screen behind as it recedes or comes back; same as the front screen's entrance. */
+    fun <T> recedeSpec(): FiniteAnimationSpec<T> = enterSpec(Duration.Long)
 
     /** Fade-through for switching between sibling destinations (bottom-bar tabs). */
     fun fadeThrough(): ContentTransform = ContentTransform(
