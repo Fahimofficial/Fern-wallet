@@ -17,6 +17,8 @@ One-time setup:
 
 The Play upload uses the AAB already signed and verified by `release.yml`; it does not have access to the APK release-signing secrets.
 
+**Current blocker:** Fern's `target-sdk` is currently 34. Google Play requires API 36 for new apps and app updates submitted from 31 August 2026. The workflow reads the target SDK from the selected release tag and fails before authentication if it is below 36. Complete and test an Android 16 / API 36 migration before the first Play upload. Do not just change the number: exercise Android 16 behavior changes first.
+
 ### Narrow Workload Identity Federation trust
 
 Configure the OIDC provider to map these GitHub claims:
