@@ -16,22 +16,22 @@ Every other brand is shown as its initials on a brand colour, and no artwork is 
 
 | Brand | File | From | Upstream source | Licence |
 |---|---|---|---|---|
-| HDFC Bank | `shared/ui/core/src/main/res/drawable/logo_hdfcbank.xml` | Simple Icons 16.36.0, `hdfcbank.svg` | https://www.hdfcsales.com | CC0 1.0 (icon data); trademark of its owner |
-| ICICI Bank | `shared/ui/core/src/main/res/drawable/logo_icicibank.xml` | Simple Icons 16.36.0, `icicibank.svg` | https://www.icicibank.com/ms/aboutus/annual-reports/2022-23/icici/assets/images/home-page/logo.svg | CC0 1.0 (icon data); trademark of its owner |
-| Axis Bank | `shared/ui/core/src/main/res/drawable/logo_axisbank.xml` | Simple Icons 16.36.0, `axisbank.svg` | https://www.axisbank.com/shareholders-corner/shareholders-information/annual-reports | CC0 1.0 (icon data); trademark of its owner |
-| Fi | `shared/ui/core/src/main/res/drawable/logo_fi.xml` | Simple Icons 16.36.0, `fi.svg` | https://fi.money | CC0 1.0 (icon data); trademark of its owner |
-| Google Pay | `shared/ui/core/src/main/res/drawable/logo_googlepay.xml` | Simple Icons 16.36.0, `googlepay.svg` | https://pay.google.com/intl/en_us/about/ | CC0 1.0 (icon data); trademark of its owner |
-| PhonePe | `shared/ui/core/src/main/res/drawable/logo_phonepe.xml` | Simple Icons 16.36.0, `phonepe.svg` | https://www.phonepe.com/press/ | CC0 1.0 (icon data); trademark of its owner |
-| Paytm | `shared/ui/core/src/main/res/drawable/logo_paytm.xml` | Simple Icons 16.36.0, `paytm.svg` | https://paytm.com | CC0 1.0 (icon data); trademark of its owner |
-| Zerodha | `shared/ui/core/src/main/res/drawable/logo_zerodha.xml` | Simple Icons 16.36.0, `zerodha.svg` | https://zerodha.com | CC0 1.0 (icon data); trademark of its owner |
-| Visa | `shared/ui/core/src/main/res/drawable/logo_visa.xml` | Simple Icons 16.36.0, `visa.svg` | https://merchantsignageeu.visa.com/product.asp?dptID=696 | CC0 1.0 (icon data); trademark of its owner |
-| American Express | `shared/ui/core/src/main/res/drawable/logo_americanexpress.xml` | Simple Icons 16.36.0, `americanexpress.svg` | https://commons.wikimedia.org/wiki/File:American_Express_logo_(2018).svg | CC0 1.0 (icon data); trademark of its owner |
-| Diners Club | `shared/ui/core/src/main/res/drawable/logo_dinersclub.xml` | Simple Icons 16.36.0, `dinersclub.svg` | https://www.dinersclub.com/about-us/press | CC0 1.0 (icon data); trademark of its owner |
-| Chase | `shared/ui/core/src/main/res/drawable/logo_chase.xml` | Simple Icons 16.36.0, `chase.svg` | https://commons.wikimedia.org/wiki/File:Chase_logo_2007.svg | CC0 1.0 (icon data); trademark of its owner |
-| Bank of America | `shared/ui/core/src/main/res/drawable/logo_bankofamerica.xml` | Simple Icons 16.36.0, `bankofamerica.svg` | https://www.bankofamerica.com | CC0 1.0 (icon data); trademark of its owner |
-| Cash App | `shared/ui/core/src/main/res/drawable/logo_cashapp.xml` | Simple Icons 16.36.0, `cashapp.svg` | https://cash.app/press | CC0 1.0 (icon data); trademark of its owner |
-| Bitcoin | `shared/ui/core/src/main/res/drawable/logo_bitcoin.xml` | Simple Icons 16.36.0, `bitcoin.svg` | https://bitcoin.org | CC0 1.0 (icon data); trademark of its owner |
-| Ethereum | `shared/ui/core/src/main/res/drawable/logo_ethereum.xml` | Simple Icons 16.36.0, `ethereum.svg` | https://ethereum.org/en/assets/ | CC0 1.0 (icon data); trademark of its owner |
+| HDFC Bank | `shared/ui/core/src/main/res/drawable/logo_hdfcbank.xml` | Simple Icons 16.36.0, `hdfcbank.svg` | <https://www.hdfcsales.com> | CC0 1.0 (icon data); trademark of its owner |
+| ICICI Bank | `shared/ui/core/src/main/res/drawable/logo_icicibank.xml` | Simple Icons 16.36.0, `icicibank.svg` | <https://www.icicibank.com/ms/aboutus/annual-reports/2022-23/icici/assets/images/home-page/logo.svg> | CC0 1.0 (icon data); trademark of its owner |
+| Axis Bank | `shared/ui/core/src/main/res/drawable/logo_axisbank.xml` | Simple Icons 16.36.0, `axisbank.svg` | <https://www.axisbank.com/shareholders-corner/shareholders-information/annual-reports> | CC0 1.0 (icon data); trademark of its owner |
+| Fi | `shared/ui/core/src/main/res/drawable/logo_fi.xml` | Simple Icons 16.36.0, `fi.svg` | <https://fi.money> | CC0 1.0 (icon data); trademark of its owner |
+| Google Pay | `shared/ui/core/src/main/res/drawable/logo_googlepay.xml` | Simple Icons 16.36.0, `googlepay.svg` | <https://pay.google.com/intl/en_us/about/> | CC0 1.0 (icon data); trademark of its owner |
+| PhonePe | `shared/ui/core/src/main/res/drawable/logo_phonepe.xml` | Simple Icons 16.36.0, `phonepe.svg` | <https://www.phonepe.com/press/> | CC0 1.0 (icon data); trademark of its owner |
+| Paytm | `shared/ui/core/src/main/res/drawable/logo_paytm.xml` | Simple Icons 16.36.0, `paytm.svg` | <https://paytm.com> | CC0 1.0 (icon data); trademark of its owner |
+| Zerodha | `shared/ui/core/src/main/res/drawable/logo_zerodha.xml` | Simple Icons 16.36.0, `zerodha.svg` | <https://zerodha.com> | CC0 1.0 (icon data); trademark of its owner |
+| Visa | `shared/ui/core/src/main/res/drawable/logo_visa.xml` | Simple Icons 16.36.0, `visa.svg` | <https://merchantsignageeu.visa.com/product.asp?dptID=696> | CC0 1.0 (icon data); trademark of its owner |
+| American Express | `shared/ui/core/src/main/res/drawable/logo_americanexpress.xml` | Simple Icons 16.36.0, `americanexpress.svg` | <https://commons.wikimedia.org/wiki/File:American_Express_logo_(2018).svg> | CC0 1.0 (icon data); trademark of its owner |
+| Diners Club | `shared/ui/core/src/main/res/drawable/logo_dinersclub.xml` | Simple Icons 16.36.0, `dinersclub.svg` | <https://www.dinersclub.com/about-us/press> | CC0 1.0 (icon data); trademark of its owner |
+| Chase | `shared/ui/core/src/main/res/drawable/logo_chase.xml` | Simple Icons 16.36.0, `chase.svg` | <https://commons.wikimedia.org/wiki/File:Chase_logo_2007.svg> | CC0 1.0 (icon data); trademark of its owner |
+| Bank of America | `shared/ui/core/src/main/res/drawable/logo_bankofamerica.xml` | Simple Icons 16.36.0, `bankofamerica.svg` | <https://www.bankofamerica.com> | CC0 1.0 (icon data); trademark of its owner |
+| Cash App | `shared/ui/core/src/main/res/drawable/logo_cashapp.xml` | Simple Icons 16.36.0, `cashapp.svg` | <https://cash.app/press> | CC0 1.0 (icon data); trademark of its owner |
+| Bitcoin | `shared/ui/core/src/main/res/drawable/logo_bitcoin.xml` | Simple Icons 16.36.0, `bitcoin.svg` | <https://bitcoin.org> | CC0 1.0 (icon data); trademark of its owner |
+| Ethereum | `shared/ui/core/src/main/res/drawable/logo_ethereum.xml` | Simple Icons 16.36.0, `ethereum.svg` | <https://ethereum.org/en/assets/> | CC0 1.0 (icon data); trademark of its owner |
 
 ## Shown as initials (no artwork bundled)
 
