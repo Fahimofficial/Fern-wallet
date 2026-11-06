@@ -50,7 +50,6 @@ update that installation through Play. Configure the AAB upload certificate in P
 the accepted upload key. Test the first release with internal testing before production.
 Before the first upload, verify in Play Console **App integrity** that the **App signing key certificate SHA-256** matches `RELEASE_CERT_SHA256`. The upload-key fingerprint alone is not sufficient. If the app-signing fingerprint differs, stop: GitHub-installed users may not be able to update through Play.
 
-
 ## F-Droid status
 
 This source tree is not currently ready for the official F-Droid repository. It includes Google Play-only dependencies (Play In-App Updates, Play review, Play Services Tasks, and the Play Services coroutine bridge). F-Droid's main repository requires free/open-source software and does not accept proprietary Google Play Services dependencies.
