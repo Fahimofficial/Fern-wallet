@@ -103,10 +103,11 @@ import com.ivy.design.system.motion.pressScale
 import kotlinx.coroutines.launch
 
 private const val MenuVisibleThreshold = 0.01f
-private const val NavBarAlpha = 0.95f
 private const val NavBarZIndex = 50f
 private const val TabIconPressedScale = 0.8f
-private val NavScrimHeight = 24.dp
+
+// Covers the + rising 34dp above the bar, so list text fades out before it reaches it.
+private val NavScrimHeight = 40.dp
 
 // What the FAB does right now, for screen readers.
 private fun fabLabel(tab: MainTab, expanded: Boolean): Int = when {
@@ -192,7 +193,7 @@ fun BoxWithConstraintsScope.BottomBar(
                 val scrim = NavScrimHeight.toPx()
                 drawRect(
                     brush = Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, navBarColor.copy(alpha = NavBarAlpha)),
+                        colors = listOf(Color.Transparent, navBarColor),
                         startY = -scrim,
                         endY = 0f,
                     ),
@@ -200,7 +201,8 @@ fun BoxWithConstraintsScope.BottomBar(
                     size = Size(size.width, scrim),
                 )
             }
-            .background(navBarColor.copy(alpha = NavBarAlpha))
+            // Opaque: at 95% the list's text showed through the tab labels.
+            .background(navBarColor)
             .graphicsLayer { alpha = (1f - buttonsShown.value).coerceIn(0f, 1f) }
             .navigationBarsPadding()
             .clickableNoIndication(rememberInteractionSource()) {

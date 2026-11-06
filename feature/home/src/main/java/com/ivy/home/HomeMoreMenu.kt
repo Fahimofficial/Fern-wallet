@@ -1,5 +1,21 @@
 package com.ivy.home
 
+import androidx.compose.animation.core.animate
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.lerp as lerpColor
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import com.ivy.design.system.motion.pressScale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CircleShape
@@ -66,22 +82,18 @@ import androidx.compose.ui.zIndex
 import com.ivy.base.legacy.Theme
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
-import com.ivy.design.utils.thenIf
 import com.ivy.design.system.appearance.ColorToken
 import com.ivy.design.system.appearance.FernTheme
 import com.ivy.design.system.appearance.get
-import com.ivy.design.system.motion.pressScale
 import com.ivy.domain.RootScreen
 import com.ivy.legacy.Constants
 import com.ivy.legacy.ivyWalletCtx
 import com.ivy.legacy.utils.clickableNoIndication
-import com.ivy.legacy.utils.colorLerp
 import com.ivy.legacy.utils.lerp
 import com.ivy.legacy.utils.navigationBarInset
 import com.ivy.legacy.utils.openUrl
 import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.legacy.utils.rememberSwipeListenerState
-import com.ivy.legacy.utils.springBounce
 import com.ivy.legacy.utils.statusBarInset
 import com.ivy.legacy.utils.toDensityPx
 import com.ivy.legacy.utils.verticalSwipeListener
@@ -97,7 +109,6 @@ import com.ivy.navigation.SupportScreen
 import com.ivy.navigation.navigation
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.components.BufferBattery
-import com.ivy.wallet.ui.theme.components.CircleButtonFilled
 import com.ivy.wallet.ui.theme.components.IvyIcon
 import com.ivy.wallet.ui.theme.modal.AddModalBackHandling
 import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
@@ -125,26 +136,25 @@ fun BoxWithConstraintsScope.MoreMenu(
     topCategory: TopCategory? = null,
     celebrateGoal: Boolean = false,
     onGoalCelebrated: () -> Unit = {},
+    // False on tabs the hub doesn't belong to: the chevron fades out and takes no input.
+    available: Boolean = true,
 ) {
     val ivyContext = ivyWalletCtx()
 
-    // Kept as State and read in layout/draw lambdas: the reveal animates without recomposing
-    // the menu on every frame.
-    val percentExpanded = animateFloatAsState(
-        targetValue = if (expanded) 1f else 0f,
-        animationSpec = springBounce(),
-        label = "more_menu"
-    )
-    val iconRotation = animateFloatAsState(
-        targetValue = if (expanded) -180f else 0f,
-        animationSpec = springBounce(),
-        label = "more_menu_arrow"
-    )
+    // Follows the finger while the chevron is dragged, springs otherwise; read only in
+    // layout/draw lambdas, so the reveal never recomposes the menu per frame.
+    val scope = rememberCoroutineScope()
+    val hub = remember { HubExpansion(if (expanded) 1f else 0f, scope) }
+    LaunchedEffect(expanded) {
+        if (!hub.dragging && hub.target != expanded) hub.settle(expanded)
+    }
+    val percentExpanded = hub.progressState
     val onScreen by remember { derivedStateOf { percentExpanded.value > 0.01f } }
     // The tile wave greets an opening; a menu that is already open (restored, screenshots) just shows.
     val startedOpen = remember { expanded }
 
     val buttonSizePx = 40.dp.toDensityPx()
+    val touchPaddingPx = HubTouchPadding.toDensityPx()
 
     val xBase = ivyContext.screenWidth - 24.dp.toDensityPx()
     val yBaseCollapsed = 20.dp.toDensityPx() + statusBarInset()
@@ -228,7 +238,14 @@ fun BoxWithConstraintsScope.MoreMenu(
         }
     }
 
-    MoreMenuButton(
+    val view = LocalView.current
+    val travelPx = (yBaseExpanded - buttonSizePx - yBaseCollapsed).coerceAtLeast(1f)
+    val shown by animateFloatAsState(
+        targetValue = if (available) 1f else 0f,
+        animationSpec = IvyMotion.standard(IvyMotion.Duration.Short),
+        label = "hub_button_visibility",
+    )
+    HubButton(
         modifier = Modifier
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
@@ -239,37 +256,147 @@ fun BoxWithConstraintsScope.MoreMenu(
                 )
 
                 layout(placeable.width, placeable.height) {
-                    placeable.place(
-                        x = xBase.roundToInt() - buttonSizePx.roundToInt(),
-                        y = yButton.roundToInt()
-                    )
+                    // Once faded out it isn't placed, so whatever is underneath gets the touches.
+                    if (available || shown > 0f) {
+                        placeable.placeWithLayer(
+                            x = xBase.roundToInt() - buttonSizePx.roundToInt() - touchPaddingPx.roundToInt(),
+                            y = yButton.roundToInt() - touchPaddingPx.roundToInt(),
+                        ) {
+                            alpha = shown
+                            val scale = lerp(HiddenScale, 1f, shown)
+                            scaleX = scale
+                            scaleY = scale
+                        }
+                    }
                 }
             }
-            .graphicsLayer { rotationZ = iconRotation.value }
-            .thenIf(expanded) {
-                zIndex(520f)
-            }
+            // Above the tab content (zIndex 1): the Home root used to take every touch here.
+            .zIndex(if (expanded || hub.dragging) 520f else HubButtonZIndex)
             .testTag("home_more_menu_arrow"),
+        expanded = expanded,
+        enabled = available,
         progress = { percentExpanded.value },
+        onDragStart = { hub.grab() },
+        onDrag = { delta -> hub.drag(delta, travelPx) },
+        onDragEnd = { velocity ->
+            val target = hub.release(velocity, travelPx)
+            hub.settle(target, velocity / travelPx) { IvyHaptics.tick(view) }
+            if (target != expanded) setExpanded(target)
+        },
     ) {
+        IvyHaptics.tick(view)
         setExpanded(!expanded)
     }
 }
 
-// Own restart scope: only this button recomposes as its background color animates.
+/**
+ * The chevron: a tap toggles the hub; a drag past touch slop moves it, and the release settles
+ * to the state the fling would land in. Clickable and draggable share one hit area (48dp around
+ * the 40dp circle), and touch slop decides which one gets the gesture; nothing consumes events
+ * by hand.
+ */
 @Composable
-private fun MoreMenuButton(
+private fun HubButton(
+    expanded: Boolean,
+    enabled: Boolean,
     progress: () -> Float,
+    onDragStart: () -> Unit,
+    onDrag: (Float) -> Unit,
+    onDragEnd: (velocity: Float) -> Unit,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    CircleButtonFilled(
-        modifier = modifier,
-        backgroundColor = colorLerp(UI.colors.medium, UI.colors.pure, progress()),
-        icon = R.drawable.ic_expandarrow,
-        onClick = onClick,
-    )
+    val interactionSource = rememberInteractionSource()
+    val medium = UI.colors.medium
+    val pure = UI.colors.pure
+    val label = stringResource(if (expanded) R.string.close else R.string.quick_access)
+    Box(
+        modifier = modifier
+            .draggable(
+                state = rememberDraggableState(onDrag),
+                orientation = Orientation.Vertical,
+                enabled = enabled,
+                interactionSource = interactionSource,
+                onDragStarted = { onDragStart() },
+                onDragStopped = { velocity -> onDragEnd(velocity) },
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled,
+                role = Role.Button,
+                onClickLabel = label,
+                onClick = onClick,
+            )
+            .semantics { contentDescription = label }
+            .padding(HubTouchPadding),
+    ) {
+        Icon(
+            modifier = Modifier
+                .pressScale(interactionSource)
+                .clip(CircleShape)
+                .drawBehind { drawCircle(lerpColor(medium, pure, progress())) }
+                .graphicsLayer { rotationZ = HubOpenRotation * progress() }
+                .padding(8.dp),
+            painter = painterResource(R.drawable.ic_expandarrow),
+            contentDescription = null,
+            tint = UI.colors.pureInverse,
+        )
+    }
 }
+
+/**
+ * Expansion of the Quick-access hub, 0 = closed, 1 = open. Written directly while the chevron is
+ * dragged; otherwise a critically damped spring that starts from the value and velocity on
+ * screen, so a tap or drag mid-animation reverses it without a jump.
+ */
+@Stable
+private class HubExpansion(initial: Float, private val scope: CoroutineScope) {
+    val progressState = mutableFloatStateOf(initial)
+    var dragging by mutableStateOf(false)
+        private set
+
+    /** Where the running (or last) settle goes. */
+    var target: Boolean? = null
+        private set
+    private var job: Job? = null
+
+    fun grab() {
+        dragging = true
+        job?.cancel()
+        target = null
+    }
+
+    fun drag(deltaPx: Float, rangePx: Float) {
+        progressState.floatValue = (progressState.floatValue + deltaPx / rangePx).coerceIn(0f, 1f)
+    }
+
+    /** @return whether the hub should end open, judged from where the fling would land. */
+    fun release(velocityPx: Float, rangePx: Float): Boolean {
+        dragging = false
+        return progressState.floatValue + IvyMotion.projectedDistance(velocityPx) / rangePx >= HalfOpen
+    }
+
+    fun settle(open: Boolean, velocity: Float = 0f, onSettled: () -> Unit = {}) {
+        job?.cancel()
+        target = open
+        job = scope.launch {
+            animate(
+                initialValue = progressState.floatValue,
+                targetValue = if (open) 1f else 0f,
+                initialVelocity = velocity,
+                animationSpec = IvyMotion.Springs.surface(),
+            ) { value, _ -> progressState.floatValue = value.coerceIn(0f, 1f) }
+            onSettled()
+        }
+    }
+}
+
+private const val HalfOpen = 0.5f
+private const val HiddenScale = 0.8f
+private const val HubOpenRotation = -180f
+private const val HubButtonZIndex = 2f
+private val HubTouchPadding = 4.dp
 
 @Suppress("LongParameterList")
 @Composable

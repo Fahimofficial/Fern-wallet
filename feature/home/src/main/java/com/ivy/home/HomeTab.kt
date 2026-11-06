@@ -91,7 +91,13 @@ fun BoxWithConstraintsScope.HomeTab(
         if (!selected) wasHidden = true else if (wasHidden) viewModel.onEvent(HomeEvent.Refresh)
     }
 
-    HomeUi(uiState, viewModel::onEvent, modifier, onBarsVisibleChange = onBarsVisibleChange)
+    HomeUi(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        modifier = modifier,
+        onBarsVisibleChange = onBarsVisibleChange,
+        tabSelected = selected,
+    )
 }
 
 @Suppress("LongMethod")
@@ -106,6 +112,8 @@ fun BoxWithConstraintsScope.HomeUi(
     initialPeriodModalOpen: Boolean = false,
     initialMoreMenuExpanded: Boolean? = null,
     onBarsVisibleChange: (Boolean) -> Unit = {},
+    // Home is kept composed under other tabs; its hub chevron only belongs to Home.
+    tabSelected: Boolean = true,
 ) {
     val ivyContext = ivyWalletCtx()
 
@@ -266,6 +274,7 @@ fun BoxWithConstraintsScope.HomeUi(
         topCategory = remember(uiState.history, uiState.baseData.categories) {
             topExpenseCategory(uiState.history, uiState.baseData.categories)
         },
+        available = tabSelected,
         celebrateGoal = uiState.celebrateSavingsGoal,
         onGoalCelebrated = { onEvent(HomeEvent.SavingsGoalCelebrated) },
     )

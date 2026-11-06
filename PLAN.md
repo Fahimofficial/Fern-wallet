@@ -1,117 +1,129 @@
-# UI/UX polish plan
+# Plan: bug fixes, connected motion, account logos and backgrounds
 
-## Recon
+The previous UI-polish plan is now `CHANGELOG.md` (section "UI polish, motion and
+micro-interactions"). Work continues on branch `ui-polish` (PR #46): these fixes touch the same
+code.
 
-- **Stack:** Kotlin 2.4, Jetpack Compose 1.7.8 (foundation, animation, ui) with Material3 1.2.1.
-  Hilt, Room 2.8 and DataStore. AGP 9.5, minSdk 28, targetSdk 34.
-- **Architecture:** multi-module MVVM (`ComposeViewModel<State, Event>`). Most widgets are still
-  legacy code in `temp/legacy-code` and `temp/old-design` (`UI.colors`, `UI.typo`).
-- **Theme:** `FernPalette` / `ColorToken` (`shared/ui/core/.../appearance`) is the source of
-  truth. It is mapped onto the old `IvyColors` in `IvyTheme.withPalette`. Typography lives in
-  `IvyWalletDesign.typography()`; amounts use the Open Sans `n*` styles.
-- **Navigation:** a custom `Navigation` stack and `NavigationRoot`.
-  - Shared-axis X transitions, a seekable predictive back (`PredictiveBackHandler`) and
-    `enableOnBackInvokedCallback="true"`.
-  - A `SharedTransitionLayout` with `Modifier.sharedContainer` gives the transaction card →
-    edit screen container transform.
-- **Already present, reused rather than rewritten:**
-  - `IvyMotion`: durations of 150/250/300 ms, M3 easings and springs.
-  - `Modifier.pressScale`, a graphics-layer node.
-  - `IvyHaptics`: `tick`, `toggle` and `gestureCommit`.
-  - `MotionPreferences.reduceMotion`, set from `ANIMATOR_DURATION_SCALE` in `RootActivity.onResume`.
-  - `UndoController` with an undo snackbar for deletes. The edit screen already deletes with no
-    dialog.
-  - The collapsing header: the greeting turns into the mini balance on scroll.
-  - Lazy keys and `contentType` for transaction rows.
-  - R8 with resource shrinking for release builds.
+## Diagnoses (Part A)
 
-### Screens
+All found by reading the code; no device was available, so none of this is confirmed with a
+Perfetto or JankStats trace.
 
-| Screen | Files |
-|---|---|
-| Home | `feature/home/HomeTab.kt`, `HomeHeader.kt`, `HomeViewModel.kt`; rows in `temp/legacy-code/.../transaction/{Transactions,TransactionCard,HistoryDateDivider}.kt`; bar and FAB in `feature/main/MainBottomBar.kt` |
-| Add/Edit expense and transfer | `feature/edit-transaction/EditTransactionScreen.kt`; `temp/legacy-code/.../edit/core/{EditBottomSheet,Toolbar}.kt` |
-| Quick-access hub | `feature/home/HomeMoreMenu.kt`, `BufferBattery.kt` |
-| Search | `feature/search/SearchScreen.kt` |
-| Appearance | `feature/settings/.../appearance/*` |
+**A1. The hub chevron only opens with a swipe.**
+The chevron is emitted into MainScreen's Box with zIndex 0. Home's root `Column` gets zIndex 1
+from `MainTabs.tabVisibility`, fills the screen, and carries `pointerInput` swipe listeners.
+Compose hit-tests the topmost sibling first, so the Column takes every touch over the chevron.
+A tap never reaches the button's `clickable`. A swipe "works" only because the Column's own
+swipe-down listener opens the hub.
+- Fix: put the chevron above the tabs.
+- Make it `draggable` (touch slop decides tap vs drag) plus `clickable` on the same element.
+  A release settles to the state the fling projects to.
+- Haptic tick on tap and on settle.
 
-## Phase order
+**A2. The chevron shows on Accounts.**
+`MainTabs` hides a tab through the Modifier of its root content only. `MoreMenu` is a sibling of
+Home's root, not inside it, so it keeps drawing over Accounts.
+- Fix: `HomeUi` knows whether its tab is selected and passes `available` to `MoreMenu`. The
+  chevron then fades and scales out over 150 ms, its gestures turn off, and once invisible it
+  isn't placed, so Accounts' reorder button underneath gets its touches back.
+- The button is absolutely positioned, so the top bar doesn't jump.
 
-Each phase is built, unit-tested and committed on its own.
+**A3. Back does nothing on a transaction or an account.**
+The root cause is in `AddModalBackHandling` (legacy modals). Its `onDispose` removed the handler
+only if it was the top of `Navigation.modalBackHandling`.
+- Modals that close out of order leaked their handler. For example, after an amount is entered
+  the category picker opens before the amount keypad closes.
+- The leaked handler captured `visible = true`. Every later back press called it, it returned
+  "handled", and nothing happened. Back stayed dead in every screen until the process died.
+- The manifest flag, `PredictiveBackHandler` and `MainScreen`'s `BackHandler` are correct.
+- Fix: register and unregister by identity (`Navigation.registerModalBack`), so a modal always
+  removes exactly its own handler.
+- Back order is kept: the keyboard (system), then modal or sheet, then screen pop, then the hub
+  (itself a modal on Home), then exit.
+- The predictive-back animation already seeks the screen transition. Phase 2 makes it run the
+  container transform backwards.
 
-1. **Foundations** (`shared/ui/core/.../motion`, the typography in `IvyWalletDesign`)
-   - Add stagger and bounce tokens.
-   - Make `MotionPreferences` snapshot state in `shared/ui/core`, so Compose reads are observable.
-   - Haptics: add `success` and `error`.
-   - Add `AnimatedAmountText` and a tabular-numerals style.
-   - `pressScale`: change the scale to 0.97 and add an optional elevation.
-2. **Home layout:** bar scrim, bottom padding, hide-on-scroll, a one-time extended FAB, compact
-   empty days, tinted day totals, a fallback primary text, right-aligned amounts, the cashflow
-   chip and the month pill.
-3. **Home motion:** count-ups, compact/exact balance, the eye toggle, month-change slide,
-   staggered entrance, swipe rows with undo, and a bounce on nav icons.
-4. **Transitions:** a tint pulse on the row after returning from edit. The other items already
-   exist (see Skipped).
-5. **Add/Edit:** a converted line only when the value was converted, a unified selected chip,
-   a drag handle and scrim on the sheet, "More" for transfers, From/To swap, and save feedback.
-6. **Hub:** grid press, haptic and wave; a due badge; a goal progress bar with one-time
-   confetti; a top-category insight; the GitHub card; the heart pulse; search-match highlight
-   and recent searches.
-7. **Appearance:** pinned preview, colour cross-fade and wave, a sliding theme thumb with icons,
-   the AMOLED hint, presets peek and fade, section chevron and reset fade, a warning icon, a
-   reset confirm sheet, and the saved indicator.
-8. **Performance:** keys and `contentType` on every Home item, a stability check of the Compose
-   reports, and a baseline profile.
+**A4. List text shows through the nav labels.**
+The bar is drawn at 95 % alpha (`NavBarAlpha = 0.95f`) and the scrim is only 24 dp, while the +
+rises 34 dp above the bar.
+- Fix: an opaque bar, and a scrim tall enough to cover the + area. The list's bottom padding
+  stays.
 
-## Decisions and risks (simplest safe option)
+## Diagnosis: opening an account (B3)
 
-- **Reduce motion.** Compose tweens and springs already finish instantly when the animator
-  scale is 0. The helper covers what the scale does not: `delay()`-based staggers, count-ups,
-  confetti and one-shot pulses. All of these check `MotionPreferences.reduceMotion` and are
-  skipped when it is on.
-- **Scroll direction** comes from the Home list's existing `NestedScrollConnection` (scroll
-  deltas), not from `derivedStateOf`. A `derivedStateOf` would have to write its "previous
-  offset" state while deriving, which is a snapshot anti-pattern. `derivedStateOf` is still
-  used for the derived "at top" check.
-  - The bar is never hidden while TalkBack is on (touch exploration), or while the add menu is
-    open.
-- **Month selector.** The round chevron next to the month opens the Quick-access hub, not a
-  month menu. Merging it into the month pill would remove the only button for the hub. So the
-  month pill gets its own caret (the whole pill opens the picker), and the hub button stays.
-  The month picker (`ChoosePeriodModal` / `IvyModal`) is already a bottom sheet.
-- **Balance tap** now toggles compact/exact, as requested. The Balance screen, which a tap used
-  to open, moves to long-press plus a TalkBack custom action, so it stays reachable. The eye
-  icon toggles the existing persisted "hide balance" preference (`SharedPrefs`).
-- **Cashflow chip** opens the Reports screen.
-- **Swipe rows** are on Home only. They are wrapped in M3 `SwipeToDismissBox`.
-  - Delete reuses the same restorable delete and Undo snackbar as the edit screen, with no
-    dialog.
-  - Both actions are also TalkBack custom actions.
-  - A child row drag consumes the gesture, so the Home tab-switch swipe still works outside rows.
-- **Save button.** The view model saves and then closes the screen itself, so the button shows
-  progress plus a success haptic until the screen leaves. A checkmark would need the view model
-  to report "saved" and then delay navigation. That changes app flow, so it is skipped.
-- **Insight:** "top category this month" counts transactions per category instead of summing
-  amounts. Summing would mix currencies without conversion, which would be wrong.
-- **Confetti** runs for about 800 ms, longer than the 300 ms motion rule, because a celebration
-  needs time to read. It plays once per goal (stored in `SharedPrefs`) and never with reduce
-  motion.
-- **Baseline profile.** There is no emulator or KVM here, so a profile can't be generated or
-  measured. A hand-written `app/src/main/baseline-prof.txt` covers the startup, Home and
-  navigation classes. `profileinstaller` already arrives transitively through Compose, so no
-  new dependency is needed.
-- **Profiling.** I can't profile a release build without a device. Frame-time targets are
-  unverified, and the CHANGELOG says so.
+Static analysis, unverified on a device.
 
-## Skipped and why
+- **(a) Load during the transition.** `TransactionsViewModel.start` loads everything
+  asynchronously. The first frames have `account == null`, so the header is grey and has no
+  balance rows. It then recolours and grows while `sharedBounds` animates toward it, and the
+  history list composes mid-transition.
+  - Fix: seed the account from the in-memory account cache on the first frame.
+  - Publish the account's data in one snapshot.
+  - Compose the history only once the enter transition has settled, with a fixed-height
+    placeholder until then.
+- **(c) Corner mismatch.** Both ends use `UI.shapes.r4`, but the header and the editor end
+  square, so the corners pop at the end. Fix: the overlay clip animates the corner radius from
+  card to screen along the transition, so predictive back follows it too.
+- **(d) Competing animations.** The 8 % shared-axis slide runs on the screen while
+  `sharedBounds` moves the container. Fix: when the target screen opens from a container, the
+  screens only fade and scale; the bounds drive the motion.
+- **(e) Recomposition storm.** `initForAccount` writes about 12 states across suspension points,
+  and each write recomposes the screen during the transition. The single snapshot in (a) fixes
+  this.
+- **Side effect in composition.** `Header` calls `setStatusBarDarkTextCompat` on every
+  recomposition. Fix: move it into an effect keyed on the colour.
 
-- **Pull-to-refresh:** on Home, pull-down already opens the Quick-access hub, and data reloads
-  on every write (`DataObserver`).
-- **FAB morph into a sheet:** the existing radial add menu, with its swipe shortcuts, is kept.
-  Replacing it is a redesign, not polish.
-- **Amount as the hero at the top of the edit screen:** this means restructuring the legacy
-  sheet. The keypad already opens automatically for new transactions.
-- **Expense/Income/Transfer segmented switch:** the existing type chip and modal stay.
-- **Sparkline, circular-reveal sweep, transfer-icon flip and a Macrobenchmark module:** these
-  are optional or low value for their cost.
-- **Count-up already shows change** on month switch, so no extra cross-fade is added on top.
+## Phases (one commit each; build and tests after each)
+
+1. **A1-A4 bugs** and a JVM test for the modal back registry.
+2. **Motion** (B1, B2):
+   - Screen enter 300 ms EmphasizedDecelerate, exit 200 ms EmphasizedAccelerate.
+   - The screen behind scales to 0.94 and dims instead of vanishing.
+   - Container screens fade; the bounds drive.
+   - Animated corner clip.
+   - Everything stays seekable, so taps or back mid-way reverse it without a restart.
+3. **Account open** (B3, B4) as diagnosed above.
+4. **Data model** (C):
+   - `AccountAppearance` in the domain and legacy models.
+   - 6 nullable columns, a `Migration131to132`, a schema JVM test and an androidTest.
+   - The backup JSON uses `AccountEntity`, so the new fields ride along. Old backups decode to
+     null, which means "as before".
+5. **Logos** (D): a registry, Simple Icons assets, `LOGO_LICENSES.md`, `AccountLogo`, the picker
+   sheet, Photo Picker upload and the media store.
+6. **Backgrounds** (E): None / Solid / Gradient / Image editor with a live preview, plus card and
+   header rendering with guaranteed contrast.
+7. **Account colours on transactions** (F):
+   - One root collection of the existing `show_account_color` flag (default OFF) through a
+     CompositionLocal, replacing five ViewModel collections.
+   - The switch lives in Appearance, with a crossfade, logos in chips and the live preview.
+8. **Compose UI tests and verification** (G and the test list).
+
+## Decisions and risks
+
+- **Compose UI tests:** the repo has none, and CI's emulator job runs only data and domain tests.
+- Added `:shared:ui:ui-tests`, a JVM module running Compose UI tests on Robolectric
+  (test-only dependencies; nothing ships).
+- Kept out of feature modules because Paparazzi and Robolectric conflict there.
+- **Logo licensing.** I used only Simple Icons (CC0 icon data). An icon is used only when its
+  Simple Icons entry has no `guidelines` or `license` field and its source isn't a
+  brand-guidelines page.
+  - Everything else gets an initials badge on the brand colour. See "Logos shipped as initials"
+    below and `LOGO_LICENSES.md`.
+  - The marks remain trademarks of their owners. This is identification only, and the owner of
+    the app should review it before a store release.
+- **Policy change.** `docs/Card-Catalogue.md` and the CHANGELOG said no bank or network logos
+  are bundled. This feature reverses that at your request. Credit-card illustrations stay
+  generic.
+- **Image backgrounds** use white text over a dim scrim with a minimum alpha that guarantees
+  4.5:1 against a pure-white image pixel, so the result doesn't depend on sampling. Blur is
+  skipped: `Modifier.blur` only exists from API 31 and minSdk is 28.
+- **Backup.** The image files aren't inside backups. A restored account whose file is missing
+  falls back to its initials or solid colour.
+- **Default background.** A null style means Solid with the account colour, which is today's
+  look.
+- **Not done here:** Perfetto, JankStats or Macrobenchmark profiling (no device or emulator).
+  The jank fixes come from the diagnoses above, not from traces.
+
+## Logos shipped as initials (no clean licence)
+
+Filled in during phase 5, once each entry in the Simple Icons data has been checked.
