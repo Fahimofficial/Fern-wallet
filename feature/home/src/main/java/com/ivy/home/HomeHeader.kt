@@ -210,7 +210,7 @@ private fun HeaderStickyRow(
             }
         }
 
-        MonthSelector(
+        HomeMonthPickerButton(
             modifier = Modifier.horizontalSwipeListener(
                 sensitivity = 75,
                 state = rememberSwipeListenerState(),
@@ -243,7 +243,7 @@ private fun HeaderStickyRow(
  * to it opens Quick access, not a month menu). A horizontal swipe still steps the month.
  */
 @Composable
-private fun MonthSelector(
+private fun HomeMonthPickerButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -306,7 +306,7 @@ fun CashFlowInfo(
                 },
             ),
     ) {
-        HomeBalance(
+        HomeBalanceDisplay(
             currency = currency,
             balance = balance,
             hidden = hideBalance,
@@ -353,7 +353,7 @@ fun CashFlowInfo(
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun HomeBalance(
+private fun HomeBalanceDisplay(
     currency: String,
     balance: Double,
     hidden: Boolean,
