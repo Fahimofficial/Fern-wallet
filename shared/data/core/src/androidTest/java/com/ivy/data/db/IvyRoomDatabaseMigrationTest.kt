@@ -103,7 +103,9 @@ class IvyRoomDatabaseMigrationTest {
             getInt(1) shouldBe 42
             getString(2) shouldBe "cash"
             // Every appearance column is NULL: the account keeps its original look.
-            (3..9).forEach { isNull(it) shouldBe true }
+            for (columnIndex in 3..9) {
+                isNull(columnIndex) shouldBe true
+            }
             close()
         }
         newDb.close()
