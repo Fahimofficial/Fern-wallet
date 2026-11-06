@@ -123,6 +123,7 @@ private fun RowScope.SummaryCard(@DrawableRes icon: Int, color: Color, amount: S
     }
 }
 
+@Suppress("LongParameterList")
 @Composable
 private fun TransactionRow(
     label: Int,
