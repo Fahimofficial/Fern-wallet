@@ -75,6 +75,7 @@ fun LogoPickerSheet(
     hasCustomLogo: Boolean,
     onChoice: (LogoChoice) -> Unit,
     onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var categoryName by rememberSaveable { mutableStateOf<String?>(null) }
@@ -82,6 +83,7 @@ fun LogoPickerSheet(
     val results = remember(query, category) { Logos.search(query, category) }
 
     ModalBottomSheet(
+        modifier = modifier,
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     ) {

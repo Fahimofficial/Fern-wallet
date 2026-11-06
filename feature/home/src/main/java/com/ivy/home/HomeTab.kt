@@ -511,7 +511,12 @@ enum class HomeSampleOverlay { None, PeriodPicker, MoreMenu }
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Suppress("MagicNumber")
 @Composable
-fun BoxWithConstraintsScope.HomeSampleUi(overlay: HomeSampleOverlay = HomeSampleOverlay.None) {
+fun BoxWithConstraintsScope.HomeSampleUi(
+    modifier: Modifier = Modifier,
+    overlay: HomeSampleOverlay = HomeSampleOverlay.None,
+    // False renders Home as it sits under another tab (UI tests).
+    tabSelected: Boolean = true,
+) {
     val everyday = com.ivy.legacy.datamodel.Account(
         name = "Everyday",
         color = 0xFF3F51B5.toInt(),
@@ -589,6 +594,8 @@ fun BoxWithConstraintsScope.HomeSampleUi(overlay: HomeSampleOverlay = HomeSample
             onEvent = {},
             initialPeriodModalOpen = overlay == HomeSampleOverlay.PeriodPicker,
             initialMoreMenuExpanded = if (overlay == HomeSampleOverlay.MoreMenu) true else null,
+            tabSelected = tabSelected,
+            modifier = modifier,
         )
     }
 }
@@ -611,6 +618,6 @@ fun HomeUiTest(isDark: Boolean, overlay: HomeSampleOverlay = HomeSampleOverlay.N
         false -> Theme.LIGHT
     }
     IvyWalletPreview(theme) {
-        HomeSampleUi(overlay)
+        HomeSampleUi(overlay = overlay)
     }
 }

@@ -65,8 +65,10 @@ fun AccountBackgroundSheet(
     onChange: (AccountAppearance) -> Unit,
     onPickImage: (() -> Unit)?,
     onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     ModalBottomSheet(
+        modifier = modifier,
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     ) {
@@ -130,7 +132,7 @@ private fun CardPreview(appearance: AccountAppearance, name: String, color: Colo
 }
 
 @Composable
-private fun GradientControls(appearance: AccountAppearance, onChange: (AccountAppearance) -> Unit) {
+private fun GradientControls(appearance: AccountAppearance, onChange: (AccountAppearance) -> Unit): Unit = Column {
     Text(stringResource(R.string.account_background_presets), style = MaterialTheme.typography.titleSmall)
     Spacer(Modifier.height(8.dp))
     LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(vertical = 4.dp)) {
@@ -172,7 +174,7 @@ private fun GradientControls(appearance: AccountAppearance, onChange: (AccountAp
 }
 
 @Composable
-private fun SwatchRow(label: Int, selected: Int, onPick: (Int) -> Unit) {
+private fun SwatchRow(label: Int, selected: Int, onPick: (Int) -> Unit): Unit = Column {
     Text(stringResource(label), style = MaterialTheme.typography.titleSmall)
     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 6.dp)) {
         items(Swatches, key = { it }) { argb ->
@@ -195,7 +197,7 @@ private fun ImageControls(
     appearance: AccountAppearance,
     onChange: (AccountAppearance) -> Unit,
     onPickImage: (() -> Unit)?,
-) {
+): Unit = Column {
     val hasImage = appearance.backgroundImagePath != null
     if (onPickImage != null) {
         if (hasImage) {

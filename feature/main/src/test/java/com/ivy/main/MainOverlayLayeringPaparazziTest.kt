@@ -24,7 +24,7 @@ class MainOverlayLayeringPaparazziTest(
             IvyWalletPreview(if (theme == PaparazziTheme.Dark) Theme.DARK else Theme.LIGHT) {
                 MainTabs(
                     tab = MainTab.HOME,
-                    home = { HomeSampleUi(HomeSampleOverlay.PeriodPicker) },
+                    home = { HomeSampleUi(overlay = HomeSampleOverlay.PeriodPicker) },
                     accounts = {},
                 )
                 BottomBar(
