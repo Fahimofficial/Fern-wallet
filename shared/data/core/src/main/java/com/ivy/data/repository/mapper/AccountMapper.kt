@@ -30,6 +30,7 @@ class AccountMapper @Inject constructor(
             includeInBalance = includeInBalance,
             orderNum = orderNum,
             type = accountTypeFromEntity(type),
+            appearance = appearance(),
         )
     }
 
@@ -44,7 +45,7 @@ class AccountMapper @Inject constructor(
             id = id.value,
             type = type.name,
             isSynced = true, // TODO: Delete this
-        )
+        ).withAppearance(appearance)
     }
 }
 

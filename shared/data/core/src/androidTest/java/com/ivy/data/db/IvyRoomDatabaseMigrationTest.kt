@@ -10,6 +10,7 @@ import com.ivy.data.db.migration.Migration124to125_LoanEditDateTime
 import com.ivy.data.db.migration.Migration126to127_LoanRecordType
 import com.ivy.data.db.migration.Migration129to130_LoanIncludeNote
 import com.ivy.data.db.migration.Migration130to131_CreditCards
+import com.ivy.data.db.migration.Migration131to132_AccountAppearance
 import com.ivy.data.model.LoanType
 import io.kotest.matchers.shouldBe
 import org.junit.Rule
@@ -69,6 +70,40 @@ class IvyRoomDatabaseMigrationTest {
         newDb.query("SELECT COUNT(*) FROM credit_cards").apply {
             moveToFirst() shouldBe true
             getInt(0) shouldBe 0
+            close()
+        }
+        newDb.close()
+    }
+
+    @Test
+    fun migrate131to132_AccountAppearance_keepsAccountsLookingTheSame() {
+        val accountId = UUID.randomUUID().toString()
+        helper.createDatabase(TestDb, 131).apply {
+            execSQL(
+                "INSERT INTO accounts (name, currency, color, icon, orderNum, includeInBalance, " +
+                    "type, isSynced, isDeleted, id) VALUES " +
+                    "('Wallet', 'INR', 42, 'cash', 2.0, 1, 'ASSET', 0, 0, '$accountId')"
+            )
+            close()
+        }
+
+        val newDb = helper.runMigrationsAndValidate(
+            TestDb,
+            132,
+            true,
+            Migration131to132_AccountAppearance()
+        )
+
+        newDb.query(
+            "SELECT name, color, icon, logoKey, customLogoPath, backgroundStyle, backgroundColors, " +
+                "backgroundAngle, backgroundImagePath, backgroundDim FROM accounts WHERE id = '$accountId'"
+        ).apply {
+            moveToFirst() shouldBe true
+            getString(0) shouldBe "Wallet"
+            getInt(1) shouldBe 42
+            getString(2) shouldBe "cash"
+            // Every appearance column is NULL: the account keeps its original look.
+            (3..9).forEach { isNull(it) shouldBe true }
             close()
         }
         newDb.close()

@@ -40,6 +40,7 @@ class AccountCreator @Inject constructor(
                     icon = data.icon?.let(IconAsset::from)?.getOrNull(),
                     includeInBalance = data.includeBalance,
                     orderNum = accountDao.findMaxOrderNum().nextOrderNum(),
+                    appearance = data.appearance,
                 )
             }.getOrNull() ?: return@ioThread
             accountRepository.save(account)
