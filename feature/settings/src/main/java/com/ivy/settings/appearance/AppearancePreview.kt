@@ -1,5 +1,6 @@
 package com.ivy.settings.appearance
 
+import androidx.compose.runtime.getValue
 import com.ivy.design.system.appearance.ColorGroup
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
@@ -45,7 +46,11 @@ import com.ivy.ui.R
  * before leaving the screen. Purely decorative for screen readers: the rows below describe it all.
  */
 @Composable
-internal fun AppearancePreview(palette: FernPalette, modifier: Modifier = Modifier) {
+internal fun AppearancePreview(
+    palette: FernPalette,
+    modifier: Modifier = Modifier,
+    accountColors: Boolean = false,
+) {
     // Changes sweep through the miniature as a wave: balance and text, then money, then bars.
     val c: @Composable (ColorToken) -> Color = { token ->
         val delay = when (token.group) {
@@ -86,7 +91,14 @@ internal fun AppearancePreview(palette: FernPalette, modifier: Modifier = Modifi
         }
         Spacer(Modifier.height(8.dp))
         TransactionRow(R.string.appearance_preview_salary, c(ColorToken.Income), "+3,200.00", card, text)
-        TransactionRow(R.string.appearance_preview_groceries, c(ColorToken.Expense), "-42.50", card, text)
+        TransactionRow(
+            R.string.appearance_preview_groceries,
+            c(ColorToken.Expense),
+            "-42.50",
+            card,
+            text,
+            chip = { AccountChip(accountColors, background) },
+        )
         TransactionRow(R.string.appearance_preview_rent, c(ColorToken.Upcoming), "-950.00", card, text, warning = true)
         Spacer(Modifier.height(10.dp))
         ProgressRow(card, c(ColorToken.BudgetProgress), c(ColorToken.Overdue), c(ColorToken.Transfer))
@@ -120,6 +132,7 @@ private fun TransactionRow(
     text: Color,
     // "Due soon" isn't told by the amber alone: it gets a warning mark too.
     warning: Boolean = false,
+    chip: (@Composable () -> Unit)? = null,
 ) {
     Row(
         Modifier
@@ -135,6 +148,7 @@ private fun TransactionRow(
             text = stringResource(label),
             style = UI.typo.c.style(color = text, fontWeight = FontWeight.Bold)
         )
+        chip?.invoke()
         if (warning) {
             Icon(
                 modifier = Modifier.size(16.dp),
@@ -147,6 +161,28 @@ private fun TransactionRow(
         Text(text = amount, style = UI.typo.nC.style(color = color.readableOn(card), fontWeight = FontWeight.Bold))
     }
 }
+
+/** A transaction's account chip: the account's colour with account colours on, else neutral. */
+@Composable
+private fun AccountChip(accountColors: Boolean, neutral: Color) {
+    val fill by animateColorAsState(
+        if (accountColors) SampleAccountColor else neutral,
+        IvyMotion.standard(IvyMotion.Duration.Medium),
+        label = "preview_account_chip",
+    )
+    Text(
+        modifier = Modifier
+            .padding(end = 8.dp)
+            .clip(CircleShape)
+            .background(fill)
+            .padding(horizontal = 8.dp, vertical = 2.dp),
+        text = stringResource(R.string.appearance_preview_account),
+        style = UI.typo.c.style(color = fill.contentColor(), fontWeight = FontWeight.Bold),
+    )
+}
+
+// A sample account colour (pink), like the reference look.
+private val SampleAccountColor = Color(0xFFE91E63)
 
 @Composable
 private fun ProgressRow(card: Color, budget: Color, overdue: Color, transfer: Color) {

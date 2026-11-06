@@ -1,5 +1,7 @@
 package com.ivy.wallet
 
+import com.ivy.domain.features.Features
+import com.ivy.legacy.ui.component.account.LocalAccountColorsInTransactions
 import androidx.compose.runtime.CompositionLocalProvider
 import com.ivy.data.media.AccountMediaStore
 import com.ivy.legacy.ui.component.account.LocalAccountMediaStore
@@ -113,6 +115,9 @@ class RootActivity : AppCompatActivity(), RootScreen {
     @Inject
     lateinit var accountMediaStore: AccountMediaStore
 
+    @Inject
+    lateinit var features: Features
+
     private lateinit var createFileLauncher: ActivityResultLauncher<String>
     private lateinit var onFileCreated: (fileUri: Uri) -> Unit
 
@@ -160,7 +165,7 @@ class RootActivity : AppCompatActivity(), RootScreen {
                     // Theme-coloured backdrop behind screen transitions: while one screen fades
                     // out and the next fades in, the dark window background must never show.
                     ThemedBackdrop(rootPalette(isSystemInDarkTheme)[ColorToken.Background]) {
-                      CompositionLocalProvider(LocalAccountMediaStore provides accountMediaStore) {
+                      AppLocals {
                         NavigationRoot(navigation = navigation, onUnhandledBack = ::leaveApp) { screen ->
                             IvyUI(
                                 design = appDesign(ivyContext),
@@ -186,6 +191,21 @@ class RootActivity : AppCompatActivity(), RootScreen {
                 if (appLocked == false) UndoOverlay(undoController)
             }
         }
+    }
+
+    /** App-wide values every screen reads, each collected once here. */
+    @Suppress("FunctionNaming") // a composable
+    @Composable
+    private fun AppLocals(content: @Composable () -> Unit) {
+        // "Use account colours on transactions" (it used to be collected per screen); default off.
+        val accountColors by remember {
+            features.showAccountColorsInTransactions.enabledFlow(applicationContext)
+        }.collectAsState(initial = false)
+        CompositionLocalProvider(
+            LocalAccountMediaStore provides accountMediaStore,
+            LocalAccountColorsInTransactions provides (accountColors == true),
+            content = content,
+        )
     }
 
     private fun setupApp() {

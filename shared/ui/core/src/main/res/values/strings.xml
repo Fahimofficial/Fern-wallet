@@ -891,4 +891,8 @@
     <string name="account_background_choose_image">Choose image</string>
     <string name="account_background_replace_image">Replace image</string>
     <string name="account_background_dim">Dim (keeps text readable)</string>
+    <string name="appearance_transactions">Transactions</string>
+    <string name="appearance_account_colors">Use account colours on transactions</string>
+    <string name="appearance_account_colors_description">Fill each transaction\'s account chip with the account\'s colour and logo; transfers blend from one account to the other.</string>
+    <string name="appearance_preview_account">Wallet</string>
 </resources>

@@ -1,5 +1,8 @@
 package com.ivy.settings.appearance
 
+import android.content.Context
+import com.ivy.domain.features.Features
+import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.lifecycle.ViewModel
 import com.ivy.base.di.AppCoroutineScope
 import com.ivy.base.legacy.Theme
@@ -32,6 +35,8 @@ class AppearanceViewModel @Inject constructor(
     private val settingsAct: SettingsAct,
     private val updateSettingsAct: UpdateSettingsAct,
     @AppCoroutineScope private val applicationScope: CoroutineScope,
+    private val features: Features,
+    @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
     private val saveLock = Mutex()
 
@@ -56,6 +61,14 @@ class AppearanceViewModel @Inject constructor(
                 if (pendingSaves == 0) saving = false
             }
         }
+    }
+
+    /**
+     * "Use account colours on transactions": the existing feature flag, so Settings > Features
+     * and this switch stay one setting. The app root collects it; every list updates at once.
+     */
+    fun setAccountColorsInTransactions(enabled: Boolean) {
+        applicationScope.launch { features.showAccountColorsInTransactions.set(appContext, enabled) }
     }
 
     fun setTheme(theme: Theme) {

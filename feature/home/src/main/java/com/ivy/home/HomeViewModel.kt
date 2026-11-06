@@ -15,7 +15,6 @@ import com.ivy.base.time.TimeProvider
 import com.ivy.data.model.primitive.AssetCode
 import com.ivy.data.repository.CategoryRepository
 import com.ivy.data.repository.mapper.TransactionMapper
-import com.ivy.domain.features.Features
 import com.ivy.domain.usecase.exchange.SyncExchangeRatesUseCase
 import com.ivy.frp.fixUnit
 import com.ivy.frp.then
@@ -101,7 +100,6 @@ class HomeViewModel @Inject constructor(
     private val transactionMapper: TransactionMapper,
     private val timeProvider: TimeProvider,
     private val timeConverter: TimeConverter,
-    private val features: Features,
     private val dataObserver: DataObserver,
     private val transactionRepo: TransactionRepository,
     private val undoController: UndoController,
@@ -177,14 +175,8 @@ class HomeViewModel @Inject constructor(
             hideBalance = getHideBalance(),
             expanded = getExpanded(),
             hideIncome = getHideIncome(),
-            shouldShowAccountSpecificColorInTransactions = getShouldShowAccountSpecificColorInTransactions(),
             celebrateSavingsGoal = celebrateSavingsGoal,
         )
-    }
-
-    @Composable
-    fun getShouldShowAccountSpecificColorInTransactions(): Boolean {
-        return features.showAccountColorsInTransactions.asEnabledState()
     }
 
     @Composable

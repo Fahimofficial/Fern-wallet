@@ -1,5 +1,12 @@
 package com.ivy.settings.appearance
 
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Switch
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import com.ivy.design.system.motion.IvyHaptics
+import com.ivy.legacy.ui.component.account.LocalAccountColorsInTransactions
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -72,6 +79,7 @@ internal class AppearanceActions(
     val onTheme: (Theme) -> Unit,
     val onUpdate: ((AppearanceSettings) -> AppearanceSettings) -> Unit,
     val onOpenCategories: () -> Unit,
+    val onAccountColors: (Boolean) -> Unit = {},
 )
 
 /** Settings > Appearance: theme mode, presets and every customisable colour, grouped. */
@@ -90,6 +98,7 @@ fun AppearanceScreenImpl() {
                 onTheme = viewModel::setTheme,
                 onUpdate = viewModel::update,
                 onOpenCategories = { nav.navigateTo(CategoriesScreen) },
+                onAccountColors = viewModel::setAccountColorsInTransactions,
             )
         },
     )
@@ -118,7 +127,8 @@ private fun AppearanceUi(
     ) {
         IvyToolbar(onBack = actions.onBack)
         // Pinned: every control below scrolls under it, so a change is always seen in context.
-        AppearancePreview(palette)
+        val accountColors = LocalAccountColorsInTransactions.current
+        AppearancePreview(palette, accountColors = accountColors)
         SaveIndicator(saving)
     Column(
         Modifier
@@ -134,6 +144,9 @@ private fun AppearanceUi(
         PresetRow(appearance, dark) { preset -> actions.onUpdate { it.withPreset(preset) } }
 
         EditingThemeHint(dark)
+
+        SectionTitle(R.string.appearance_transactions)
+        AccountColorsSwitch(accountColors, actions.onAccountColors)
 
         ColorGroup.entries.forEach { group ->
             GroupSection(
@@ -286,6 +299,41 @@ private fun SaveIndicator(saving: Boolean?) {
                 style = UI.typo.c.style(color = UI.colors.gray, fontWeight = FontWeight.Medium),
             )
         }
+    }
+}
+
+/** "Use account colours on transactions", off by default; the preview above shows the effect. */
+@Composable
+private fun AccountColorsSwitch(checked: Boolean, onChange: (Boolean) -> Unit) {
+    val view = LocalView.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(UI.colors.medium)
+            .toggleable(value = checked, role = Role.Switch) {
+                IvyHaptics.toggle(view, it)
+                onChange(it)
+            }
+            .padding(horizontal = 20.dp, vertical = 14.dp)
+            .testTag("appearance_account_colors"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.appearance_account_colors),
+                style = UI.typo.b2.style(fontWeight = FontWeight.Bold),
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = stringResource(R.string.appearance_account_colors_description),
+                style = UI.typo.c.style(color = UI.colors.gray, fontWeight = FontWeight.Medium),
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        // The row is the toggle; the switch only shows its state.
+        Switch(checked = checked, onCheckedChange = null)
     }
 }
 

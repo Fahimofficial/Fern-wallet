@@ -1,5 +1,7 @@
 package com.ivy.home
 
+import androidx.compose.runtime.CompositionLocalProvider
+import com.ivy.legacy.ui.component.account.LocalAccountColorsInTransactions
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
@@ -224,7 +226,6 @@ fun BoxWithConstraintsScope.HomeUi(
             history = uiState.history,
 
             customerJourneyCards = uiState.customerJourneyCards,
-            shouldShowAccountSpecificColorInTransactions = uiState.shouldShowAccountSpecificColorInTransactions,
 
             onPayOrGet = forward<Transaction>() then2 {
                 HomeEvent.PayOrGetPlanned(it)
@@ -335,7 +336,6 @@ fun HomeLazyColumn(
     period: TimePeriod,
 
     baseData: AppBaseData,
-    shouldShowAccountSpecificColorInTransactions: Boolean,
 
     upcoming: LegacyDueSection,
     overdue: LegacyDueSection,
@@ -478,7 +478,6 @@ fun HomeLazyColumn(
                     timeFormatter = timeFormatter,
                 )
             ),
-            shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions,
             lastItemSpacer = 0.dp,
             onSkipTransaction = onSkipTransaction,
             onSkipAllTransactions = onSkipAllTransactions,
@@ -543,53 +542,55 @@ fun BoxWithConstraintsScope.HomeSampleUi(overlay: HomeSampleOverlay = HomeSample
             dateTime = date.atTime(12, 0).toInstant(java.time.ZoneOffset.UTC),
             id = java.util.UUID(2L, idx),
         )
-    HomeUi(
-        uiState = HomeState(
-            theme = Theme.AUTO,
-            name = "Sam",
-            baseData = AppBaseData(
-                baseCurrency = "USD",
-                accounts = persistentListOf(everyday, cash),
-                categories = persistentListOf()
+    // The sample shows account colours on its transactions, as it always has.
+    CompositionLocalProvider(LocalAccountColorsInTransactions provides true) {
+        HomeUi(
+            uiState = HomeState(
+                theme = Theme.AUTO,
+                name = "Sam",
+                baseData = AppBaseData(
+                    baseCurrency = "USD",
+                    accounts = persistentListOf(everyday, cash),
+                    categories = persistentListOf()
+                ),
+                balance = BigDecimal("11918.65"),
+                buffer = BufferInfo(
+                    amount = BigDecimal("2000"),
+                    bufferDiff = BigDecimal("9918.65"),
+                ),
+                customerJourneyCards = persistentListOf(),
+                history = persistentListOf(
+                    TransactionHistoryDateDivider(day1, income = 0.0, expenses = 91.2),
+                    trn(everyday, com.ivy.base.model.TransactionType.EXPENSE, "86.40", day1, 1, title = "Groceries"),
+                    trn(cash, com.ivy.base.model.TransactionType.EXPENSE, "4.80", day1, 2, title = "Coffee"),
+                    TransactionHistoryDateDivider(day2, income = 4250.0, expenses = 0.0),
+                    trn(everyday, com.ivy.base.model.TransactionType.INCOME, "4250.00", day2, 3, title = "Salary"),
+                ),
+                stats = IncomeExpensePair(
+                    income = BigDecimal("4750.00"),
+                    expense = BigDecimal("1868.32"),
+                ),
+                upcoming = LegacyDueSection(
+                    trns = persistentListOf(),
+                    stats = IncomeExpensePair.zero(),
+                    expanded = false,
+                ),
+                overdue = LegacyDueSection(
+                    trns = persistentListOf(),
+                    stats = IncomeExpensePair.zero(),
+                    expanded = false,
+                ),
+                period = TimePeriod(month = Month.monthsList()[2], year = 2025),
+                hideBalance = false,
+                hideIncome = false,
+                expanded = true,
+                celebrateSavingsGoal = false,
             ),
-            balance = BigDecimal("11918.65"),
-            buffer = BufferInfo(
-                amount = BigDecimal("2000"),
-                bufferDiff = BigDecimal("9918.65"),
-            ),
-            customerJourneyCards = persistentListOf(),
-            history = persistentListOf(
-                TransactionHistoryDateDivider(day1, income = 0.0, expenses = 91.2),
-                trn(everyday, com.ivy.base.model.TransactionType.EXPENSE, "86.40", day1, 1, title = "Groceries"),
-                trn(cash, com.ivy.base.model.TransactionType.EXPENSE, "4.80", day1, 2, title = "Coffee"),
-                TransactionHistoryDateDivider(day2, income = 4250.0, expenses = 0.0),
-                trn(everyday, com.ivy.base.model.TransactionType.INCOME, "4250.00", day2, 3, title = "Salary"),
-            ),
-            stats = IncomeExpensePair(
-                income = BigDecimal("4750.00"),
-                expense = BigDecimal("1868.32"),
-            ),
-            upcoming = LegacyDueSection(
-                trns = persistentListOf(),
-                stats = IncomeExpensePair.zero(),
-                expanded = false,
-            ),
-            overdue = LegacyDueSection(
-                trns = persistentListOf(),
-                stats = IncomeExpensePair.zero(),
-                expanded = false,
-            ),
-            period = TimePeriod(month = Month.monthsList()[2], year = 2025),
-            hideBalance = false,
-            hideIncome = false,
-            expanded = true,
-            shouldShowAccountSpecificColorInTransactions = true,
-            celebrateSavingsGoal = false,
-        ),
-        onEvent = {},
-        initialPeriodModalOpen = overlay == HomeSampleOverlay.PeriodPicker,
-        initialMoreMenuExpanded = if (overlay == HomeSampleOverlay.MoreMenu) true else null,
-    )
+            onEvent = {},
+            initialPeriodModalOpen = overlay == HomeSampleOverlay.PeriodPicker,
+            initialMoreMenuExpanded = if (overlay == HomeSampleOverlay.MoreMenu) true else null,
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)

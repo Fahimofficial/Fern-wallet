@@ -7,6 +7,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,6 +18,12 @@ import com.ivy.data.model.AccountAppearance
 import com.ivy.ui.logo.AccountLogo
 import com.ivy.ui.logo.hasAccountLogo
 import com.ivy.wallet.ui.theme.components.ItemIconSDefaultIcon
+
+/**
+ * "Use account colours on transactions" (Settings > Appearance), collected once at the root.
+ * Not static: toggling it recomposes only the chips that read it.
+ */
+val LocalAccountColorsInTransactions = compositionLocalOf { false }
 
 /** Imports picked account images; provided by the Activity, null in previews and tests. */
 val LocalAccountMediaStore = staticCompositionLocalOf<AccountMediaStore?> { null }

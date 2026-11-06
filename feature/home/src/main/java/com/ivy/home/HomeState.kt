@@ -34,7 +34,6 @@ data class HomeState(
     val hideBalance: Boolean,
     val hideIncome: Boolean,
     val expanded: Boolean,
-    val shouldShowAccountSpecificColorInTransactions: Boolean,
     /** The savings goal is reached and this goal amount hasn't been celebrated yet. */
     val celebrateSavingsGoal: Boolean,
 )

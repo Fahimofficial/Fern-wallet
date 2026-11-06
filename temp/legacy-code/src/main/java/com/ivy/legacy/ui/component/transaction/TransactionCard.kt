@@ -1,5 +1,12 @@
 package com.ivy.legacy.ui.component.transaction
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.drawBehind
+import com.ivy.design.system.motion.IvyMotion
+import com.ivy.legacy.ui.component.account.AccountMark
+import com.ivy.legacy.ui.component.account.LocalAccountColorsInTransactions
+import com.ivy.legacy.ui.component.account.primaryColors
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -100,7 +107,6 @@ import java.util.UUID
 fun TransactionCard(
     baseData: AppBaseData,
     transaction: Transaction,
-    shouldShowAccountSpecificColorInTransactions: Boolean,
     onPayOrGet: (Transaction) -> Unit,
     modifier: Modifier = Modifier,
     onSkipTransaction: (Transaction) -> Unit = {},
@@ -141,7 +147,6 @@ fun TransactionCard(
             transaction = transaction,
             categories = baseData.categories,
             accounts = baseData.accounts,
-            shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions
         )
 
         TransactionCardDateAndText(
@@ -366,7 +371,6 @@ private fun TransactionHeaderRow(
     transaction: Transaction,
     categories: List<Category>,
     accounts: List<Account>,
-    shouldShowAccountSpecificColorInTransactions: Boolean,
 ) {
     val nav = navigation()
 
@@ -386,7 +390,6 @@ private fun TransactionHeaderRow(
             TransferHeader(
                 accounts = accounts,
                 transaction = transaction,
-                shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions
             )
         }
     } else {
@@ -404,17 +407,19 @@ private fun TransactionHeaderRow(
                 accounts = accounts
             )
 
-            val accountBackgroundColor = if (shouldShowAccountSpecificColorInTransactions) {
-                account?.color?.toComposeColor() ?: UI.colors.pure
-            } else {
-                UI.colors.pure
-            }
+            val colored = LocalAccountColorsInTransactions.current && account != null
+            val accountBackgroundColor by animateColorAsState(
+                targetValue = account?.takeIf { colored }?.primaryColor() ?: UI.colors.pure,
+                animationSpec = IvyMotion.standard(ChipCrossfadeMillis),
+                label = "account_chip",
+            )
 
             TransactionBadge(
                 text = account?.name ?: stringResource(R.string.deleted),
                 backgroundColor = accountBackgroundColor,
                 icon = account?.icon,
-                defaultIcon = R.drawable.ic_custom_account_s
+                defaultIcon = R.drawable.ic_custom_account_s,
+                logo = account?.takeIf { colored },
             ) {
                 account?.let {
                     nav.navigateTo(
@@ -478,6 +483,8 @@ private fun TransactionBadge(
     icon: String?,
     @DrawableRes
     defaultIcon: Int,
+    // An account whose logo, if it has one, replaces the icon.
+    logo: Account? = null,
 
     onClick: () -> Unit
 ) {
@@ -495,11 +502,7 @@ private fun TransactionBadge(
 
         val contrastColor = findContrastTextColor(backgroundColor)
 
-        ItemIconSDefaultIcon(
-            iconName = icon,
-            defaultIcon = defaultIcon,
-            tint = contrastColor
-        )
+        ChipIcon(account = logo, iconName = icon, defaultIcon = defaultIcon, tint = contrastColor)
 
         SpacerHor(width = 4.dp)
 
@@ -516,12 +519,18 @@ private fun TransactionBadge(
 }
 
 private const val TransferHeaderGradientThreshold = 0.35f
+private const val ChipCrossfadeMillis = 200
 
+/**
+ * From -> To pill. With account colours on, it runs from the From account's colour to the To
+ * account's (their gradient's ends, for gradient backgrounds), each side's text picking black or
+ * white for its own colour. The colours cross-fade when the setting changes and are read only
+ * while drawing, so the fade doesn't recompose the row.
+ */
 @Composable
 private fun TransferHeader(
     accounts: List<Account>,
     transaction: Transaction,
-    shouldShowAccountSpecificColorInTransactions: Boolean
 ) {
     val account = remember(accounts, transaction) {
         accounts.find { transaction.accountId == it.id }
@@ -529,40 +538,44 @@ private fun TransferHeader(
     val toAccount = remember(accounts, transaction) {
         accounts.find { transaction.toAccountId == it.id }
     }
+    val colored = LocalAccountColorsInTransactions.current && account != null && toAccount != null
+    val neutral = UI.colors.pure
+    val spec = IvyMotion.standard<Color>(ChipCrossfadeMillis)
+    val fromColor by animateColorAsState(
+        if (colored) account!!.primaryColor() else neutral,
+        spec,
+        label = "transfer_from",
+    )
+    val toColor by animateColorAsState(
+        if (colored) toAccount!!.primaryColor(last = true) else neutral,
+        spec,
+        label = "transfer_to",
+    )
 
     Row(
         modifier = Modifier
-            .then(
-                if (shouldShowAccountSpecificColorInTransactions && account != null && toAccount != null) {
-                    Modifier
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                0f to account.color.toComposeColor(),
-                                (TransferHeaderGradientThreshold) to account.color.toComposeColor(),
-                                (1f - TransferHeaderGradientThreshold) to toAccount.color.toComposeColor(),
-                                1f to toAccount.color.toComposeColor()
-                            ),
-                            shape = UI.shapes.rFull
-                        )
-                } else {
-                    Modifier.background(UI.colors.pure, UI.shapes.rFull)
-                }
-            ),
+            .clip(UI.shapes.rFull)
+            .drawBehind {
+                drawRect(
+                    Brush.horizontalGradient(
+                        0f to fromColor,
+                        TransferHeaderGradientThreshold to fromColor,
+                        (1f - TransferHeaderGradientThreshold) to toColor,
+                        1f to toColor,
+                    )
+                )
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(Modifier.width(8.dp))
 
-        val accountContrastColor =
-            if (shouldShowAccountSpecificColorInTransactions && account != null) {
-                findContrastTextColor(account.color.toComposeColor())
-            } else {
-                UI.colors.pureInverse
-            }
+        val accountContrastColor = if (colored) findContrastTextColor(fromColor) else UI.colors.pureInverse
 
-        ItemIconSDefaultIcon(
+        ChipIcon(
+            account = account?.takeIf { colored },
             iconName = account?.icon,
             defaultIcon = R.drawable.ic_custom_account_s,
-            tint = accountContrastColor
+            tint = accountContrastColor,
         )
 
         Spacer(Modifier.width(4.dp))
@@ -584,17 +597,13 @@ private fun TransferHeader(
 
         Spacer(Modifier.width(12.dp))
 
-        val toAccountContrastColor =
-            if (shouldShowAccountSpecificColorInTransactions && toAccount != null) {
-                findContrastTextColor(toAccount.color.toComposeColor())
-            } else {
-                UI.colors.pureInverse
-            }
+        val toAccountContrastColor = if (colored) findContrastTextColor(toColor) else UI.colors.pureInverse
 
-        ItemIconSDefaultIcon(
+        ChipIcon(
+            account = toAccount?.takeIf { colored },
             iconName = toAccount?.icon,
             defaultIcon = R.drawable.ic_custom_account_s,
-            tint = toAccountContrastColor
+            tint = toAccountContrastColor,
         )
 
         Spacer(Modifier.width(4.dp))
@@ -613,6 +622,28 @@ private fun TransferHeader(
         Spacer(Modifier.width(20.dp))
     }
 }
+
+/** The account's logo when [account] is given and has one, else the plain icon. */
+@Composable
+private fun ChipIcon(account: Account?, iconName: String?, @DrawableRes defaultIcon: Int, tint: Color) {
+    if (account != null) {
+        AccountMark(
+            appearance = account.appearance,
+            name = account.name,
+            color = account.color.toComposeColor(),
+            iconName = iconName,
+            tint = tint,
+            defaultIcon = defaultIcon,
+            size = 18.dp,
+        )
+    } else {
+        ItemIconSDefaultIcon(iconName = iconName, defaultIcon = defaultIcon, tint = tint)
+    }
+}
+
+// The colour the account stands for on chips: its colour, or its gradient's start (or end).
+private fun Account.primaryColor(last: Boolean = false): Color =
+    appearance.primaryColors(color.toComposeColor()).let { if (last) it.last() else it.first() }
 
 @Composable
 fun TypeAmountCurrency(
@@ -723,7 +754,6 @@ private fun PreviewUpcomingExpense() {
                         dateTime = null,
                         type = TransactionType.EXPENSE,
                     ),
-                    shouldShowAccountSpecificColorInTransactions = false,
                     onPayOrGet = {},
                 ) {
                 }
@@ -762,7 +792,6 @@ private fun PreviewUpcomingExpenseBadgeSecondRow() {
                         dateTime = null,
                         type = TransactionType.EXPENSE,
                     ),
-                    shouldShowAccountSpecificColorInTransactions = false,
                     onPayOrGet = {},
                 ) {
                 }
@@ -801,7 +830,6 @@ private fun PreviewOverdueExpense() {
                         dateTime = null,
                         type = TransactionType.EXPENSE
                     ),
-                    shouldShowAccountSpecificColorInTransactions = false,
                     onPayOrGet = {},
                 ) {
                 }
@@ -839,7 +867,6 @@ private fun PreviewNormalExpense() {
                         dateTime = timeNowUTC().toInstant(ZoneOffset.UTC),
                         type = TransactionType.EXPENSE
                     ),
-                    shouldShowAccountSpecificColorInTransactions = false,
                     onPayOrGet = {},
                 ) {
                 }
@@ -877,7 +904,6 @@ private fun PreviewIncome() {
                         dateTime = timeNowUTC().toInstant(ZoneOffset.UTC),
                         type = TransactionType.INCOME
                     ),
-                    shouldShowAccountSpecificColorInTransactions = false,
                     onPayOrGet = {},
                 ) {
                 }
@@ -909,7 +935,6 @@ private fun PreviewTransfer() {
                         dateTime = timeNowUTC().toInstant(ZoneOffset.UTC),
                         type = TransactionType.TRANSFER
                     ),
-                    shouldShowAccountSpecificColorInTransactions = false,
                     onPayOrGet = {},
                 ) {
                 }
@@ -947,7 +972,6 @@ private fun PreviewTransfer_differentCurrency() {
                         dateTime = timeNowUTC().toInstant(ZoneOffset.UTC),
                         type = TransactionType.TRANSFER
                     ),
-                    shouldShowAccountSpecificColorInTransactions = true,
                     onPayOrGet = {},
                 ) {
                 }

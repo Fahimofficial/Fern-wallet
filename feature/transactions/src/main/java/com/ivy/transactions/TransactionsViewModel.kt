@@ -31,7 +31,6 @@ import com.ivy.data.repository.TransactionRepository
 import com.ivy.data.repository.mapper.TransactionMapper
 import com.ivy.design.l0_system.RedLight
 import com.ivy.domain.creditcard.DeleteCreditCardUseCase
-import com.ivy.domain.features.Features
 import com.ivy.frp.then
 import com.ivy.legacy.IvyWalletCtx
 import com.ivy.legacy.data.model.TimePeriod
@@ -101,7 +100,6 @@ class TransactionsViewModel @Inject constructor(
     private val tagRepository: TagRepository,
     private val timeProvider: TimeProvider,
     private val timeConverter: TimeConverter,
-    private val features: Features,
     private val creditCardRepository: CreditCardRepository,
     private val creditCardNotifications: CreditCardNotifications,
     private val deleteCreditCardUseCase: DeleteCreditCardUseCase,
@@ -187,13 +185,7 @@ class TransactionsViewModel @Inject constructor(
             skipAllModalVisible = getSkipAllModalVisible(),
             deleteModal1Visible = getDeleteModal1Visible(),
             choosePeriodModal = getChoosePeriodModal(),
-            showAccountColorsInTransactions = getShouldShowAccountSpecificColorInTransactions()
         )
-    }
-
-    @Composable
-    fun getShouldShowAccountSpecificColorInTransactions(): Boolean {
-        return features.showAccountColorsInTransactions.asEnabledState()
     }
 
     @Composable

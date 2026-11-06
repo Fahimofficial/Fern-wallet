@@ -106,7 +106,6 @@ private fun SearchUi(
                 emptyStateTitle = emptyStateTitle,
                 emptyStateText = emptyStateText,
                 dateDividerMarginTop = 16.dp,
-                shouldShowAccountSpecificColorInTransactions = uiState.shouldShowAccountSpecificColorInTransactions,
                 highlight = uiState.searchQuery,
             )
 
@@ -137,7 +136,6 @@ private fun Preview(isDark: Boolean = false) {
                 baseCurrency = "",
                 accounts = persistentListOf(),
                 categories = persistentListOf(),
-                shouldShowAccountSpecificColorInTransactions = false
             ),
             onEvent = {}
         )
