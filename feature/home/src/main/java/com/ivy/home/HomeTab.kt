@@ -513,7 +513,7 @@ enum class HomeSampleOverlay { None, PeriodPicker, MoreMenu }
  * Used for previews and the README screenshots.
  */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
-@Suppress("MagicNumber")
+@Suppress("MagicNumber", "LongMethod")
 @Composable
 fun BoxWithConstraintsScope.HomeSampleUi(
     modifier: Modifier = Modifier,
