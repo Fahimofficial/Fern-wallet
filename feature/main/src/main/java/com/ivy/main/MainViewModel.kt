@@ -36,11 +36,9 @@ class MainViewModel @Inject constructor(
     var fabLabelVisible by mutableStateOf(!sharedPrefs.getBoolean(SharedPrefs.FAB_LABEL_SHOWN, false))
         private set
 
-    init {
-        if (fabLabelVisible) sharedPrefs.putBoolean(SharedPrefs.FAB_LABEL_SHOWN, true)
-    }
-
     fun onFabLabelSeen() {
+        if (!fabLabelVisible) return
+        sharedPrefs.putBoolean(SharedPrefs.FAB_LABEL_SHOWN, true)
         fabLabelVisible = false
     }
 
