@@ -55,6 +55,15 @@ jobs:
             exit 1
           fi
 
+          # Google Play requires API 36+ for new apps and app updates from 2026-08-31.
+          catalog_json="$(gh api "repos/${GITHUB_REPOSITORY}/contents/gradle/libs.versions.toml?ref=${TAG_INPUT}")"
+          target_api="$(jq -r '.content' <<< "$catalog_json" | base64 --decode | python3 -c 'import sys, tomllib; print(int(tomllib.load(sys.stdin.buffer)["versions"]["target-sdk"]))')"
+          if (( target_api < 36 )); then
+            echo "::error::This release targets API ${target_api}; Google Play requires API 36 or higher. Upgrade and test targetSdk before publishing."
+            exit 1
+          fi
+          echo "Release targets API ${target_api}, satisfying Google Play's current requirement."
+
           release_dir="$RUNNER_TEMP/play-release"
           mkdir -p "$release_dir"
           gh release download "$TAG_INPUT" --repo "$GITHUB_REPOSITORY" \
