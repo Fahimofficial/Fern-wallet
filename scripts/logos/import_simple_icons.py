@@ -183,7 +183,7 @@ md = ["# Logo licences", "",
       "## Bundled brand glyphs", "",
       "| Brand | File | From | Upstream source | Licence |", "|---|---|---|---|---|"]
 def markdown_urls(value):
-    return re.sub(r"(https?://[^\\s|]+)", r"<\\1>", value)
+    return re.sub(r"(https?://[^\s|]+)", r"<\1>", value)
 
 
 for (n, f, frm, src, lic) in licenses:
