@@ -66,6 +66,14 @@ sealed interface LogoChoice {
  * Bottom sheet to choose an account's logo: search (name or alias), category chips, a grid of
  * every logo, and Upload / Use initials / None. The current choice carries a check that scales in.
  */
+private data class LogoPickerGridState(
+    val results: List<LogoSpec>,
+    val accountName: String,
+    val accountColor: Color,
+    val selectedKey: String?,
+    val hasCustomLogo: Boolean,
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LogoPickerSheet(
@@ -87,73 +95,113 @@ fun LogoPickerSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     ) {
-        Column(Modifier.padding(horizontal = 16.dp)) {
-            Text(text = stringResource(R.string.logo), style = MaterialTheme.typography.titleLarge)
-            Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { onChoice(LogoChoice.Upload) }, modifier = Modifier.testTag("logo_upload")) {
-                    Text(stringResource(if (hasCustomLogo) R.string.logo_replace_upload else R.string.logo_upload))
-                }
-                OutlinedButton(onClick = { onChoice(LogoChoice.Initials) }) {
-                    Text(stringResource(R.string.logo_use_initials))
-                }
-                OutlinedButton(onClick = { onChoice(LogoChoice.None) }) {
-                    Text(stringResource(R.string.logo_none))
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth().testTag("logo_search"),
-                value = query,
-                onValueChange = { query = it },
-                singleLine = true,
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                placeholder = { Text(stringResource(R.string.logo_search_hint)) },
-            )
-        }
+        LogoPickerHeader(
+            hasCustomLogo = hasCustomLogo,
+            query = query,
+            onQueryChange = { query = it },
+            onChoice = onChoice,
+        )
         Spacer(Modifier.height(8.dp))
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            item(key = "all") {
-                FilterChip(
-                    selected = category == null,
-                    onClick = { categoryName = null },
-                    label = { Text(stringResource(R.string.logo_category_all)) },
-                )
+        LogoPickerCategories(category) { categoryName = it?.name }
+        LogoPickerGridContent(
+            state = LogoPickerGridState(
+                results = results,
+                accountName = accountName,
+                accountColor = accountColor,
+                selectedKey = selectedKey,
+                hasCustomLogo = hasCustomLogo,
+            ),
+            onChoice = onChoice,
+        )
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun LogoPickerHeader(
+    hasCustomLogo: Boolean,
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onChoice: (LogoChoice) -> Unit,
+) {
+    Column(Modifier.padding(horizontal = 16.dp)) {
+        Text(text = stringResource(R.string.logo), style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = { onChoice(LogoChoice.Upload) }, modifier = Modifier.testTag("logo_upload")) {
+                Text(stringResource(if (hasCustomLogo) R.string.logo_replace_upload else R.string.logo_upload))
             }
-            items(LogoCategory.entries, key = { it.name }) { entry ->
-                FilterChip(
-                    selected = category == entry,
-                    onClick = { categoryName = entry.name },
-                    label = { Text(stringResource(entry.label())) },
-                )
+            OutlinedButton(onClick = { onChoice(LogoChoice.Initials) }) {
+                Text(stringResource(R.string.logo_use_initials))
+            }
+            OutlinedButton(onClick = { onChoice(LogoChoice.None) }) {
+                Text(stringResource(R.string.logo_none))
             }
         }
-        LazyVerticalGrid(
-            modifier = Modifier.heightIn(max = 480.dp),
-            columns = GridCells.Adaptive(minSize = 80.dp),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            items(results, key = { it.id }, contentType = { "logo" }) { spec ->
-                LogoCell(
-                    spec = spec,
-                    accountName = accountName,
-                    accountColor = accountColor,
-                    selected = spec.id == selectedKey && !hasCustomLogo,
-                ) { onChoice(LogoChoice.Registry(spec.id)) }
-            }
-        }
-        if (results.isEmpty()) {
-            Text(
-                modifier = Modifier.fillMaxWidth().padding(24.dp),
-                text = stringResource(R.string.logo_no_results),
-                textAlign = TextAlign.Center,
+        Spacer(Modifier.height(12.dp))
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth().testTag("logo_search"),
+            value = query,
+            onValueChange = onQueryChange,
+            singleLine = true,
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+            placeholder = { Text(stringResource(R.string.logo_search_hint)) },
+        )
+    }
+}
+
+@Composable
+private fun LogoPickerCategories(
+    selectedCategory: LogoCategory?,
+    onCategorySelected: (LogoCategory?) -> Unit,
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item(key = "all") {
+            FilterChip(
+                selected = selectedCategory == null,
+                onClick = { onCategorySelected(null) },
+                label = { Text(stringResource(R.string.logo_category_all)) },
             )
         }
-        Spacer(Modifier.height(24.dp))
+        items(LogoCategory.entries, key = { it.name }) { entry ->
+            FilterChip(
+                selected = selectedCategory == entry,
+                onClick = { onCategorySelected(entry) },
+                label = { Text(stringResource(entry.label())) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun LogoPickerGridContent(
+    state: LogoPickerGridState,
+    onChoice: (LogoChoice) -> Unit,
+) {
+    LazyVerticalGrid(
+        modifier = Modifier.heightIn(max = 480.dp),
+        columns = GridCells.Adaptive(minSize = 80.dp),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(state.results, key = { it.id }, contentType = { "logo" }) { spec ->
+            LogoCell(
+                spec = spec,
+                accountName = state.accountName,
+                accountColor = state.accountColor,
+                selected = spec.id == state.selectedKey && !state.hasCustomLogo,
+            ) { onChoice(LogoChoice.Registry(spec.id)) }
+        }
+    }
+    if (state.results.isEmpty()) {
+        Text(
+            modifier = Modifier.fillMaxWidth().padding(24.dp),
+            text = stringResource(R.string.logo_no_results),
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
