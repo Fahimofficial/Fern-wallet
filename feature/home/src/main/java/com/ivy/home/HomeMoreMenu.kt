@@ -743,8 +743,6 @@ private fun QuickAccessGrid(
     plannedDue: Int,
 ) {
     Column {
-        val nav = navigation()
-
         Text(
             modifier = Modifier.padding(start = 24.dp),
             text = stringResource(R.string.quick_access),
@@ -752,89 +750,102 @@ private fun QuickAccessGrid(
         )
 
         Spacer(Modifier.height(16.dp))
+        QuickAccessMainRow(theme, onSwitchTheme, plannedDue)
+        Spacer(Modifier.height(16.dp))
+        QuickAccessSecondaryRow()
+    }
+}
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.Top
+@Composable
+private fun QuickAccessMainRow(
+    theme: Theme,
+    onSwitchTheme: () -> Unit,
+    plannedDue: Int,
+) {
+    val nav = navigation()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Top
+    ) {
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 0,
+            icon = R.drawable.home_more_menu_settings,
+            label = stringResource(R.string.settings)
         ) {
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                wave = 0,
-                icon = R.drawable.home_more_menu_settings,
-                label = stringResource(R.string.settings)
-            ) {
-                nav.navigateTo(SettingsScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                wave = 1,
-                icon = R.drawable.home_more_menu_categories,
-                label = stringResource(R.string.categories)
-            ) {
-                nav.navigateTo(CategoriesScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                wave = 2,
-                icon = when (theme) {
-                    Theme.LIGHT -> R.drawable.home_more_menu_light_mode
-                    Theme.DARK -> R.drawable.home_more_menu_dark_mode
-                    Theme.AMOLED_DARK -> R.drawable.home_more_menu_amoled_dark_mode
-                    Theme.AUTO -> R.drawable.home_more_menu_auto_mode
-                },
-                label = when (theme) {
-                    Theme.LIGHT -> stringResource(R.string.light_mode)
-                    Theme.DARK -> stringResource(R.string.dark_mode)
-                    Theme.AMOLED_DARK -> stringResource(R.string.amoled_mode)
-                    Theme.AUTO -> stringResource(R.string.auto_mode)
-                },
-                backgroundColor = when (theme) {
-                    Theme.LIGHT -> UI.colors.pure
-                    Theme.DARK -> UI.colors.pureInverse
-                    Theme.AMOLED_DARK -> UI.colors.pureInverse
-                    Theme.AUTO -> UI.colors.pure
-                },
-                tint = when (theme) {
-                    Theme.LIGHT -> UI.colors.pureInverse
-                    Theme.DARK -> UI.colors.pure
-                    Theme.AMOLED_DARK -> UI.colors.pure
-                    Theme.AUTO -> UI.colors.pureInverse
-                }
-            ) {
-                onSwitchTheme()
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                wave = 3,
-                icon = R.drawable.home_more_menu_planned_payments,
-                label = stringResource(R.string.planned_payments),
-                badge = plannedDue,
-            ) {
-                nav.navigateTo(PlannedPaymentsScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
+            nav.navigateTo(SettingsScreen)
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.weight(1f))
 
-        // Second Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.Top
+        MoreMenuButton(
+            wave = 1,
+            icon = R.drawable.home_more_menu_categories,
+            label = stringResource(R.string.categories)
         ) {
-            Spacer(Modifier.weight(1f))
+            nav.navigateTo(CategoriesScreen)
+        }
 
-            val context = LocalContext.current
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 2,
+            icon = when (theme) {
+                Theme.LIGHT -> R.drawable.home_more_menu_light_mode
+                Theme.DARK -> R.drawable.home_more_menu_dark_mode
+                Theme.AMOLED_DARK -> R.drawable.home_more_menu_amoled_dark_mode
+                Theme.AUTO -> R.drawable.home_more_menu_auto_mode
+            },
+            label = when (theme) {
+                Theme.LIGHT -> stringResource(R.string.light_mode)
+                Theme.DARK -> stringResource(R.string.dark_mode)
+                Theme.AMOLED_DARK -> stringResource(R.string.amoled_mode)
+                Theme.AUTO -> stringResource(R.string.auto_mode)
+            },
+            backgroundColor = when (theme) {
+                Theme.LIGHT -> UI.colors.pure
+                Theme.DARK -> UI.colors.pureInverse
+                Theme.AMOLED_DARK -> UI.colors.pureInverse
+                Theme.AUTO -> UI.colors.pure
+            },
+            tint = when (theme) {
+                Theme.LIGHT -> UI.colors.pureInverse
+                Theme.DARK -> UI.colors.pure
+                Theme.AMOLED_DARK -> UI.colors.pure
+                Theme.AUTO -> UI.colors.pureInverse
+            }
+        ) {
+            onSwitchTheme()
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 3,
+            icon = R.drawable.home_more_menu_planned_payments,
+            label = stringResource(R.string.planned_payments),
+            badge = plannedDue,
+        ) {
+            nav.navigateTo(PlannedPaymentsScreen)
+        }
+
+        Spacer(Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun QuickAccessSecondaryRow() {
+    val nav = navigation()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Top
+    ) {
+        Spacer(Modifier.weight(1f))
+
+        val context = LocalContext.current
 //        MoreMenuButton(
 //            icon = R.drawable.home_more_menu_reports,
 //            label = "Charts"
@@ -842,50 +853,48 @@ private fun QuickAccessGrid(
 //            ivyContext.navigateTo(Screen.Charts)
 //        }
 
-            // Resolve the RootScreen lazily so the menu can render in previews/screenshots.
-            MoreMenuButton(
-                wave = 1,
-                icon = R.drawable.home_more_menu_share,
-                label = stringResource(R.string.share_ivy)
-            ) {
-                (context as? RootScreen)?.shareIvyWallet()
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                wave = 2,
-                icon = R.drawable.home_more_menu_reports,
-                label = stringResource(R.string.reports),
-            ) {
-                nav.navigateTo(ReportScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                wave = 3,
-                icon = R.drawable.home_more_menu_budgets,
-                label = stringResource(R.string.budgets),
-            ) {
-                nav.navigateTo(BudgetScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                wave = 4,
-                icon = R.drawable.home_more_menu_loans,
-                label = stringResource(R.string.loans),
-            ) {
-                nav.navigateTo(LoansScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
+        // Resolve the RootScreen lazily so the menu can render in previews/screenshots.
+        MoreMenuButton(
+            wave = 1,
+            icon = R.drawable.home_more_menu_share,
+            label = stringResource(R.string.share_ivy)
+        ) {
+            (context as? RootScreen)?.shareIvyWallet()
         }
+
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 2,
+            icon = R.drawable.home_more_menu_reports,
+            label = stringResource(R.string.reports),
+        ) {
+            nav.navigateTo(ReportScreen)
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 3,
+            icon = R.drawable.home_more_menu_budgets,
+            label = stringResource(R.string.budgets),
+        ) {
+            nav.navigateTo(BudgetScreen)
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 4,
+            icon = R.drawable.home_more_menu_loans,
+            label = stringResource(R.string.loans),
+        ) {
+            nav.navigateTo(LoansScreen)
+        }
+
+        Spacer(Modifier.weight(1f))
     }
 }
-
 /**
  * A Quick-access tile: icon and label are one 48dp+ target that shrinks under the finger with a
  * light tick. On the menu's first opening per app start, tiles fade in as a diagonal wave.
