@@ -352,6 +352,7 @@ fun CashFlowInfo(
  * exact, a long press (or the TalkBack action) opens the balance details, and the eye hides it.
  */
 @OptIn(ExperimentalFoundationApi::class)
+@Suppress("LongParameterList")
 @Composable
 private fun HomeBalanceDisplay(
     currency: String,
