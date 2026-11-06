@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.drop
  * actions are TalkBack custom actions for people who can't swipe.
  */
 @OptIn(ExperimentalMaterial3Api::class)
+@Suppress("LongMethod")
 @Composable
 internal fun SwipeableTransaction(
     onEdit: () -> Unit,
