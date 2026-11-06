@@ -73,8 +73,14 @@ internal fun SwipeableTransaction(
     SwipeToDismissBox(
         modifier = Modifier.semantics {
             customActions = listOf(
-                CustomAccessibilityAction(editLabel) { onEdit(); true },
-                CustomAccessibilityAction(deleteLabel) { onDelete(); true },
+                CustomAccessibilityAction(editLabel) {
+                    onEdit()
+                    true
+                },
+                CustomAccessibilityAction(deleteLabel) {
+                    onDelete()
+                    true
+                },
             )
         },
         state = state,

@@ -88,7 +88,6 @@ import com.ivy.wallet.ui.theme.findContrastTextColor
 import com.ivy.wallet.ui.theme.gradientExpenses
 import com.ivy.wallet.ui.theme.gradientIncome
 import com.ivy.wallet.ui.theme.toComposeColor
-import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDateTime
@@ -226,11 +225,12 @@ fun TransactionCard(
 // What an untitled row leads with instead of only its account chip: the category, else the time.
 @Composable
 private fun untitledText(transaction: Transaction, categories: List<Category>): String? {
-    if (transaction.title.isNotNullOrBlank()) return null
-    category(transaction.categoryId, categories)?.let { return it.name.value }
-    val dateTime = transaction.dateTime ?: return null
-    val local = with(LocalTimeConverter.current) { dateTime.toLocalDateTime() }
-    return with(LocalTimeFormatter.current) { local.toLocalTime().format() }
+    val local = with(LocalTimeConverter.current) { transaction.dateTime?.toLocalDateTime() }
+    val time = with(LocalTimeFormatter.current) { local?.toLocalTime()?.format() }
+    return when {
+        transaction.title.isNotNullOrBlank() -> null
+        else -> category(transaction.categoryId, categories)?.name?.value ?: time
+    }
 }
 
 @Composable

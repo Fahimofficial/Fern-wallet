@@ -79,7 +79,11 @@ private fun BoxWithConstraintsScope.UI(
     MainTabs(
         tab = tab,
         home = {
-            HomeTab(modifier = it, selected = tab == MainTab.HOME, onBarsVisibleChange = { visible -> homeBarsVisible = visible })
+            HomeTab(
+                modifier = it,
+                selected = tab == MainTab.HOME,
+                onBarsVisibleChange = { visible -> homeBarsVisible = visible },
+            )
         },
         accounts = { AccountsTab(modifier = it, selected = tab == MainTab.ACCOUNTS) },
     )

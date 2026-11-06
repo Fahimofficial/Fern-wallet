@@ -48,7 +48,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -526,8 +525,11 @@ private fun BoxWithConstraintsScope.UI(
             AnimatedContent(
                 targetState = saving,
                 transitionSpec = {
-                    (fadeIn(IvyMotion.standard(IvyMotion.Duration.Short)) + scaleIn(initialScale = 0.8f))
-                        .togetherWith(fadeOut(IvyMotion.standard(IvyMotion.Duration.Short)) + scaleOut(targetScale = 0.8f))
+                    val enter = fadeIn(IvyMotion.standard(IvyMotion.Duration.Short)) +
+                        scaleIn(initialScale = SaveButtonScale)
+                    val exit = fadeOut(IvyMotion.standard(IvyMotion.Duration.Short)) +
+                        scaleOut(targetScale = SaveButtonScale)
+                    enter.togetherWith(exit)
                 },
                 label = "save_button",
             ) { inProgress ->
@@ -797,6 +799,7 @@ fun EditTransactionScreenUiTest(isDark: Boolean) {
 }
 
 private const val SaveFeedbackTimeoutMillis = 1_500L
+private const val SaveButtonScale = 0.8f
 
 @Composable
 private fun SavingIndicator() {

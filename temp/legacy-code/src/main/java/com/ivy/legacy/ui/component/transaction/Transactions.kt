@@ -99,7 +99,7 @@ fun LazyListScope.transactions(
         (overdue == null || overdue.trns.isEmpty()) &&
         history.isEmpty()
     ) {
-        item {
+        item(key = "empty_state", contentType = "empty_state") {
             NoTransactionsEmptyState(
                 emptyStateTitle = emptyStateTitle,
                 emptyStateText = emptyStateText
@@ -269,29 +269,29 @@ private fun LazyListScope.historySection(
     if (history.isNotEmpty()) {
         itemsIndexed(
             items = history,
-            key = { _, it ->
-                when (it) {
-                    is Transaction -> it.id.toString()
-                    is TransactionHistoryDateDivider -> it.date.toString()
+            key = { _, item ->
+                when (item) {
+                    is Transaction -> item.id.toString()
+                    is TransactionHistoryDateDivider -> item.date.toString()
                     else -> "unknown"
                 }
             },
             // Cards and date dividers have different layouts: let Compose reuse each with its own kind.
-            contentType = { _, it ->
-                when (it) {
+            contentType = { _, item ->
+                when (item) {
                     is TransactionHistoryDateDivider -> ContentTypeDateDivider
                     else -> ContentTypeTransaction
                 }
             }
-        ) { index, it ->
-            when (it) {
+        ) { index, item ->
+            when (item) {
                 is Transaction -> {
                     val nav = navigation()
                     val card = @Composable {
                         TransactionCard(
                             baseData = baseData,
 
-                            transaction = it,
+                            transaction = item,
                             shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions,
                             onPayOrGet = onPayOrGet,
                             highlight = highlight,
@@ -305,8 +305,8 @@ private fun LazyListScope.historySection(
                     AnimatedItem(Modifier.animateHistoryItem(this).historyMotion(motion, index)) {
                         if (onDeleteTransaction != null) {
                             SwipeableTransaction(
-                                onEdit = { onTransactionClick(nav, it) },
-                                onDelete = { onDeleteTransaction(it) },
+                                onEdit = { onTransactionClick(nav, item) },
+                                onDelete = { onDeleteTransaction(item) },
                                 content = card,
                             )
                         } else {
@@ -318,12 +318,12 @@ private fun LazyListScope.historySection(
                 is TransactionHistoryDateDivider -> {
                     AnimatedItem(Modifier.animateHistoryItem(this).historyMotion(motion, index)) {
                     HistoryDateDivider(
-                        date = it.date,
+                        date = item.date,
                         spacerTop = dateDividerMarginTop
-                            ?: if (it == history.firstOrNull()) 24.dp else 32.dp,
+                            ?: if (item == history.firstOrNull()) 24.dp else 32.dp,
                         baseCurrency = baseData.baseCurrency,
-                        income = it.income,
-                        expenses = it.expenses
+                        income = item.income,
+                        expenses = item.expenses
                     )
                     }
                 }
@@ -394,7 +394,7 @@ private fun LazyListScope.scrollHackSpacer(
 
     lastItemSpacer: Dp?,
 ) {
-    item {
+    item(key = "last_spacer", contentType = "last_spacer") {
         if (lastItemSpacer != null) {
             Spacer(Modifier.height(lastItemSpacer))
         } else {

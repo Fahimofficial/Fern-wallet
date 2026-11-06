@@ -363,9 +363,8 @@ private fun HomeBalance(
 ) {
     var compact by rememberSaveable { mutableStateOf(true) }
     val short = compact && shouldShortAmount(balance)
-    val format = remember(currency, short) {
-        { value: Double -> "$currency ${if (short) shortenAmount(value) else value.format(currency)}" }
-    }
+    // Compose memoizes this lambda: it only changes with currency and short.
+    val format = { value: Double -> "$currency ${if (short) shortenAmount(value) else value.format(currency)}" }
     val detailsLabel = stringResource(R.string.balance_details)
     val toggleLabel = stringResource(if (compact) R.string.show_exact_amount else R.string.show_compact_amount)
     Row(
@@ -382,9 +381,18 @@ private fun HomeBalance(
                     onClickLabel = if (hidden) null else toggleLabel,
                     onLongClickLabel = detailsLabel,
                     onLongClick = onOpenDetails,
-                    onClick = { if (hidden) onHiddenClick() else compact = !compact },
+                    onClick = {
+                        if (hidden) onHiddenClick() else compact = !compact
+                    },
                 )
-                .semantics { customActions = listOf(CustomAccessibilityAction(detailsLabel) { onOpenDetails(); true }) }
+                .semantics {
+                    customActions = listOf(
+                        CustomAccessibilityAction(detailsLabel) {
+                            onOpenDetails()
+                            true
+                        }
+                    )
+                }
                 .testTag("home_balance"),
         ) {
             val style = UI.typo.nH1.style(fontWeight = FontWeight.ExtraBold, color = UI.colors.pureInverse)
@@ -558,9 +566,7 @@ private fun RowScope.HeaderCard(
             AnimatedAmountText(
                 modifier = Modifier.alignByBaseline(),
                 amount = amount,
-                format = remember(currency, short) {
-                    { value: Double -> if (short) shortenAmount(value) else value.format(currency) }
-                },
+                format = { value: Double -> if (short) shortenAmount(value) else value.format(currency) },
                 style = UI.typo.nB1.style(fontWeight = FontWeight.Bold, color = UI.colors.pureInverse),
             )
             Spacer(Modifier.width(4.dp))

@@ -257,6 +257,8 @@ class HomeViewModel @Inject constructor(
         return hideIncome
     }
 
+    // One branch per event: the complexity is the dispatch table, not logic.
+    @Suppress("CyclomaticComplexMethod")
     override fun onEvent(event: HomeEvent) {
         viewModelScope.launch {
             when (event) {
@@ -382,8 +384,9 @@ class HomeViewModel @Inject constructor(
         )
 
         val goal = settings.bufferAmount
+        val celebrated = ioThread { sharedPrefs.getString(SharedPrefs.SAVINGS_GOAL_CELEBRATED, null) }
         celebrateSavingsGoal = goal > BigDecimal.ZERO && balance >= goal &&
-            ioThread { sharedPrefs.getString(SharedPrefs.SAVINGS_GOAL_CELEBRATED, null) } != goal.stripTrailingZeros().toPlainString()
+            celebrated != goal.stripTrailingZeros().toPlainString()
 
         return settings.baseCurrency to timeRange
     }

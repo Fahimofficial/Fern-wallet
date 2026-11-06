@@ -419,7 +419,7 @@ fun HomeLazyColumn(
         // The last row clears the bottom bar and the + button that overlaps it.
         contentPadding = PaddingValues(bottom = BottomBarClearance),
     ) {
-        item {
+        item(key = "home_cashflow", contentType = "home_cashflow") {
             CashFlowInfo(
                 currency = baseData.baseCurrency,
                 balance = balance.toDouble(),
@@ -438,13 +438,13 @@ fun HomeLazyColumn(
                 onToggleHideBalance = onToggleHideBalance,
             )
         }
-        item {
+        item(key = "home_divider", contentType = "home_divider") {
             Spacer(Modifier.height(16.dp))
 
             TransactionsDividerLine()
         }
 
-        item {
+        item(key = "home_customer_journey", contentType = "home_customer_journey") {
             CustomerJourney(
                 customerJourneyCards = customerJourneyCards,
                 onDismiss = onDismiss
@@ -488,10 +488,8 @@ private const val BarsToggleDeltaPx = 4f
 // (the screen's own state doesn't survive navigating away); move to saved state if that changes.
 private var homeEntrancePlayed = false
 
-private fun TimePeriod.monthIndex(): Int? {
-    val month = month ?: return null
-    return (year ?: return null) * MonthsInYear + month.monthValue
-}
+private fun TimePeriod.monthIndex(): Int? =
+    month?.let { month -> year?.let { year -> year * MonthsInYear + month.monthValue } }
 
 private const val MonthsInYear = 12
 
@@ -576,7 +574,8 @@ fun BoxWithConstraintsScope.HomeSampleUi(overlay: HomeSampleOverlay = HomeSample
             hideBalance = false,
             hideIncome = false,
             expanded = true,
-            shouldShowAccountSpecificColorInTransactions = true
+            shouldShowAccountSpecificColorInTransactions = true,
+            celebrateSavingsGoal = false,
         ),
         onEvent = {},
         initialPeriodModalOpen = overlay == HomeSampleOverlay.PeriodPicker,

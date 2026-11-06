@@ -61,7 +61,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.ivy.base.legacy.Theme
@@ -272,6 +271,7 @@ private fun MoreMenuButton(
     )
 }
 
+@Suppress("LongParameterList")
 @Composable
 private fun ColumnScope.Content(
     balance: Double,
@@ -382,6 +382,7 @@ private fun OpenSource() {
             subtitle = Constants.URL_IVY_WALLET_REPO,
             subtitleColor = UI.colors.gray,
             trailingIcon = R.drawable.ic_arrow_right,
+            pulseIcon = false,
         ),
         modifier = Modifier.testTag("home_open_source_card"),
     ) {
@@ -400,6 +401,7 @@ private fun SupportMyWork() {
             title = stringResource(R.string.support_my_work),
             subtitle = stringResource(R.string.support_my_work_home_description),
             subtitleColor = UI.colors.gray,
+            trailingIcon = null,
             pulseIcon = true,
         ),
         modifier = Modifier.testTag(SupportCardTag),
@@ -416,10 +418,10 @@ private data class LinkCardData(
     val title: String,
     val subtitle: String,
     val subtitleColor: Color,
-    /** e.g. an "opens" arrow for a card that leaves the app. */
-    @DrawableRes val trailingIcon: Int? = null,
+    /** e.g. an "opens" arrow for a card that leaves the app; null for none. */
+    @DrawableRes val trailingIcon: Int?,
     /** One gentle beat each time the card appears. */
-    val pulseIcon: Boolean = false,
+    val pulseIcon: Boolean,
 )
 
 @Composable
@@ -797,7 +799,11 @@ private fun MoreMenuButton(
             }
             .pressScale(interactionSource, pressedScale = TilePressedScale)
             .clip(UI.shapes.r4)
-            .clickable(interactionSource = interactionSource, indication = LocalIndication.current, role = Role.Button) {
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                role = Role.Button,
+            ) {
                 IvyHaptics.tick(view)
                 onClick()
             }

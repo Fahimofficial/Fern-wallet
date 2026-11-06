@@ -125,7 +125,7 @@ val FAB_BUTTON_SIZE = 56.dp
 
 /** @param initiallyExpanded only used by screenshot tests to render the add menu open. */
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-@Suppress("LongMethod")
+@Suppress("LongMethod", "CyclomaticComplexMethod")
 @Composable
 fun BoxWithConstraintsScope.BottomBar(
     tab: MainTab,
@@ -275,7 +275,11 @@ fun BoxWithConstraintsScope.BottomBar(
     val fabPullRangePx = FAB_BUTTON_SIZE.toDensityPx()
     // + & x button. A pill that shows "Add" in the first session, then a round button.
     val fabInteraction = remember { MutableInteractionSource() }
-    val fabGradient = if (tab == MainTab.HOME && expanded) Gradient.solid(UI.colors.gray) else paletteGradient(ColorToken.Fab)
+    val fabGradient = if (tab == MainTab.HOME && expanded) {
+        Gradient.solid(UI.colors.gray)
+    } else {
+        paletteGradient(ColorToken.Fab)
+    }
     val fabTint = if (expanded) UI.colors.gray.contentColor() else FernTheme.palette[ColorToken.Fab].contentColor()
     val fabDescription = stringResource(fabLabel(tab, expanded))
     val fabHiddenOffset = ivyContext.screenHeight - fabStartY

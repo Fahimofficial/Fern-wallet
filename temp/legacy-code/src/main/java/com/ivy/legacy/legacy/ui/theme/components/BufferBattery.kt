@@ -42,10 +42,10 @@ import kotlin.math.abs
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
 fun BufferBattery(
-    modifier: Modifier = Modifier,
     buffer: Double,
     balance: Double,
     currency: String,
+    modifier: Modifier = Modifier,
     backgroundNotFilled: Color = UI.colors.pure,
     animateIn: Boolean = false,
     onClick: (() -> Unit)? = null,

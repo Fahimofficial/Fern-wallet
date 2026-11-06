@@ -21,7 +21,7 @@ fun topExpenseCategory(history: List<TransactionHistoryItem>, categories: List<C
         .mapNotNull { it.categoryId }
         .groupingBy { it }
         .eachCount()
-    val (id, count) = counts.maxByOrNull { it.value } ?: return null
-    val name = categories.find { it.id.value == id }?.name?.value ?: return null
-    return TopCategory(name = name, count = count)
+    return counts.maxByOrNull { it.value }?.let { (id, count) ->
+        categories.find { it.id.value == id }?.let { TopCategory(name = it.name.value, count = count) }
+    }
 }

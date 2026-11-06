@@ -67,7 +67,6 @@ import com.ivy.legacy.utils.format
 import com.ivy.legacy.utils.hideKeyboard
 import com.ivy.legacy.utils.lerp
 import com.ivy.legacy.utils.onScreenStart
-import com.ivy.design.utils.thenIf
 import com.ivy.base.model.TransactionType
 import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.ui.R
@@ -225,11 +224,10 @@ fun BoxWithConstraintsScope.EditBottomSheet(
     val percentExpanded = expansion.progress
     val percentCollapsed = 1f - percentExpanded
 
+    // Only a real conversion earns a second line; the same currency would just repeat the amount.
+    val converted = convertedAmountCurrencyCode != null && convertedAmountCurrencyCode != currency
     val showConvertedAmountText by remember(convertedAmount) {
-        // Only a real conversion earns a second line; the same currency would just repeat the amount.
-        if (type == TransactionType.TRANSFER && convertedAmount != null && convertedAmountCurrencyCode != null &&
-            convertedAmountCurrencyCode != currency
-        ) {
+        if (type == TransactionType.TRANSFER && convertedAmount != null && converted) {
             mutableStateOf(
                 "${
                     convertedAmount.format(

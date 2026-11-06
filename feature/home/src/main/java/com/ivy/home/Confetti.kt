@@ -23,6 +23,9 @@ import kotlin.random.Random
 
 private const val ConfettiMillis = 800
 private const val PieceCount = 36
+private const val LaunchHeight = 0.5f
+private const val Gravity = 1.6f
+private val ConfettiTokens = listOf(ColorToken.Income, ColorToken.Accent, ColorToken.Upcoming, ColorToken.Transfer)
 
 private class Piece(val x: Float, val vx: Float, val vy: Float, val spin: Float, val color: Color)
 
@@ -33,7 +36,7 @@ private class Piece(val x: Float, val vx: Float, val vy: Float, val spin: Float,
 @Composable
 internal fun Confetti(modifier: Modifier = Modifier, onFinished: () -> Unit) {
     val palette = FernTheme.palette
-    val colors = listOf(ColorToken.Income, ColorToken.Accent, ColorToken.Upcoming, ColorToken.Transfer).map { palette[it] }
+    val colors = ConfettiTokens.map { palette[it] }
     val pieces = remember {
         val random = Random(seed = 7)
         List(PieceCount) {
@@ -59,7 +62,7 @@ internal fun Confetti(modifier: Modifier = Modifier, onFinished: () -> Unit) {
         pieces.forEach { p ->
             // Thrown up from the card's middle, then falling under "gravity".
             val x = size.width * (p.x + p.vx * t)
-            val y = size.height * (0.5f - p.vy * t + 1.6f * t * t)
+            val y = size.height * (LaunchHeight - p.vy * t + Gravity * t * t)
             rotate(p.spin * t, pivot = Offset(x, y)) {
                 drawRect(p.color, topLeft = Offset(x, y), size = piece, alpha = 1f - t)
             }

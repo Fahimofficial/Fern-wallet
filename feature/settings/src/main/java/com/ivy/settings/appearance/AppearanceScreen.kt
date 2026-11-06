@@ -266,7 +266,11 @@ private fun SaveIndicator(saving: Boolean?) {
         ) {
             AnimatedContent(targetState = saving == true, label = "save_state") { inProgress ->
                 if (inProgress) {
-                    CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = UI.colors.gray)
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp),
+                        strokeWidth = 2.dp,
+                        color = UI.colors.gray,
+                    )
                 } else {
                     Icon(
                         modifier = Modifier.size(14.dp),
