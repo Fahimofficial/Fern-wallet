@@ -224,7 +224,7 @@ private fun ResetAllButton(onClick: () -> Unit) {
     }
 }
 
-/** Says exactly what "Reset all" will undo before doing it. */
+/** Confirms which appearance settings will be reset. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ResetAllConfirmationSheet(appearance: AppearanceSettings, onConfirm: () -> Unit, onDismiss: () -> Unit) {
@@ -266,7 +266,7 @@ private fun ResetAllConfirmationSheet(appearance: AppearanceSettings, onConfirm:
     }
 }
 
-/** "Saved on this device": a spinner while writing, then a check. Hidden until something changes. */
+/** Shows whether changed appearance settings are still saving or saved locally. */
 @Composable
 private fun AppearanceSaveStatusIndicator(saving: Boolean?) {
     AnimatedVisibility(visible = saving != null, enter = fadeIn(), exit = fadeOut()) {
@@ -302,7 +302,7 @@ private fun AppearanceSaveStatusIndicator(saving: Boolean?) {
     }
 }
 
-/** "Use account colours on transactions", off by default; the preview above shows the effect. */
+/** Toggles account-specific colours in transaction rows. */
 @Composable
 private fun AccountTransactionColorsToggle(checked: Boolean, onChange: (Boolean) -> Unit) {
     val view = LocalView.current
