@@ -1,10 +1,9 @@
-"""
-Import account logos from an unpacked `simple-icons` npm package.
+"""Import account logos from an unpacked `simple-icons` npm package.
 
 Usage: python3 scripts/logos/import_simple_icons.py path/to/simple-icons/package
 
-Writes shared/ui/core/res/drawable/logo_*.xml, LogoCatalog.kt and LOGO_LICENSES.md. A glyph is
-used only when its Simple Icons entry is unrestricted (see clean()); other brands get initials.
+Writes drawable assets, LogoCatalog.kt and LOGO_LICENSES.md. Only unrestricted glyphs are used;
+other brands get initials.
 """
 import json
 import os
@@ -75,7 +74,7 @@ BRANDS = [
 
 
 def clean(slug):
-    """Use a Simple Icons glyph only when its entry has no guidelines or licence restrictions.
+    """Check that a Simple Icons entry has no guidelines or licence restrictions.
 
     Its source must not be a brand-guidelines page.
     """
