@@ -123,7 +123,7 @@ Fern Wallet is free software under the [GNU General Public License v3.0](LICENSE
 
 Fern Wallet is free and ad-free. If it helps you keep your money in order, a small donation keeps development going.
 
-<a href="https://quantummpv.vercel.app/pay/"><img src="docs/assets/support/upi-qr.png" width="240" alt="UPI QR code to pay Md Fahim, UPI ID SimplyFahim@sbi. Tap to open UPI payment options."></a>
+<a href="https://quantummpv.vercel.app/pay/"><img src="docs/assets/support/upi-qr.png" width="220" alt="UPI QR code to pay Md Fahim, UPI ID SimplyFahim@sbi. Tap to open UPI payment options."></a>
 
 ### 👆 **Tap the QR to open UPI payment options**
 
