@@ -127,7 +127,7 @@ fun NavigationRoot(
                             LocalScreenEnterSettled provides enterSettled,
                         ) {
                             Box(
-                                Modifier.recedeBehindNewerScreenContent(
+                                Modifier.applyPreviousScreenRecedeEffect(
                                     shown,
                                     screens.currentState,
                                     screens.targetState,
@@ -148,7 +148,7 @@ fun NavigationRoot(
  * Scales and dims the older screen as the newer screen enters, following predictive back progress.
  */
 @Composable
-private fun Modifier.recedeBehindNewerScreenContent(
+private fun Modifier.applyPreviousScreenRecedeEffect(
     shown: NavEntry,
     current: NavEntry,
     target: NavEntry,
