@@ -808,7 +808,6 @@ private fun QuickAccessMainRow(
     }
 }
 
-
 private data class QuickAccessThemeStyle(
     val icon: Int,
     val label: String,
@@ -821,26 +820,26 @@ private fun QuickAccessThemeButton(
     theme: Theme,
     onSwitchTheme: () -> Unit,
 ) {
-    val (icon, label, backgroundColor, tint) = when (theme) {
+    val style = when (theme) {
         Theme.LIGHT -> QuickAccessThemeStyle(
             R.drawable.home_more_menu_light_mode,
             stringResource(R.string.light_mode),
             UI.colors.pure,
             UI.colors.pureInverse,
         )
-        Theme.DARK -> Quadruple(
+        Theme.DARK -> QuickAccessThemeStyle(
             R.drawable.home_more_menu_dark_mode,
             stringResource(R.string.dark_mode),
             UI.colors.pureInverse,
             UI.colors.pure,
         )
-        Theme.AMOLED_DARK -> Quadruple(
+        Theme.AMOLED_DARK -> QuickAccessThemeStyle(
             R.drawable.home_more_menu_amoled_dark_mode,
             stringResource(R.string.amoled_mode),
             UI.colors.pureInverse,
             UI.colors.pure,
         )
-        Theme.AUTO -> Quadruple(
+        Theme.AUTO -> QuickAccessThemeStyle(
             R.drawable.home_more_menu_auto_mode,
             stringResource(R.string.auto_mode),
             UI.colors.pure,
@@ -849,10 +848,10 @@ private fun QuickAccessThemeButton(
     }
     MoreMenuButton(
         wave = 2,
-        icon = icon,
-        label = label,
-        backgroundColor = backgroundColor,
-        tint = tint,
+        icon = style.icon,
+        label = style.label,
+        backgroundColor = style.backgroundColor,
+        tint = style.tint,
     ) {
         onSwitchTheme()
     }
@@ -918,6 +917,7 @@ private fun QuickAccessSecondaryRow() {
         Spacer(Modifier.weight(1f))
     }
 }
+
 /**
  * A Quick-access tile: icon and label are one 48dp+ target that shrinks under the finger with a
  * light tick. On the menu's first opening per app start, tiles fade in as a diagonal wave.

@@ -126,7 +126,14 @@ fun NavigationRoot(
                             LocalScreenAnimationScope provides this,
                             LocalScreenEnterSettled provides enterSettled,
                         ) {
-                            Box(Modifier.recedeBehindNewerScreenContent(shown, screens.currentState, screens.targetState, this)) {
+                            Box(
+                                Modifier.recedeBehindNewerScreenContent(
+                                    shown,
+                                    screens.currentState,
+                                    screens.targetState,
+                                    this,
+                                ),
+                            ) {
                                 ScreenContent(shown, navigation, stores, parentOwner, navGraph)
                             }
                         }

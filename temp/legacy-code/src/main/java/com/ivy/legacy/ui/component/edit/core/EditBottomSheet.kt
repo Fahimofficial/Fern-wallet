@@ -591,7 +591,10 @@ private fun SheetHeader(
                     modifier = Modifier.padding(start = 20.dp, end = 24.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    AccountSwapConnector(enabled = selectedAccount != null && toAccount != null, onSwap = onSwapAccounts)
+                    AccountSwapConnector(
+                        enabled = selectedAccount != null && toAccount != null,
+                        onSwap = onSwapAccounts,
+                    )
                     Spacer(Modifier.width(4.dp))
                     // With From chosen and To still empty, To is the next step: say so in the accent.
                     val toPending = selectedAccount != null && toAccount == null

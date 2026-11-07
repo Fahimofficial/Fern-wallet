@@ -644,7 +644,12 @@ private fun TransferHeader(
 
 /** The account's logo when [account] is given and has one, else the plain icon. */
 @Composable
-private fun TransactionAccountChipIcon(account: Account?, iconName: String?, @DrawableRes defaultIcon: Int, tint: Color) {
+private fun TransactionAccountChipIcon(
+    account: Account?,
+    iconName: String?,
+    @DrawableRes defaultIcon: Int,
+    tint: Color,
+) {
     if (account != null) {
         AccountMark(
             appearance = account.appearance,
