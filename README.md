@@ -12,6 +12,7 @@ Accounts, budgets, credit cards and reports. No ads, no account, your data stays
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue?style=for-the-badge)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/SimplyFahimOfficial/Fern-wallet?include_prereleases&style=for-the-badge&logo=github&label=Release)](https://github.com/SimplyFahimOfficial/Fern-wallet/releases)
 [![GitHub stars](https://img.shields.io/github/stars/SimplyFahimOfficial/Fern-wallet?style=for-the-badge&logo=github)](https://github.com/SimplyFahimOfficial/Fern-wallet/stargazers)
+[![Join the Fern Wallet Telegram group](https://img.shields.io/badge/Join_the-Telegram_group-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Fernwallet)
 
 [Features](#-features) · [Download](#-download) · [Build](#-build-from-source) · [Credits](#-credits) · [Contact](#-contact) · [Support](#-support-the-project)
 
