@@ -87,6 +87,10 @@ internal fun PaymentOptionsSection(actions: SupportScreenActions) {
         SettingsSectionDivider(text = stringResource(R.string.support_payment_options))
         Spacer(Modifier.height(16.dp))
 
+        UpiCard(actions)
+
+        Spacer(Modifier.height(12.dp))
+
         SupportDestinationLinkRow(
             icon = SettingsR.drawable.ic_kofi,
             iconTint = KofiBrandRed,
@@ -94,10 +98,6 @@ internal fun PaymentOptionsSection(actions: SupportScreenActions) {
             description = SupportDestinations.KOFI_URL.withoutScheme(),
             onClick = { actions.onOpenUrl(SupportDestinations.KOFI_URL) },
         )
-
-        Spacer(Modifier.height(12.dp))
-
-        UpiCard(actions)
     }
 }
 

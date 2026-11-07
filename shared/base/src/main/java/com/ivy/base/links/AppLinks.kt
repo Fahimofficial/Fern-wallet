@@ -54,6 +54,26 @@ object SupportDestinations {
     /** This app's own repository. */
     const val APP_REPOSITORY = FernLinks.REPOSITORY
 
+    /** Fern Wallet's Telegram group (updates, help, feedback): the primary contact. */
+    const val TELEGRAM_GROUP_USERNAME = "Fernwallet"
+
+    /** Personal contact, shown with less emphasis than the group. */
+    const val INSTAGRAM_HANDLE = "SimplyFahimofficial"
+    val EMAILS: List<String> = listOf("simplyfahimofficial@gmail.com")
+
+    /** TODO: set the personal Telegram username (without `@`). Its tile is hidden while this is null. */
+    val PERSONAL_TELEGRAM_USERNAME: String? = null
+
+    const val EMAIL_SUBJECT = "Fern Wallet feedback"
+
+    fun telegramUrl(username: String): String = "https://t.me/${username.removePrefix("@")}"
+
+    fun instagramUrl(handle: String): String = "https://instagram.com/${handle.removePrefix("@")}"
+
+    /** `mailto:` link with a short subject, e.g. `mailto:a@b.c?subject=Fern%20Wallet%20feedback`. */
+    fun mailtoUri(email: String, subject: String = EMAIL_SUBJECT): String =
+        "mailto:$email?subject=${encodeQueryValue(subject)}"
+
     /** Public UPI ID (VPA) and the payee name UPI apps show before the user confirms. */
     const val UPI_ID = "SimplyFahim@sbi"
     const val UPI_PAYEE_NAME = "Md Fahim"

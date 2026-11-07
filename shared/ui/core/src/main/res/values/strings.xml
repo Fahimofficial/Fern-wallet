@@ -542,6 +542,16 @@
     <string name="support_app_repository">Fern Wallet on GitHub</string>
     <string name="support_website">Personal website</string>
     <string name="support_github_profile">More projects on GitHub</string>
+    <string name="support_community">Community</string>
+    <string name="support_telegram_group_title">Fern Wallet on Telegram</string>
+    <string name="support_telegram_group_subtitle">Get updates, ask for help and share feedback with other users.</string>
+    <string name="support_telegram_group_cta">Join the group</string>
+    <string name="support_personal_contact">Personal contact</string>
+    <string name="support_instagram">Instagram</string>
+    <string name="support_email">Email</string>
+    <string name="support_personal_telegram">Telegram</string>
+    <string name="support_contact_description">%1$s: %2$s</string>
+    <string name="support_copy_action">Copy</string>
     <!-- Credit cards -->
     <string name="cc_credit_card">Credit card</string>
     <string name="cc_credit_cards">Credit cards</string>
