@@ -210,7 +210,7 @@ private fun HeaderStickyRow(
             }
         }
 
-        HomeMonthPickerButton(
+        HomeMonthSelectorButton(
             modifier = Modifier.horizontalSwipeListener(
                 sensitivity = 75,
                 state = rememberSwipeListenerState(),
@@ -242,7 +242,7 @@ private fun HeaderStickyRow(
  * Opens the month picker; horizontal swipes step the month.
  */
 @Composable
-private fun HomeMonthPickerButton(
+private fun HomeMonthSelectorButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -305,7 +305,7 @@ fun CashFlowInfo(
                 },
             ),
     ) {
-        HomeBalanceDisplay(
+        HomeBalanceAmountDisplay(
             currency = currency,
             balance = balance,
             hidden = hideBalance,
@@ -353,7 +353,7 @@ fun CashFlowInfo(
 @OptIn(ExperimentalFoundationApi::class)
 @Suppress("LongParameterList")
 @Composable
-private fun HomeBalanceDisplay(
+private fun HomeBalanceAmountDisplay(
     currency: String,
     balance: Double,
     hidden: Boolean,
