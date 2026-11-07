@@ -127,7 +127,7 @@ fun NavigationRoot(
                             screens.targetState
                         }
                         val behind = shown.id < other.id
-                        val covered by visibility.transition.animateFloat(
+                        val covered by visibility.animateFloat(
                             transitionSpec = { IvyMotion.recedeSpec() },
                             label = "screen_recede",
                         ) { state ->
