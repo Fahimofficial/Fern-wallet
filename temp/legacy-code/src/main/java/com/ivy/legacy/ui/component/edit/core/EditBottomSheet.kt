@@ -277,7 +277,7 @@ fun BoxWithConstraintsScope.EditBottomSheet(
             )
             .consumeClicks(rememberInteractionSource())
     ) {
-        AccountSelectionDragHandle(
+        AccountSheetDragHandle(
             expanded = expanded,
             onToggle = {
                 hideKeyboard(rootView)
@@ -591,7 +591,7 @@ private fun SheetHeader(
                     modifier = Modifier.padding(start = 20.dp, end = 24.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    AccountSwapConnector(
+                    TransferAccountSwapControl(
                         enabled = selectedAccount != null && toAccount != null,
                         onSwap = onSwapAccounts,
                     )
@@ -748,7 +748,7 @@ private fun Account(
 
 /** Lets users drag the sheet or activate it to show and hide the accounts. */
 @Composable
-private fun AccountSelectionDragHandle(expanded: Boolean, onToggle: () -> Unit) {
+private fun AccountSheetDragHandle(expanded: Boolean, onToggle: () -> Unit) {
     val label = stringResource(if (expanded) R.string.collapse else R.string.expand)
     Box(
         modifier = Modifier
@@ -770,7 +770,7 @@ private const val HandleAlpha = 0.5f
 
 /** Shows the transfer direction and rotates when the accounts are swapped. */
 @Composable
-private fun AccountSwapConnector(enabled: Boolean, onSwap: () -> Unit) {
+private fun TransferAccountSwapControl(enabled: Boolean, onSwap: () -> Unit) {
     var turns by remember { mutableIntStateOf(0) }
     val rotation by animateFloatAsState(
         targetValue = 90f + turns * 180f,
