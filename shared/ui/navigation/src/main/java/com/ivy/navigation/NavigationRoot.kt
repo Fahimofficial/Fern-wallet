@@ -2,7 +2,6 @@ package com.ivy.navigation
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.layout.Box
@@ -122,17 +121,24 @@ fun NavigationRoot(
                                 !arrivingInFront || visibility.currentState == EnterExitState.Visible
                             }
                         }
+                        val other = if (shown.id == screens.targetState.id) {
+                            screens.currentState
+                        } else {
+                            screens.targetState
+                        }
+                        val behind = shown.id < other.id
+                        val covered by visibility.transition.animateFloat(
+                            transitionSpec = { IvyMotion.recedeSpec() },
+                            label = "screen_recede",
+                        ) { state ->
+                            if (state == EnterExitState.Visible || !behind) 0f else 1f
+                        }
                         CompositionLocalProvider(
                             LocalScreenAnimationScope provides this,
                             LocalScreenEnterSettled provides enterSettled,
                         ) {
                             Box(
-                                Modifier.applyPreviousScreenRecedeEffect(
-                                    shown,
-                                    screens.currentState,
-                                    screens.targetState,
-                                    this,
-                                ),
+                                Modifier.applyPreviousScreenRecedeEffect(behind, covered),
                             ) {
                                 ScreenContent(shown, navigation, stores, parentOwner, navGraph)
                             }
@@ -147,27 +153,18 @@ fun NavigationRoot(
 /**
  * Scales and dims the older screen as the newer screen enters, following predictive back progress.
  */
-@Composable
 private fun Modifier.applyPreviousScreenRecedeEffect(
-    shown: NavEntry,
-    current: NavEntry,
-    target: NavEntry,
-    scope: AnimatedVisibilityScope,
+    behind: Boolean,
+    covered: Float,
 ): Modifier {
-    val other = if (shown.id == target.id) current else target
-    val behind = shown.id < other.id
-    val covered = scope.transition.animateFloat(
-        transitionSpec = { IvyMotion.recedeSpec() },
-        label = "screen_recede",
-    ) { state -> if (state == EnterExitState.Visible || !behind) 0f else 1f }
     if (!behind) return this
     return graphicsLayer {
-        val scale = 1f - (1f - IvyMotion.RecededScale) * covered.value
+        val scale = 1f - (1f - IvyMotion.RecededScale) * covered
         scaleX = scale
         scaleY = scale
     }.drawWithContent {
         drawContent()
-        drawRect(Color.Black, alpha = IvyMotion.RecededDim * covered.value)
+        drawRect(Color.Black, alpha = IvyMotion.RecededDim * covered)
     }
 }
 
