@@ -10,7 +10,7 @@ class SupportDestinationsTest {
     @Test
     fun `UPI link identifies the payee only`() {
         SupportDestinations.upiPaymentUri() shouldBe
-            "upi://pay?pa=SimplyFahim@sbi&pn=SimplyFahim&cu=INR"
+            "upi://pay?pa=SimplyFahim@sbi&pn=Md%20Fahim&cu=INR"
     }
 
     @Test
@@ -27,7 +27,7 @@ class SupportDestinationsTest {
     @Test
     fun `support details are the developer's own`() {
         SupportDestinations.UPI_ID shouldBe "SimplyFahim@sbi"
-        SupportDestinations.UPI_PAYEE_NAME shouldBe "SimplyFahim"
+        SupportDestinations.UPI_PAYEE_NAME shouldBe "Md Fahim"
         SupportDestinations.UPI_CURRENCY shouldBe "INR"
         SupportDestinations.KOFI_URL shouldBe "https://ko-fi.com/simplyfahim"
         SupportDestinations.WEBSITE shouldBe "https://SimplyFahim.pages.dev"
