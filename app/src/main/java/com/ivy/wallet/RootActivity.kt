@@ -193,7 +193,6 @@ class RootActivity : AppCompatActivity(), RootScreen {
         }
     }
 
-    /** App-wide values every screen reads, each collected once here. */
     @Suppress("FunctionNaming") // a composable
     @Composable
     private fun ProvideAppCompositionLocals(content: @Composable () -> Unit) {
