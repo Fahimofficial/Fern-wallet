@@ -642,7 +642,7 @@ private fun TransferHeader(
     }
 }
 
-/** The account's logo when [account] is given and has one, else the plain icon. */
+/** Shows an account logo when available, otherwise its regular icon. */
 @Composable
 private fun TransactionAccountChipIcon(
     account: Account?,
