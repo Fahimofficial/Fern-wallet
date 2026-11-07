@@ -145,10 +145,7 @@ fun NavigationRoot(
 }
 
 /**
- * The older of the two screens in a transition scales down a little and dims while the newer one
- * covers it, instead of disappearing, and comes back the same way on back. Driven by the screen's
- * own enter/exit progress, so a predictive back gesture scrubs it too. Read only in the draw
- * phase: receding never recomposes the screen.
+ * Scales and dims the older screen as the newer screen enters, following predictive back progress.
  */
 @Composable
 private fun Modifier.recedeBehindNewerScreenContent(
