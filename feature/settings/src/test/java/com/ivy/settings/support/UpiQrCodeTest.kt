@@ -24,7 +24,7 @@ class UpiQrCodeTest {
 
     @Test
     fun `QR payload is the UPI payment link without an amount`() {
-        payload shouldBe "upi://pay?pa=SimplyFahim@sbi&pn=SimplyFahim&cu=INR"
+        payload shouldBe "upi://pay?pa=SimplyFahim@sbi&pn=Md%20Fahim&cu=INR"
         payload shouldNotContain "am="
     }
 

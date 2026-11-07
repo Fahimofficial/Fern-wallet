@@ -1,148 +1,128 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/branding/wordmark-dark.png" />
-    <img src="docs/branding/wordmark-light.png" width="420" alt="Fern Wallet" />
-  </picture>
-</p>
+<div align="center">
 
-<p align="center">
-  A free, open-source money manager for Android: accounts, transactions, budgets, planned payments, loans and reports.
-  <br/>No ads, no trackers, no account required. Your data stays on your device.
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/branding/wordmark-dark.png">
+  <img src="docs/branding/wordmark-light.png" width="380" alt="Fern Wallet">
+</picture>
 
-<p align="center">
-  <a href="https://github.com/Fahimofficial/Fern-wallet/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Fahimofficial/Fern-wallet/actions/workflows/ci.yml/badge.svg" /></a>
-  <a href="https://github.com/Fahimofficial/Fern-wallet/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/Fahimofficial/Fern-wallet?include_prereleases" /></a>
-  <a href="LICENSE"><img alt="License: GPL v3" src="https://img.shields.io/badge/License-GPLv3-blue.svg" /></a>
-</p>
+**A calm, open-source money manager for Android.**<br>
+Accounts, budgets, credit cards and reports. No ads, no account, your data stays on your phone.
 
-<p align="center">
-  <img src="docs/screenshots/home-light.png" width="23%" alt="Home screen with balance, income, expenses and recent transactions" />
-  <img src="docs/screenshots/accounts-light.png" width="23%" alt="Accounts with balances and monthly income and expenses" />
-  <img src="docs/screenshots/add-menu-light.png" width="23%" alt="Add menu: income, expense, transfer and planned payment" />
-  <img src="docs/screenshots/period-picker-light.png" width="23%" alt="Period picker: month, custom range, last N weeks or all time" />
-</p>
-<p align="center">
-  <img src="docs/screenshots/more-menu-light.png" width="23%" alt="Quick access menu with search, savings goal and shortcuts" />
-  <img src="docs/screenshots/home-dark.png" width="23%" alt="Home screen in dark theme" />
-  <img src="docs/screenshots/support-light.png" width="23%" alt="Support my work screen" />
-</p>
+[![Platform: Android 9.0+](https://img.shields.io/badge/Android-9.0%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-download)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue?style=for-the-badge)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/Fahimofficial/Fern-wallet?include_prereleases&style=for-the-badge&logo=github&label=Release)](https://github.com/Fahimofficial/Fern-wallet/releases)
+[![GitHub stars](https://img.shields.io/github/stars/Fahimofficial/Fern-wallet?style=for-the-badge&logo=github)](https://github.com/Fahimofficial/Fern-wallet/stargazers)
 
-<sub>Rendered from the app's Compose previews with made-up sample data (Paparazzi), not from a real device or account.
-Regenerate with `./gradlew recordPaparazziDebug && python3 scripts/readme_screenshots.py`.</sub>
+[Features](#-features) · [Download](#-download) · [Build](#-build-from-source) · [Credits](#-credits) · [Support](#-support-the-project)
 
-## About
+</div>
 
-Fern Wallet is a fork of [Ivy Wallet](https://github.com/Ivy-Apps/ivy-wallet) by Ivy Apps and its
-contributors, which is no longer maintained upstream. Fern Wallet continues development under the same
-[GPL-3.0 license](LICENSE). Most of the code was written by the Ivy Wallet contributors; see
-[Upstream & attribution](#upstream--attribution).
+---
 
-## Features
+## ✨ Features
 
-- Multiple accounts with their own currency, color and icon; total balance with optional excluded accounts
-- Income, expense and account-transfer transactions with categories, tags and descriptions
-- Monthly overview with a custom month start day, custom date ranges, "last N days/weeks/months" and all-time
-- Credit cards: limit and available credit, calculated statements and due dates, bill payments as transfers,
-  due-date reminders, and a catalogue of Indian banks and cards ([docs](docs/Credit-Cards.md))
-- Planned (one-time and recurring) payments, budgets, loans, savings goal ("left to spend")
-- Reports, pie-chart statistics, search
-- Exchange rates (fetched over HTTPS from a public currency API) and manual overrides
-- Backup/restore to a ZIP file, CSV import from several apps
-- Home-screen widgets, app shortcuts and a Quick Settings tile
-- App lock (biometric / device credential), hide balance/income
-- Light, dark and AMOLED-black themes, and four app icons (Fern, Mono, Graphite, Midnight)
+- 💼 **Accounts and transactions.** Multiple accounts with their own currency, color and icon. Income, expenses and transfers with categories, tags and notes.
+- 📅 **Flexible periods.** Monthly overview with a custom month start day, custom ranges, "last N days/weeks/months" and all time.
+- 💳 **Credit cards.** Limits and available credit, calculated statements and due dates, bill payments as transfers, due-date reminders and a catalogue of Indian banks and cards ([docs](docs/Credit-Cards.md)).
+- 🎯 **Plan ahead.** One-time and recurring planned payments, budgets, loans and a savings goal.
+- 📊 **Insights.** Reports, pie-chart statistics and search.
+- 💱 **Multi-currency.** Exchange rates fetched over HTTPS from a public currency API, with manual overrides.
+- 🔄 **Your data, portable.** Backup and restore to a ZIP file, plus CSV import from Ivy Wallet, Money Manager, Wallet by BudgetBakers, Spendee, Monefy, 1Money, BlueCoins, KTW Money Manager, Fortune City and Financisto.
+- 🧩 **Quick access.** Home-screen widgets, app shortcuts and a Quick Settings tile.
+- 🔒 **Privacy.** App lock with biometrics or device credential, hide balances, and no analytics or crash reporting.
+- 🎨 **Appearance.** System, light, dark and AMOLED themes, color presets or your own colors for light and dark, and four app icons (Fern, Mono, Graphite, Midnight).
 
-## Download
+## 📸 Screenshots
 
-Signed APKs and AABs are published on the [Releases page](https://github.com/Fahimofficial/Fern-wallet/releases),
-each with a `SHA256SUMS.txt`, a Software Bill of Materials (SBOM) and a build-provenance attestation. Verify a download with:
+<div align="center">
+  <img src="docs/screenshots/home-light.png" width="23%" alt="Home screen with balance, income, expenses and recent transactions">
+  <img src="docs/screenshots/accounts-light.png" width="23%" alt="Accounts with balances and monthly totals">
+  <img src="docs/screenshots/add-menu-light.png" width="23%" alt="Add menu: income, expense, transfer and planned payment">
+  <img src="docs/screenshots/period-picker-light.png" width="23%" alt="Period picker">
+  <br><br>
+  <img src="docs/screenshots/home-dark.png" width="23%" alt="Home screen in dark theme">
+  <img src="docs/screenshots/more-menu-light.png" width="23%" alt="Quick access menu">
+  <img src="docs/screenshots/support-light.png" width="23%" alt="Support my work screen">
+  <br>
+  <sub>Rendered from Compose previews with sample data (Paparazzi). Regenerate with <code>./gradlew recordPaparazziDebug && python3 scripts/readme_screenshots.py</code>.</sub>
+</div>
 
-```sh
+## 📥 Download
+
+Signed builds are published on [GitHub Releases](https://github.com/Fahimofficial/Fern-wallet/releases) with an APK, an AAB, an SBOM, `SHA256SUMS.txt` and a build-provenance attestation. No release has been published yet, so for now [build it from source](#-build-from-source). Fern Wallet needs Android 9.0 (API 28) or newer and is not on Google Play or F-Droid yet.
+
+Verify a download:
+
+```bash
 sha256sum -c SHA256SUMS.txt --ignore-missing
-gh attestation verify FernWallet-<version>.apk --repo Fahimofficial/Fern-wallet   # built by this repo's release workflow
+gh attestation verify FernWallet-<version>.apk --repo Fahimofficial/Fern-wallet
 ```
 
-> **Coming from Ivy Wallet?** Fern Wallet has its own application ID (`com.fernwallet.app`), so it installs
-> *next to* Ivy Wallet instead of updating it, and starts empty. To move your data: in Ivy Wallet open
-> **Settings → Backup data**, then in Fern Wallet open **Settings → Import data** and pick the backup ZIP.
-> See [docs/Package-Identity.md](docs/Package-Identity.md).
+> [!NOTE]
+> **Coming from Ivy Wallet?** Fern Wallet uses its own app ID (`com.fernwallet.app`), so it installs next to Ivy Wallet and starts empty. Export with **Settings → Backup data** in Ivy Wallet, then use **Settings → Import data** in Fern Wallet. See [docs/Package-Identity.md](docs/Package-Identity.md).
 
-## Build from source
+## 🔨 Build from source
 
-Requirements: JDK 21, Android SDK (compile SDK 37). The Gradle wrapper downloads Gradle 9.8.2.
+**Requirements:** JDK 21 (the build targets Java 17 bytecode) and Android SDK platform 37. The Gradle wrapper downloads Gradle 9.8.2.
 
-```sh
+```bash
 git clone https://github.com/Fahimofficial/Fern-wallet.git
 cd Fern-wallet
-./gradlew :app:assembleDebug            # app/build/outputs/apk/debug/app-debug.apk
+
+./gradlew :app:assembleDebug     # app/build/outputs/apk/debug/app-debug.apk
+./gradlew testDebugUnitTest      # unit tests and Paparazzi rendering
+./gradlew detekt lintRelease     # static analysis and Android lint
 ```
 
-| Build type | Application ID | Signing | Purpose |
+| Build type | App ID | Signing | Use |
 |---|---|---|---|
-| `debug` | `com.fernwallet.app.debug` | public debug key (`debug.jks`) | development |
-| `demo` | `com.fernwallet.app.demo` | public debug key | minified test build; **never distribute** |
-| `release` | `com.fernwallet.app` | your key via env vars (below) | published builds |
+| `debug` | `com.fernwallet.app.debug` | public debug key | development |
+| `demo` | `com.fernwallet.app.demo` | public debug key | minified test build, never distribute |
+| `release` | `com.fernwallet.app` | `SIGNING_*` environment variables | published builds |
 
-Release builds read signing details only from the environment:
+Releases, CI and troubleshooting: [docs/RELEASE.md](docs/RELEASE.md), [docs/CI_CD.md](docs/CI_CD.md) and [docs/CI-Troubleshooting.md](docs/CI-Troubleshooting.md). Contributions are welcome; start with [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/Guidelines.md](docs/Guidelines.md).
 
-```sh
-export SIGNING_STORE_FILE=/path/to/release.jks
-export SIGNING_STORE_PASSWORD=... SIGNING_KEY_ALIAS=... SIGNING_KEY_PASSWORD=...
-./gradlew :app:assembleRelease :app:bundleRelease
+## 🧰 Tech stack
+
+| Area | Technology |
+|---|---|
+| Language | Kotlin 2.4, Coroutines and Flow |
+| UI | Jetpack Compose, Material 3, Glance widgets, a legacy in-house design system |
+| Architecture | Multi-module (`feature/*`, `shared/*`, `widget/*`), Hilt, ArrowKt |
+| Data | Room, DataStore, kotlinx.serialization |
+| Networking | Ktor client (OkHttp engine) |
+| Background | WorkManager |
+| Testing | JUnit, Kotest, MockK, Paparazzi |
+| Tooling | Gradle 9.8 with convention plugins, AGP 9.5, Detekt, ktlint, compose-lints |
+
+## 🙏 Credits
+
+Fern Wallet is a fork of [**Ivy Wallet**](https://github.com/Ivy-Apps/ivy-wallet) by Ivy Apps Ltd and the [Ivy Wallet contributors](https://github.com/Ivy-Apps/ivy-wallet/graphs/contributors), which is no longer maintained upstream. Most of the code is theirs. The original design system is by Stefan Ilijev. Kotlin sources keep the `com.ivy.*` packages so upstream fixes stay easy to apply. Third-party libraries, fonts and icons are listed in the app under **Settings → Attributions**.
+
+## 📄 License
+
+Fern Wallet is free software under the [GNU General Public License v3.0](LICENSE), without any warranty. Security issues: [SECURITY.md](SECURITY.md). Privacy: [PRIVACY.md](PRIVACY.md).
+
+---
+
+<div align="center">
+
+## 💚 Support the Project
+
+Fern Wallet is free and ad-free. If it helps you keep your money in order, a small donation keeps development going.
+
+**Payee: Md Fahim**
+
+```
+SimplyFahim@sbi
 ```
 
-### Checks
+<img src="docs/assets/support/upi-qr.png" width="220" alt="UPI QR code to pay Md Fahim, UPI ID SimplyFahim@sbi">
 
-```sh
-./gradlew testDebugUnitTest      # unit tests (+ Paparazzi screenshot rendering)
-./gradlew verifyPaparazziDebug   # compare screenshots with recorded golden images
-./gradlew recordPaparazziDebug   # re-record golden images after intentional UI changes
-./gradlew detekt                 # static analysis & formatting (ktlint rules)
-./gradlew lintRelease            # Android lint (security checks are errors)
-./gradlew :app:cyclonedxDirectBom  # SBOM of the release dependencies (app/build/reports/cyclonedx-direct/)
-```
+<sub>Scan with any UPI app and choose your own amount. Check that your app shows <b>Md Fahim</b> before you pay.</sub>
 
-What CI runs, required checks and repository settings: [docs/CI_CD.md](docs/CI_CD.md).
+<br><br>
 
-### Troubleshooting
+<a href="https://ko-fi.com/simplyfahim"><img src="https://img.shields.io/badge/Support_me_on-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" height="44" alt="Support me on Ko-fi"></a>
 
-- **`SDK location not found`** – create `local.properties` with `sdk.dir=/path/to/Android/sdk`, or set `ANDROID_HOME`.
-- **Unsupported class file / JVM errors** – use JDK 21 (`java -version`).
-- **Paparazzi failures** – check `**/build/paparazzi/failures`. If the UI change was intended, run `recordPaparazziDebug` and commit the images.
-- **`./gradlew assembleRelease` fails in `:feature:*:verifyReleaseResources`** – a known upstream issue with library-only resource verification; build the app module instead: `./gradlew :app:assembleRelease`.
-
-## Releasing
-
-See [docs/RELEASE.md](docs/RELEASE.md). In short: run the **Prepare release** workflow, validate and merge its PR,
-push the tag `v<version-name>`; the release workflow checks that CI and Security passed on that commit, then builds,
-signs, verifies, smoke-tests and drafts the GitHub release for review.
-
-## Contributing & support
-
-- Bugs and feature requests: [Fern Wallet issues](https://github.com/Fahimofficial/Fern-wallet/issues)
-- Contributing: [CONTRIBUTING.md](CONTRIBUTING.md) · Developer guidelines: [docs/Guidelines.md](docs/Guidelines.md)
-- Security problems: see [SECURITY.md](SECURITY.md) (please don't open public issues)
-- Privacy: [PRIVACY.md](PRIVACY.md)
-
-**Support my work.** Fern Wallet is maintained by Fahim (SimplyFahim). **Settings → Support my work**
-offers [Ko-fi](https://ko-fi.com/simplyfahim) and UPI (`SimplyFahim@sbi`, with a QR code generated on the
-device), plus links to this repository and [SimplyFahim.pages.dev](https://SimplyFahim.pages.dev). Support is
-always optional; check the payee name in your UPI app before paying.
-
-## Tech stack
-
-Kotlin, Jetpack Compose (Material 3 + a legacy in-house design system), Coroutines/Flow, Hilt, ArrowKt,
-Room, DataStore, Ktor client, kotlinx.serialization, WorkManager, Glance widgets. Tests: JUnit4, Kotest,
-MockK, Paparazzi. Tooling: Gradle KTS with convention plugins and version catalogs, Detekt, ktlint,
-Slack compose-lints, GitHub Actions.
-
-## Upstream & attribution
-
-Fern Wallet is based on **Ivy Wallet** © Ivy Apps Ltd and the
-[Ivy Wallet contributors](https://github.com/Ivy-Apps/ivy-wallet/graphs/contributors), licensed under the
-GNU GPL v3. The original design system was created by Stefan Ilijev. Kotlin sources keep the upstream
-`com.ivy.*` package names to make upstream fixes easy to apply. Third-party libraries, fonts and icons are
-listed in the app under **Settings → Attributions**.
-
-Fern Wallet is distributed under the [GNU General Public License v3.0](LICENSE), without any warranty.
+</div>
