@@ -129,7 +129,7 @@ private fun AppearanceUi(
         // Pinned: every control below scrolls under it, so a change is always seen in context.
         val accountColors = LocalAccountColorsInTransactions.current
         AppearancePreview(palette, accountColors = accountColors)
-        AppearanceSaveStatusIndicator(saving)
+        LocalAppearanceSaveStatusIndicator(saving)
     Column(
         Modifier
             .fillMaxSize()
@@ -146,7 +146,7 @@ private fun AppearanceUi(
         EditingThemeHint(dark)
 
         SectionTitle(R.string.appearance_transactions)
-        AccountTransactionColorsToggle(accountColors, actions.onAccountColors)
+        TransactionAccountColorsSwitch(accountColors, actions.onAccountColors)
 
         ColorGroup.entries.forEach { group ->
             GroupSection(
@@ -178,7 +178,7 @@ private fun AppearanceUi(
         )
     }
     if (confirmResetAll) {
-        ResetAllConfirmationSheet(
+        AppearanceResetConfirmationSheet(
             appearance = appearance,
             onConfirm = {
                 actions.onUpdate { AppearanceSettings.Default }
@@ -227,7 +227,7 @@ private fun ResetAllButton(onClick: () -> Unit) {
 /** Confirms which appearance settings will be reset. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ResetAllConfirmationSheet(appearance: AppearanceSettings, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+private fun AppearanceResetConfirmationSheet(appearance: AppearanceSettings, onConfirm: () -> Unit, onDismiss: () -> Unit) {
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = UI.colors.pure) {
         Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp)) {
             Text(
@@ -268,7 +268,7 @@ private fun ResetAllConfirmationSheet(appearance: AppearanceSettings, onConfirm:
 
 /** Shows whether changed appearance settings are still saving or saved locally. */
 @Composable
-private fun AppearanceSaveStatusIndicator(saving: Boolean?) {
+private fun LocalAppearanceSaveStatusIndicator(saving: Boolean?) {
     AnimatedVisibility(visible = saving != null, enter = fadeIn(), exit = fadeOut()) {
         Row(
             modifier = Modifier
@@ -304,7 +304,7 @@ private fun AppearanceSaveStatusIndicator(saving: Boolean?) {
 
 /** Toggles account-specific colours in transaction rows. */
 @Composable
-private fun AccountTransactionColorsToggle(checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun TransactionAccountColorsSwitch(checked: Boolean, onChange: (Boolean) -> Unit) {
     val view = LocalView.current
     Row(
         modifier = Modifier
