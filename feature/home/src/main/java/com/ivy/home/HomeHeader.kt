@@ -239,8 +239,7 @@ private fun HeaderStickyRow(
 }
 
 /**
- * One pill that opens the month picker: calendar, month, and its own caret (the round button next
- * to it opens Quick access, not a month menu). A horizontal swipe still steps the month.
+ * Opens the month picker; horizontal swipes step the month.
  */
 @Composable
 private fun HomeMonthPickerButton(
