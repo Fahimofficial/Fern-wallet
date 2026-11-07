@@ -227,7 +227,11 @@ private fun ResetAllButton(onClick: () -> Unit) {
 /** Confirms which appearance settings will be reset. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppearanceResetConfirmationSheet(appearance: AppearanceSettings, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+private fun AppearanceResetConfirmationSheet(
+    appearance: AppearanceSettings,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = UI.colors.pure) {
         Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp)) {
             Text(
