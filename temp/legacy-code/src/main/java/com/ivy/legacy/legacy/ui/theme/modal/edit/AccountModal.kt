@@ -413,7 +413,7 @@ private fun save(
     dismiss()
 }
 
-/** "Logo" with the current one (or "None"); opens the logo sheet. */
+/** Shows the selected account logo and opens its picker. */
 @Composable
 private fun AccountLogoOptionRow(
     appearance: AccountAppearance,
@@ -454,7 +454,7 @@ private fun AccountLogoOptionRow(
     }
 }
 
-/** "Background" with a swatch of the current one; opens the background sheet. */
+/** Shows the selected account background and opens its editor. */
 @Composable
 private fun AccountBackgroundOptionRow(appearance: AccountAppearance, color: Color, onClick: () -> Unit) {
     val surface = UI.colors.medium
