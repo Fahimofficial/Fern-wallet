@@ -228,7 +228,7 @@ fun BoxWithConstraintsScope.AccountModal(
 
         Spacer(Modifier.height(16.dp))
 
-        AccountLogoOptionRow(
+        AccountLogoSelectorRow(
             appearance = appearance,
             name = nameTextFieldValue.text,
             color = color,
@@ -236,7 +236,7 @@ fun BoxWithConstraintsScope.AccountModal(
 
         Spacer(Modifier.height(8.dp))
 
-        AccountBackgroundOptionRow(appearance = appearance, color = color) { backgroundSheetVisible = true }
+        AccountBackgroundSelectorRow(appearance = appearance, color = color) { backgroundSheetVisible = true }
 
         Spacer(Modifier.height(24.dp))
 
@@ -415,7 +415,7 @@ private fun save(
 
 /** Shows the selected account logo and opens its picker. */
 @Composable
-private fun AccountLogoOptionRow(
+private fun AccountLogoSelectorRow(
     appearance: AccountAppearance,
     name: String,
     color: Color,
@@ -456,7 +456,7 @@ private fun AccountLogoOptionRow(
 
 /** Shows the selected account background and opens its editor. */
 @Composable
-private fun AccountBackgroundOptionRow(appearance: AccountAppearance, color: Color, onClick: () -> Unit) {
+private fun AccountBackgroundSelectorRow(appearance: AccountAppearance, color: Color, onClick: () -> Unit) {
     val surface = UI.colors.medium
     val paint = remember(appearance, color, surface) { accountPaint(appearance, color, surface) }
     Row(
