@@ -1,5 +1,6 @@
 package com.ivy.data.repository
 
+import com.ivy.data.media.FakeAccountMediaFiles
 import com.ivy.base.TestDispatchersProvider
 import com.ivy.data.DataObserver
 import com.ivy.data.DataWriteEvent
@@ -23,6 +24,7 @@ class RepositoryMemoInvalidationTest {
             writeAccountDao = accountDao,
             dispatchersProvider = TestDispatchersProvider,
             memoFactory = RepositoryMemoFactory(dataObserver, TestDispatchersProvider),
+            mediaFiles = FakeAccountMediaFiles(),
         )
         accountDao.save(AccountEntity(name = "Cash", currency = "EUR", color = 0))
         repository.findAll().map { it.name.value } shouldBe listOf("Cash")

@@ -1,5 +1,37 @@
 package com.ivy.home
 
+import androidx.compose.animation.core.animate
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.lerp as lerpColor
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import com.ivy.design.system.motion.pressScale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import com.ivy.design.system.appearance.contentColor
+import com.ivy.design.system.motion.IvyHaptics
+import com.ivy.design.system.motion.IvyMotion
+import com.ivy.design.system.motion.MotionPreferences
+import kotlinx.coroutines.delay
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
@@ -45,28 +77,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.ivy.base.legacy.Theme
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
-import com.ivy.design.utils.thenIf
 import com.ivy.design.system.appearance.ColorToken
 import com.ivy.design.system.appearance.FernTheme
 import com.ivy.design.system.appearance.get
-import com.ivy.design.system.motion.pressScale
 import com.ivy.domain.RootScreen
 import com.ivy.legacy.Constants
 import com.ivy.legacy.ivyWalletCtx
 import com.ivy.legacy.utils.clickableNoIndication
-import com.ivy.legacy.utils.colorLerp
 import com.ivy.legacy.utils.lerp
 import com.ivy.legacy.utils.navigationBarInset
 import com.ivy.legacy.utils.openUrl
 import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.legacy.utils.rememberSwipeListenerState
-import com.ivy.legacy.utils.springBounce
 import com.ivy.legacy.utils.statusBarInset
 import com.ivy.legacy.utils.toDensityPx
 import com.ivy.legacy.utils.verticalSwipeListener
@@ -81,9 +108,7 @@ import com.ivy.navigation.SettingsScreen
 import com.ivy.navigation.SupportScreen
 import com.ivy.navigation.navigation
 import com.ivy.ui.R
-import com.ivy.wallet.ui.theme.Blue
 import com.ivy.wallet.ui.theme.components.BufferBattery
-import com.ivy.wallet.ui.theme.components.CircleButtonFilled
 import com.ivy.wallet.ui.theme.components.IvyIcon
 import com.ivy.wallet.ui.theme.modal.AddModalBackHandling
 import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
@@ -107,24 +132,29 @@ fun BoxWithConstraintsScope.MoreMenu(
     onBufferClick: () -> Unit,
     onCurrencyClick: () -> Unit,
     modifier: Modifier = Modifier,
+    plannedDue: Int = 0,
+    topCategory: TopCategory? = null,
+    celebrateGoal: Boolean = false,
+    onGoalCelebrated: () -> Unit = {},
+    // False on tabs the hub doesn't belong to: the chevron fades out and takes no input.
+    available: Boolean = true,
 ) {
     val ivyContext = ivyWalletCtx()
 
-    // Kept as State and read in layout/draw lambdas: the reveal animates without recomposing
-    // the menu on every frame.
-    val percentExpanded = animateFloatAsState(
-        targetValue = if (expanded) 1f else 0f,
-        animationSpec = springBounce(),
-        label = "more_menu"
-    )
-    val iconRotation = animateFloatAsState(
-        targetValue = if (expanded) -180f else 0f,
-        animationSpec = springBounce(),
-        label = "more_menu_arrow"
-    )
+    // Follows the finger while the chevron is dragged, springs otherwise; read only in
+    // layout/draw lambdas, so the reveal never recomposes the menu per frame.
+    val scope = rememberCoroutineScope()
+    val hub = remember { HubExpansion(if (expanded) 1f else 0f, scope) }
+    LaunchedEffect(expanded) {
+        if (!hub.dragging && hub.target != expanded) hub.settle(expanded)
+    }
+    val percentExpanded = hub.progressState
     val onScreen by remember { derivedStateOf { percentExpanded.value > 0.01f } }
+    // The tile wave greets an opening; a menu that is already open (restored, screenshots) just shows.
+    val startedOpen = remember { expanded }
 
     val buttonSizePx = 40.dp.toDensityPx()
+    val touchPaddingPx = HubTouchPadding.toDensityPx()
 
     val xBase = ivyContext.screenWidth - 24.dp.toDensityPx()
     val yBaseCollapsed = 20.dp.toDensityPx() + statusBarInset()
@@ -198,12 +228,24 @@ fun BoxWithConstraintsScope.MoreMenu(
                 buffer = buffer,
                 currency = currency,
                 onBufferClick = onBufferClick,
-                onCurrencyClick = onCurrencyClick
+                onCurrencyClick = onCurrencyClick,
+                plannedDue = plannedDue,
+                topCategory = topCategory,
+                celebrateGoal = celebrateGoal,
+                onGoalCelebrated = onGoalCelebrated,
+                tileWave = !startedOpen,
             )
         }
     }
 
-    MoreMenuButton(
+    val view = LocalView.current
+    val travelPx = (yBaseExpanded - buttonSizePx - yBaseCollapsed).coerceAtLeast(1f)
+    val shown by animateFloatAsState(
+        targetValue = if (available) 1f else 0f,
+        animationSpec = IvyMotion.standard(IvyMotion.Duration.Short),
+        label = "hub_button_visibility",
+    )
+    QuickAccessHubToggleButton(
         modifier = Modifier
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
@@ -214,38 +256,147 @@ fun BoxWithConstraintsScope.MoreMenu(
                 )
 
                 layout(placeable.width, placeable.height) {
-                    placeable.place(
-                        x = xBase.roundToInt() - buttonSizePx.roundToInt(),
-                        y = yButton.roundToInt()
-                    )
+                    // Once faded out it isn't placed, so whatever is underneath gets the touches.
+                    if (available || shown > 0f) {
+                        placeable.placeWithLayer(
+                            x = xBase.roundToInt() - buttonSizePx.roundToInt() - touchPaddingPx.roundToInt(),
+                            y = yButton.roundToInt() - touchPaddingPx.roundToInt(),
+                        ) {
+                            alpha = shown
+                            val scale = lerp(HiddenScale, 1f, shown)
+                            scaleX = scale
+                            scaleY = scale
+                        }
+                    }
                 }
             }
-            .graphicsLayer { rotationZ = iconRotation.value }
-            .thenIf(expanded) {
-                zIndex(520f)
-            }
+            // Above the tab content (zIndex 1): the Home root used to take every touch here.
+            .zIndex(if (expanded || hub.dragging) 520f else QuickAccessHubToggleButtonZIndex)
             .testTag("home_more_menu_arrow"),
+        expanded = expanded,
+        enabled = available,
         progress = { percentExpanded.value },
+        onDragStart = { hub.grab() },
+        onDrag = { delta -> hub.drag(delta, travelPx) },
+        onDragEnd = { velocity ->
+            val target = hub.release(velocity, travelPx)
+            hub.settle(target, velocity / travelPx) { IvyHaptics.tick(view) }
+            if (target != expanded) setExpanded(target)
+        },
     ) {
+        IvyHaptics.tick(view)
         setExpanded(!expanded)
     }
 }
 
-// Own restart scope: only this button recomposes as its background color animates.
+/**
+ * A tap toggles the hub; dragging moves the chevron and settles it on release.
+ */
+@Suppress("LongParameterList")
 @Composable
-private fun MoreMenuButton(
+private fun QuickAccessHubToggleButton(
+    expanded: Boolean,
+    enabled: Boolean,
     progress: () -> Float,
+    onDragStart: () -> Unit,
+    onDrag: (Float) -> Unit,
+    onDragEnd: (velocity: Float) -> Unit,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    CircleButtonFilled(
-        modifier = modifier,
-        backgroundColor = colorLerp(UI.colors.medium, UI.colors.pure, progress()),
-        icon = R.drawable.ic_expandarrow,
-        onClick = onClick,
-    )
+    val interactionSource = rememberInteractionSource()
+    val medium = UI.colors.medium
+    val pure = UI.colors.pure
+    val label = stringResource(if (expanded) R.string.close else R.string.quick_access)
+    Box(
+        modifier = modifier
+            .draggable(
+                state = rememberDraggableState(onDrag),
+                orientation = Orientation.Vertical,
+                enabled = enabled,
+                interactionSource = interactionSource,
+                onDragStarted = { onDragStart() },
+                onDragStopped = { velocity -> onDragEnd(velocity) },
+            )
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled,
+                role = Role.Button,
+                onClickLabel = label,
+                onClick = onClick,
+            )
+            .semantics { contentDescription = label }
+            .padding(HubTouchPadding),
+    ) {
+        Icon(
+            modifier = Modifier
+                .pressScale(interactionSource)
+                .clip(CircleShape)
+                .drawBehind { drawCircle(lerpColor(medium, pure, progress())) }
+                .graphicsLayer { rotationZ = HubOpenRotation * progress() }
+                .padding(8.dp),
+            painter = painterResource(R.drawable.ic_expandarrow),
+            contentDescription = null,
+            tint = UI.colors.pureInverse,
+        )
+    }
 }
 
+/**
+ * Expansion of the Quick-access hub, 0 = closed, 1 = open. Written directly while the chevron is
+ * dragged; otherwise a critically damped spring that starts from the value and velocity on
+ * screen, so a tap or drag mid-animation reverses it without a jump.
+ */
+@Stable
+private class HubExpansion(initial: Float, private val scope: CoroutineScope) {
+    val progressState = mutableFloatStateOf(initial)
+    var dragging by mutableStateOf(false)
+        private set
+
+    /** Where the running (or last) settle goes. */
+    var target: Boolean? = null
+        private set
+    private var job: Job? = null
+
+    fun grab() {
+        dragging = true
+        job?.cancel()
+        target = null
+    }
+
+    fun drag(deltaPx: Float, rangePx: Float) {
+        progressState.floatValue = (progressState.floatValue + deltaPx / rangePx).coerceIn(0f, 1f)
+    }
+
+    /** @return whether the hub should end open, judged from where the fling would land. */
+    fun release(velocityPx: Float, rangePx: Float): Boolean {
+        dragging = false
+        return progressState.floatValue + IvyMotion.projectedDistance(velocityPx) / rangePx >= HalfOpen
+    }
+
+    fun settle(open: Boolean, velocity: Float = 0f, onSettled: () -> Unit = {}) {
+        job?.cancel()
+        target = open
+        job = scope.launch {
+            animate(
+                initialValue = progressState.floatValue,
+                targetValue = if (open) 1f else 0f,
+                initialVelocity = velocity,
+                animationSpec = IvyMotion.Springs.surface(),
+            ) { value, _ -> progressState.floatValue = value.coerceIn(0f, 1f) }
+            onSettled()
+        }
+    }
+}
+
+private const val HalfOpen = 0.5f
+private const val HiddenScale = 0.8f
+private const val HubOpenRotation = -180f
+private const val QuickAccessHubToggleButtonZIndex = 2f
+private val HubTouchPadding = 4.dp
+
+@Suppress("LongParameterList")
 @Composable
 private fun ColumnScope.Content(
     balance: Double,
@@ -256,6 +407,11 @@ private fun ColumnScope.Content(
     onSwitchTheme: () -> Unit,
     onBufferClick: () -> Unit,
     onCurrencyClick: () -> Unit,
+    plannedDue: Int,
+    topCategory: TopCategory?,
+    celebrateGoal: Boolean,
+    onGoalCelebrated: () -> Unit,
+    tileWave: Boolean,
 ) {
     Spacer(Modifier.height(24.dp))
 
@@ -270,7 +426,9 @@ private fun ColumnScope.Content(
 
     QuickAccess(
         theme = theme,
-        onSwitchTheme = onSwitchTheme
+        onSwitchTheme = onSwitchTheme,
+        plannedDue = plannedDue,
+        tileWave = tileWave,
     )
 
     Spacer(Modifier.height(40.dp))
@@ -279,7 +437,10 @@ private fun ColumnScope.Content(
         buffer = buffer,
         currency = currency,
         balance = balance,
-        onBufferClick = onBufferClick
+        onBufferClick = onBufferClick,
+        celebrate = celebrateGoal,
+        onCelebrated = onGoalCelebrated,
+        animateIn = tileWave,
     )
 
     Spacer(Modifier.height(16.dp))
@@ -289,6 +450,11 @@ private fun ColumnScope.Content(
     Spacer(Modifier.height(12.dp))
 
     SupportMyWork()
+
+    if (topCategory != null) {
+        Spacer(Modifier.height(12.dp))
+        MonthlyTopCategoryInsightCard(topCategory)
+    }
 
     Spacer(Modifier.weight(1f))
 }
@@ -339,7 +505,9 @@ private fun OpenSource() {
             iconTint = UI.colors.pureInverse,
             title = stringResource(R.string.ivy_wallet_open_source),
             subtitle = Constants.URL_IVY_WALLET_REPO,
-            subtitleColor = Blue,
+            subtitleColor = UI.colors.gray,
+            trailingIcon = R.drawable.ic_arrow_right,
+            pulseIcon = false,
         ),
         modifier = Modifier.testTag("home_open_source_card"),
     ) {
@@ -358,6 +526,8 @@ private fun SupportMyWork() {
             title = stringResource(R.string.support_my_work),
             subtitle = stringResource(R.string.support_my_work_home_description),
             subtitleColor = UI.colors.gray,
+            trailingIcon = null,
+            pulseIcon = true,
         ),
         modifier = Modifier.testTag(SupportCardTag),
     ) {
@@ -373,6 +543,10 @@ private data class LinkCardData(
     val title: String,
     val subtitle: String,
     val subtitleColor: Color,
+    /** e.g. an "opens" arrow for a card that leaves the app; null for none. */
+    @DrawableRes val trailingIcon: Int?,
+    /** One gentle beat each time the card appears. */
+    val pulseIcon: Boolean,
 )
 
 @Composable
@@ -395,12 +569,28 @@ private fun LinkCard(
     ) {
         Spacer(Modifier.width(16.dp))
 
-        IvyIcon(icon = content.icon, tint = content.iconTint)
+        val beat = remember { Animatable(1f) }
+        if (content.pulseIcon) {
+            LaunchedEffect(Unit) {
+                if (MotionPreferences.reduceMotion) return@LaunchedEffect
+                delay(IvyMotion.Duration.Long.toLong()) // after the menu has opened
+                beat.animateTo(HeartBeatScale, IvyMotion.standard(IvyMotion.Duration.Short))
+                beat.animateTo(1f, IvyMotion.Springs.bouncy())
+            }
+        }
+        IvyIcon(
+            modifier = Modifier.graphicsLayer {
+                scaleX = beat.value
+                scaleY = beat.value
+            },
+            icon = content.icon,
+            tint = content.iconTint,
+        )
 
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 24.dp)
+                .weight(1f)
+                .padding(start = 16.dp, end = 16.dp)
         ) {
             Text(
                 text = content.title,
@@ -416,7 +606,50 @@ private fun LinkCard(
                 style = UI.typo.c.style(
                     fontWeight = FontWeight.ExtraBold,
                     color = content.subtitleColor
-                )
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+
+        if (content.trailingIcon != null) {
+            IvyIcon(icon = content.trailingIcon, tint = UI.colors.gray)
+        }
+        Spacer(Modifier.width(16.dp))
+    }
+}
+
+private const val HeartBeatScale = 1.25f
+
+/** Shows the most frequent category for this month. */
+@Composable
+private fun MonthlyTopCategoryInsightCard(topCategory: TopCategory) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clip(UI.shapes.r4)
+            .background(UI.colors.pure)
+            .semantics(mergeDescendants = true) {}
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IvyIcon(icon = R.drawable.home_more_menu_reports, tint = FernTheme.palette[ColorToken.Accent])
+        Spacer(Modifier.width(16.dp))
+        Column {
+            Text(
+                text = stringResource(R.string.insight_top_category_title),
+                style = UI.typo.c.style(fontWeight = FontWeight.ExtraBold, color = UI.colors.gray),
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = pluralStringResource(
+                    R.plurals.insight_top_category,
+                    topCategory.count,
+                    topCategory.name,
+                    topCategory.count,
+                ),
+                style = UI.typo.b2.style(fontWeight = FontWeight.ExtraBold),
             )
         }
     }
@@ -433,7 +666,10 @@ private fun ColumnScope.Buffer(
     buffer: Double,
     currency: String,
     balance: Double,
-    onBufferClick: () -> Unit
+    onBufferClick: () -> Unit,
+    celebrate: Boolean,
+    onCelebrated: () -> Unit,
+    animateIn: Boolean,
 ) {
     Row(
         modifier = Modifier
@@ -467,24 +703,44 @@ private fun ColumnScope.Buffer(
 
     Spacer(Modifier.height(12.dp))
 
-    BufferBattery(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        buffer = buffer,
-        currency = currency,
-        balance = balance,
-    ) {
-        onBufferClick()
+    Box {
+        BufferBattery(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            buffer = buffer,
+            currency = currency,
+            balance = balance,
+            animateIn = animateIn,
+        ) {
+            onBufferClick()
+        }
+        if (celebrate) {
+            Confetti(modifier = Modifier.matchParentSize(), onFinished = onCelebrated)
+        }
     }
 }
 
 @Composable
 private fun QuickAccess(
     theme: Theme,
-    onSwitchTheme: () -> Unit
+    onSwitchTheme: () -> Unit,
+    plannedDue: Int,
+    tileWave: Boolean,
+) {
+    CompositionLocalProvider(LocalTileWave provides tileWave) {
+        QuickAccessGrid(theme, onSwitchTheme, plannedDue)
+    }
+}
+
+// Whether tiles may play their entrance wave; read by every tile of the grid.
+private val LocalTileWave = staticCompositionLocalOf { false }
+
+@Composable
+private fun QuickAccessGrid(
+    theme: Theme,
+    onSwitchTheme: () -> Unit,
+    plannedDue: Int,
 ) {
     Column {
-        val nav = navigation()
-
         Text(
             modifier = Modifier.padding(start = 24.dp),
             text = stringResource(R.string.quick_access),
@@ -492,84 +748,123 @@ private fun QuickAccess(
         )
 
         Spacer(Modifier.height(16.dp))
+        QuickAccessMainRow(theme, onSwitchTheme, plannedDue)
+        Spacer(Modifier.height(16.dp))
+        QuickAccessSecondaryRow()
+    }
+}
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.Top
+@Composable
+private fun QuickAccessMainRow(
+    theme: Theme,
+    onSwitchTheme: () -> Unit,
+    plannedDue: Int,
+) {
+    val nav = navigation()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Top
+    ) {
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 0,
+            icon = R.drawable.home_more_menu_settings,
+            label = stringResource(R.string.settings)
         ) {
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                icon = R.drawable.home_more_menu_settings,
-                label = stringResource(R.string.settings)
-            ) {
-                nav.navigateTo(SettingsScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                icon = R.drawable.home_more_menu_categories,
-                label = stringResource(R.string.categories)
-            ) {
-                nav.navigateTo(CategoriesScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                icon = when (theme) {
-                    Theme.LIGHT -> R.drawable.home_more_menu_light_mode
-                    Theme.DARK -> R.drawable.home_more_menu_dark_mode
-                    Theme.AMOLED_DARK -> R.drawable.home_more_menu_amoled_dark_mode
-                    Theme.AUTO -> R.drawable.home_more_menu_auto_mode
-                },
-                label = when (theme) {
-                    Theme.LIGHT -> stringResource(R.string.light_mode)
-                    Theme.DARK -> stringResource(R.string.dark_mode)
-                    Theme.AMOLED_DARK -> stringResource(R.string.amoled_mode)
-                    Theme.AUTO -> stringResource(R.string.auto_mode)
-                },
-                backgroundColor = when (theme) {
-                    Theme.LIGHT -> UI.colors.pure
-                    Theme.DARK -> UI.colors.pureInverse
-                    Theme.AMOLED_DARK -> UI.colors.pureInverse
-                    Theme.AUTO -> UI.colors.pure
-                },
-                tint = when (theme) {
-                    Theme.LIGHT -> UI.colors.pureInverse
-                    Theme.DARK -> UI.colors.pure
-                    Theme.AMOLED_DARK -> UI.colors.pure
-                    Theme.AUTO -> UI.colors.pureInverse
-                }
-            ) {
-                onSwitchTheme()
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                icon = R.drawable.home_more_menu_planned_payments,
-                label = stringResource(R.string.planned_payments)
-            ) {
-                nav.navigateTo(PlannedPaymentsScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
+            nav.navigateTo(SettingsScreen)
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.weight(1f))
 
-        // Second Row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.Top
+        MoreMenuButton(
+            wave = 1,
+            icon = R.drawable.home_more_menu_categories,
+            label = stringResource(R.string.categories)
         ) {
-            Spacer(Modifier.weight(1f))
+            nav.navigateTo(CategoriesScreen)
+        }
 
-            val context = LocalContext.current
+        Spacer(Modifier.weight(1f))
+
+        QuickAccessThemeButton(theme, onSwitchTheme)
+
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 3,
+            icon = R.drawable.home_more_menu_planned_payments,
+            label = stringResource(R.string.planned_payments),
+            badge = plannedDue,
+        ) {
+            nav.navigateTo(PlannedPaymentsScreen)
+        }
+
+        Spacer(Modifier.weight(1f))
+    }
+}
+
+private data class QuickAccessThemeStyle(
+    val icon: Int,
+    val label: String,
+    val backgroundColor: Color,
+    val tint: Color,
+)
+
+@Composable
+private fun QuickAccessThemeButton(
+    theme: Theme,
+    onSwitchTheme: () -> Unit,
+) {
+    val style = when (theme) {
+        Theme.LIGHT -> QuickAccessThemeStyle(
+            R.drawable.home_more_menu_light_mode,
+            stringResource(R.string.light_mode),
+            UI.colors.pure,
+            UI.colors.pureInverse,
+        )
+        Theme.DARK -> QuickAccessThemeStyle(
+            R.drawable.home_more_menu_dark_mode,
+            stringResource(R.string.dark_mode),
+            UI.colors.pureInverse,
+            UI.colors.pure,
+        )
+        Theme.AMOLED_DARK -> QuickAccessThemeStyle(
+            R.drawable.home_more_menu_amoled_dark_mode,
+            stringResource(R.string.amoled_mode),
+            UI.colors.pureInverse,
+            UI.colors.pure,
+        )
+        Theme.AUTO -> QuickAccessThemeStyle(
+            R.drawable.home_more_menu_auto_mode,
+            stringResource(R.string.auto_mode),
+            UI.colors.pure,
+            UI.colors.pureInverse,
+        )
+    }
+    MoreMenuButton(
+        wave = 2,
+        icon = style.icon,
+        label = style.label,
+        backgroundColor = style.backgroundColor,
+        tint = style.tint,
+    ) {
+        onSwitchTheme()
+    }
+}
+
+@Composable
+private fun QuickAccessSecondaryRow() {
+    val nav = navigation()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Top
+    ) {
+        Spacer(Modifier.weight(1f))
+
+        val context = LocalContext.current
 //        MoreMenuButton(
 //            icon = R.drawable.home_more_menu_reports,
 //            label = "Charts"
@@ -577,76 +872,134 @@ private fun QuickAccess(
 //            ivyContext.navigateTo(Screen.Charts)
 //        }
 
-            // Resolve the RootScreen lazily so the menu can render in previews/screenshots.
-            MoreMenuButton(
-                icon = R.drawable.home_more_menu_share,
-                label = stringResource(R.string.share_ivy)
-            ) {
-                (context as? RootScreen)?.shareIvyWallet()
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                icon = R.drawable.home_more_menu_reports,
-                label = stringResource(R.string.reports),
-            ) {
-                nav.navigateTo(ReportScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                icon = R.drawable.home_more_menu_budgets,
-                label = stringResource(R.string.budgets),
-            ) {
-                nav.navigateTo(BudgetScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
-
-            MoreMenuButton(
-                icon = R.drawable.home_more_menu_loans,
-                label = stringResource(R.string.loans),
-            ) {
-                nav.navigateTo(LoansScreen)
-            }
-
-            Spacer(Modifier.weight(1f))
+        // Resolve the RootScreen lazily so the menu can render in previews/screenshots.
+        MoreMenuButton(
+            wave = 1,
+            icon = R.drawable.home_more_menu_share,
+            label = stringResource(R.string.share_ivy)
+        ) {
+            (context as? RootScreen)?.shareIvyWallet()
         }
+
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 2,
+            icon = R.drawable.home_more_menu_reports,
+            label = stringResource(R.string.reports),
+        ) {
+            nav.navigateTo(ReportScreen)
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 3,
+            icon = R.drawable.home_more_menu_budgets,
+            label = stringResource(R.string.budgets),
+        ) {
+            nav.navigateTo(BudgetScreen)
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        MoreMenuButton(
+            wave = 4,
+            icon = R.drawable.home_more_menu_loans,
+            label = stringResource(R.string.loans),
+        ) {
+            nav.navigateTo(LoansScreen)
+        }
+
+        Spacer(Modifier.weight(1f))
     }
 }
 
+/**
+ * A Quick-access tile: icon and label are one 48dp+ target that shrinks under the finger with a
+ * light tick. On the menu's first opening per app start, tiles fade in as a diagonal wave.
+ *
+ * @param wave row + column: tiles on the same diagonal enter together, 30ms apart.
+ */
 @Composable
 private fun MoreMenuButton(
+    wave: Int,
     @DrawableRes icon: Int,
     label: String,
 
     backgroundColor: Color = UI.colors.pure,
     tint: Color = UI.colors.pureInverse,
-    expandPadding: Dp = 14.dp,
+    badge: Int = 0,
 
     onClick: () -> Unit
 ) {
+    val interactionSource = rememberInteractionSource()
+    val view = LocalView.current
+    val waveAllowed = LocalTileWave.current
+    val enter = remember {
+        Animatable(if (!waveAllowed || quickAccessWavePlayed || MotionPreferences.reduceMotion) 1f else 0f)
+    }
+    LaunchedEffect(Unit) {
+        if (enter.value < 1f) {
+            delay(wave * QuickAccessWaveStepMillis)
+            enter.animateTo(1f, IvyMotion.standard(IvyMotion.Duration.Medium))
+        }
+        quickAccessWavePlayed = true
+    }
+    val badgeText = if (badge > 0) pluralStringResource(R.plurals.planned_due_badge, badge, badge) else null
     Column(
+        modifier = Modifier
+            .graphicsLayer {
+                alpha = enter.value
+                translationY = (1f - enter.value) * IvyMotion.Stagger.OffsetDp.dp.toPx()
+            }
+            .pressScale(interactionSource, pressedScale = TilePressedScale)
+            .clip(UI.shapes.r4)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                role = Role.Button,
+            ) {
+                IvyHaptics.tick(view)
+                onClick()
+            }
+            .semantics(mergeDescendants = true) {
+                if (badgeText != null) stateDescription = badgeText
+            }
+            .defaultMinSize(minWidth = 80.dp)
+            .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CircleButtonFilled(
-            icon = icon,
-            backgroundColor = backgroundColor,
-            tint = tint,
-            clickAreaPadding = expandPadding,
-            onClick = onClick
-        )
+        Box {
+            IvyIcon(
+                modifier = Modifier
+                    .background(backgroundColor, CircleShape)
+                    .padding(14.dp),
+                icon = icon,
+                tint = tint,
+            )
+            if (badge > 0) {
+                val badgeColor = FernTheme.palette[ColorToken.Overdue]
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .defaultMinSize(minWidth = 20.dp)
+                        .background(badgeColor, CircleShape)
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    text = if (badge > MaxBadge) "$MaxBadge+" else badge.toString(),
+                    style = UI.typo.nC.style(
+                        color = badgeColor.contentColor(),
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                    ),
+                )
+            }
+        }
 
         Spacer(Modifier.height(8.dp))
 
         Text(
-            modifier = Modifier
-                .defaultMinSize(minWidth = 92.dp)
-                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
-                    onClick()
-                },
+            modifier = Modifier.defaultMinSize(minWidth = 80.dp),
             text = label,
             style = UI.typo.c.style(
                 color = UI.colors.pureInverse,
@@ -656,6 +1009,13 @@ private fun MoreMenuButton(
         )
     }
 }
+
+private const val TilePressedScale = 0.92f
+private const val QuickAccessWaveStepMillis = 30L
+private const val MaxBadge = 9
+
+// shortcut: process-wide, so the wave plays on the menu's first opening per app start only.
+private var quickAccessWavePlayed = false
 
 @Preview
 @Composable

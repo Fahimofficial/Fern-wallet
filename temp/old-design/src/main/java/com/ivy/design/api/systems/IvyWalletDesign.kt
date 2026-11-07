@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.sp
 import com.ivy.base.legacy.Theme
 import com.ivy.design.api.IvyDesign
 import com.ivy.design.l0_system.*
+import com.ivy.design.system.motion.TabularNumbers
 import com.ivy.ui.R
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
@@ -84,30 +85,35 @@ abstract class IvyWalletDesign : IvyDesign {
                 fontWeight = FontWeight.Bold,
                 fontSize = h1,
                 baselineShift = BaselineShift(OPEN_SANS_BASELINE_SHIFT),
+                fontFeatureSettings = TabularNumbers,
             )
             override val nH2 = TextStyle(
                 fontFamily = openSans,
                 fontWeight = FontWeight.Bold,
                 fontSize = h2,
                 baselineShift = BaselineShift(OPEN_SANS_BASELINE_SHIFT),
+                fontFeatureSettings = TabularNumbers,
             )
             override val nB1 = TextStyle(
                 fontFamily = openSans,
                 fontWeight = FontWeight.Bold,
                 fontSize = b1,
                 baselineShift = BaselineShift(OPEN_SANS_BASELINE_SHIFT),
+                fontFeatureSettings = TabularNumbers,
             )
             override val nB2 = TextStyle(
                 fontFamily = openSans,
                 fontWeight = FontWeight.Normal,
                 fontSize = b2,
                 baselineShift = BaselineShift(OPEN_SANS_BASELINE_SHIFT),
+                fontFeatureSettings = TabularNumbers,
             )
             override val nC = TextStyle(
                 fontFamily = openSans,
                 fontWeight = FontWeight.Bold,
                 fontSize = c,
                 baselineShift = BaselineShift(OPEN_SANS_BASELINE_SHIFT),
+                fontFeatureSettings = TabularNumbers,
             )
         }
     }

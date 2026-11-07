@@ -36,8 +36,30 @@ object IvyHaptics {
         )
     }
 
-    /** A value moved one discrete step (e.g. previous/next month). */
+    /** A value moved one discrete step (e.g. previous/next month), or a light tap acknowledgement. */
     fun tick(view: View) {
         view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+    }
+
+    /** Something was saved or completed. */
+    fun success(view: View) {
+        view.performHapticFeedback(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                HapticFeedbackConstants.CONFIRM
+            } else {
+                HapticFeedbackConstants.CONTEXT_CLICK
+            }
+        )
+    }
+
+    /** An action was refused (e.g. invalid input). */
+    fun error(view: View) {
+        view.performHapticFeedback(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                HapticFeedbackConstants.REJECT
+            } else {
+                HapticFeedbackConstants.LONG_PRESS
+            }
+        )
     }
 }

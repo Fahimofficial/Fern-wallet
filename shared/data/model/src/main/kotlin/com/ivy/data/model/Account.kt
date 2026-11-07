@@ -22,6 +22,8 @@ data class Account(
     override val orderNum: Double,
     /** ASSET for cash/bank accounts; CREDIT_CARD for liability (card) accounts. */
     val type: AccountType = AccountType.ASSET,
+    /** Logo and card background; [AccountAppearance.Default] keeps the original look. */
+    val appearance: AccountAppearance = AccountAppearance.Default,
 ) : Identifiable<AccountId>, Reorderable
 
 /**

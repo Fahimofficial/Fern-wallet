@@ -1,9 +1,12 @@
 package com.ivy.home
 
+import androidx.compose.runtime.CompositionLocalProvider
+import com.ivy.legacy.ui.component.account.LocalAccountColorsInTransactions
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -48,10 +51,14 @@ import com.ivy.legacy.data.model.TimePeriod
 import com.ivy.legacy.ivyWalletCtx
 import com.ivy.legacy.ui.component.transaction.TransactionsDividerLine
 import com.ivy.legacy.ui.component.transaction.transactions
+import com.ivy.legacy.ui.component.transaction.HistoryMotion
+import kotlinx.coroutines.delay
 import com.ivy.legacy.utils.horizontalSwipeListener
 import com.ivy.legacy.utils.rememberSwipeListenerState
 import com.ivy.legacy.utils.verticalSwipeListener
 import com.ivy.navigation.IvyPreview
+import com.ivy.navigation.ReportScreen
+import com.ivy.navigation.navigation
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
 import com.ivy.ui.rememberScrollPositionListState
@@ -71,18 +78,26 @@ import java.math.BigDecimal
 @ExperimentalAnimationApi
 @ExperimentalFoundationApi
 @Composable
-fun BoxWithConstraintsScope.HomeTab(modifier: Modifier = Modifier, selected: Boolean = true) {
+fun BoxWithConstraintsScope.HomeTab(
+    modifier: Modifier = Modifier,
+    selected: Boolean = true,
+    onBarsVisibleChange: (Boolean) -> Unit = {},
+) {
     val viewModel: HomeViewModel = screenScopedViewModel()
     val uiState = viewModel.uiState()
 
-    // The tab stays composed while Accounts is shown: reload when it's shown again, as
-    // re-entering it used to (e.g. balances after a payment made from Accounts).
     var wasHidden by remember { mutableStateOf(false) }
     LaunchedEffect(selected) {
         if (!selected) wasHidden = true else if (wasHidden) viewModel.onEvent(HomeEvent.Refresh)
     }
 
-    HomeUi(uiState, viewModel::onEvent, modifier)
+    HomeUi(
+        uiState = uiState,
+        onEvent = viewModel::onEvent,
+        modifier = modifier,
+        onBarsVisibleChange = onBarsVisibleChange,
+        tabSelected = selected,
+    )
 }
 
 @Suppress("LongMethod")
@@ -96,6 +111,11 @@ fun BoxWithConstraintsScope.HomeUi(
     // Only used by previews / screenshot tests to render an overlay in its open state.
     initialPeriodModalOpen: Boolean = false,
     initialMoreMenuExpanded: Boolean? = null,
+    onBarsVisibleChange: (Boolean) -> Unit = {},
+    // Home is kept composed under other tabs; its hub chevron only belongs to Home.
+    tabSelected: Boolean = true,
+    // Screenshot/sample surfaces should render settled rows; the real Home tab animates its first load.
+    animateInitialHistory: Boolean = true,
 ) {
     val ivyContext = ivyWalletCtx()
 
@@ -206,7 +226,6 @@ fun BoxWithConstraintsScope.HomeUi(
             history = uiState.history,
 
             customerJourneyCards = uiState.customerJourneyCards,
-            shouldShowAccountSpecificColorInTransactions = uiState.shouldShowAccountSpecificColorInTransactions,
 
             onPayOrGet = forward<Transaction>() then2 {
                 HomeEvent.PayOrGetPlanned(it)
@@ -225,7 +244,11 @@ fun BoxWithConstraintsScope.HomeUi(
             } then2 onEvent,
             onSkipAllTransactions = {
                 skipAllModalVisible = true
-            }
+            },
+            onBarsVisibleChange = onBarsVisibleChange,
+            onDeleteTransaction = { onEvent(HomeEvent.DeleteTransaction(it)) },
+            onToggleHideBalance = { onEvent(HomeEvent.ToggleHideBalance) },
+            animateInitialHistory = animateInitialHistory,
         )
     }
 
@@ -248,7 +271,14 @@ fun BoxWithConstraintsScope.HomeUi(
         },
         onCurrencyClick = {
             currencyModalVisible = true
-        }
+        },
+        plannedDue = uiState.upcoming.trns.size + uiState.overdue.trns.size,
+        topCategory = remember(uiState.history, uiState.baseData.categories) {
+            topExpenseCategory(uiState.history, uiState.baseData.categories)
+        },
+        available = tabSelected,
+        celebrateGoal = uiState.celebrateSavingsGoal,
+        onGoalCelebrated = { onEvent(HomeEvent.SavingsGoalCelebrated) },
     )
 
     BufferModal(
@@ -307,7 +337,6 @@ fun HomeLazyColumn(
     period: TimePeriod,
 
     baseData: AppBaseData,
-    shouldShowAccountSpecificColorInTransactions: Boolean,
 
     upcoming: LegacyDueSection,
     overdue: LegacyDueSection,
@@ -329,11 +358,37 @@ fun HomeLazyColumn(
     onHiddenIncomeClick: () -> Unit,
     onSkipTransaction: (Transaction) -> Unit,
     onSkipAllTransactions: (List<Transaction>) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBarsVisibleChange: (Boolean) -> Unit = {},
+    onDeleteTransaction: (Transaction) -> Unit = {},
+    onToggleHideBalance: () -> Unit = {},
+    animateInitialHistory: Boolean = true,
 ) {
     val ivyContext = ivyWalletCtx()
+    val nav = navigation()
+
+    // Track the first Home load independently of the initial list contents. Data may already
+    // be present on the first composition (for example after restoring the screen).
+    val motion = remember { HistoryMotion(entrancePending = animateInitialHistory && !homeEntrancePlayed) }
+    LaunchedEffect(history.isNotEmpty()) {
+        if (history.isNotEmpty() && motion.entrancePending) {
+            delay(HistoryMotion.EntranceMillis.toLong())
+            motion.entrancePending = false
+            homeEntrancePlayed = true
+        }
+    }
+    // The new month's rows arrive from the side the user moved to (earlier month: from the left).
+    var shownPeriod by remember { mutableStateOf(period) }
+    LaunchedEffect(history) {
+        if (period == shownPeriod) return@LaunchedEffect
+        val from = shownPeriod.monthIndex()
+        val to = period.monthIndex()
+        shownPeriod = period
+        if (from != null && to != null && from != to) motion.slideIn(fromLeft = to < from)
+    }
 
     val currentOnSetExpand by rememberUpdatedState(onSetExpand)
+    val currentOnBarsVisibleChange by rememberUpdatedState(onBarsVisibleChange)
     val nestedScrollConnection = remember(listState) {
         object : NestedScrollConnection {
             private var lastExpanded: Boolean? = null
@@ -352,6 +407,12 @@ fun HomeLazyColumn(
                     lastExpanded = expanded
                     currentOnSetExpand(expanded)
                 }
+                // Bottom bar and +: hide while reading down, back on any scroll up or at the top.
+                // Reported on every delta; the receiver's state ignores repeats of the same value.
+                when {
+                    expanded || consumed.y > BarsToggleDeltaPx -> currentOnBarsVisibleChange(true)
+                    consumed.y < -BarsToggleDeltaPx -> currentOnBarsVisibleChange(false)
+                }
                 return super.onPostScroll(consumed, available, source)
             }
         }
@@ -365,9 +426,11 @@ fun HomeLazyColumn(
             .fillMaxSize()
             .nestedScroll(nestedScrollConnection)
             .testTag("home_lazy_column"),
-        state = listState
+        state = listState,
+        // The last row clears the bottom bar and the + button that overlaps it.
+        contentPadding = PaddingValues(bottom = BottomBarClearance),
     ) {
-        item {
+        item(key = "home_cashflow", contentType = "home_cashflow") {
             CashFlowInfo(
                 currency = baseData.baseCurrency,
                 balance = balance.toDouble(),
@@ -381,16 +444,18 @@ fun HomeLazyColumn(
                 onBalanceClick = onBalanceClick,
                 onHiddenBalanceClick = onHiddenBalanceClick,
                 hideIncome = hideIncome,
-                onHiddenIncomeClick = onHiddenIncomeClick
+                onHiddenIncomeClick = onHiddenIncomeClick,
+                onCashflowClick = { nav.navigateTo(ReportScreen) },
+                onToggleHideBalance = onToggleHideBalance,
             )
         }
-        item {
+        item(key = "home_divider", contentType = "home_divider") {
             Spacer(Modifier.height(16.dp))
 
             TransactionsDividerLine()
         }
 
-        item {
+        item(key = "home_customer_journey", contentType = "home_customer_journey") {
             CustomerJourney(
                 customerJourneyCards = customerJourneyCards,
                 onDismiss = onDismiss
@@ -415,12 +480,28 @@ fun HomeLazyColumn(
                     timeFormatter = timeFormatter,
                 )
             ),
-            shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions,
+            lastItemSpacer = 0.dp,
             onSkipTransaction = onSkipTransaction,
-            onSkipAllTransactions = onSkipAllTransactions
+            onSkipAllTransactions = onSkipAllTransactions,
+            motion = motion,
+            onDeleteTransaction = onDeleteTransaction,
         )
     }
 }
+
+// Bottom bar (~52dp) plus the + button rising 30dp above it, plus breathing room. The system
+// navigation bar is already excluded by Home's systemBarsPadding.
+private val BottomBarClearance = 104.dp
+private const val BarsToggleDeltaPx = 4f
+
+// shortcut: process-wide, so the entrance plays once per app start, not on every return to Home
+// (the screen's own state doesn't survive navigating away); move to saved state if that changes.
+private var homeEntrancePlayed = false
+
+private fun TimePeriod.monthIndex(): Int? =
+    month?.let { month -> year?.let { year -> year * MonthsInYear + month.monthValue } }
+
+private const val MonthsInYear = 12
 
 /** Which overlay to show on top of the Home sample (screenshots / previews). */
 enum class HomeSampleOverlay { None, PeriodPicker, MoreMenu }
@@ -430,9 +511,14 @@ enum class HomeSampleOverlay { None, PeriodPicker, MoreMenu }
  * Used for previews and the README screenshots.
  */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
-@Suppress("MagicNumber")
+@Suppress("MagicNumber", "LongMethod")
 @Composable
-fun BoxWithConstraintsScope.HomeSampleUi(overlay: HomeSampleOverlay = HomeSampleOverlay.None) {
+fun BoxWithConstraintsScope.HomeSampleUi(
+    modifier: Modifier = Modifier,
+    overlay: HomeSampleOverlay = HomeSampleOverlay.None,
+    // False renders Home as it sits under another tab (UI tests).
+    tabSelected: Boolean = true,
+) {
     val everyday = com.ivy.legacy.datamodel.Account(
         name = "Everyday",
         color = 0xFF3F51B5.toInt(),
@@ -463,52 +549,58 @@ fun BoxWithConstraintsScope.HomeSampleUi(overlay: HomeSampleOverlay = HomeSample
             dateTime = date.atTime(12, 0).toInstant(java.time.ZoneOffset.UTC),
             id = java.util.UUID(2L, idx),
         )
-    HomeUi(
-        uiState = HomeState(
-            theme = Theme.AUTO,
-            name = "Sam",
-            baseData = AppBaseData(
-                baseCurrency = "USD",
-                accounts = persistentListOf(everyday, cash),
-                categories = persistentListOf()
+    // The sample shows account colours on its transactions, as it always has.
+    CompositionLocalProvider(LocalAccountColorsInTransactions provides true) {
+        HomeUi(
+            uiState = HomeState(
+                theme = Theme.AUTO,
+                name = "Sam",
+                baseData = AppBaseData(
+                    baseCurrency = "USD",
+                    accounts = persistentListOf(everyday, cash),
+                    categories = persistentListOf()
+                ),
+                balance = BigDecimal("11918.65"),
+                buffer = BufferInfo(
+                    amount = BigDecimal("2000"),
+                    bufferDiff = BigDecimal("9918.65"),
+                ),
+                customerJourneyCards = persistentListOf(),
+                history = persistentListOf(
+                    TransactionHistoryDateDivider(day1, income = 0.0, expenses = 91.2),
+                    trn(everyday, com.ivy.base.model.TransactionType.EXPENSE, "86.40", day1, 1, title = "Groceries"),
+                    trn(cash, com.ivy.base.model.TransactionType.EXPENSE, "4.80", day1, 2, title = "Coffee"),
+                    TransactionHistoryDateDivider(day2, income = 4250.0, expenses = 0.0),
+                    trn(everyday, com.ivy.base.model.TransactionType.INCOME, "4250.00", day2, 3, title = "Salary"),
+                ),
+                stats = IncomeExpensePair(
+                    income = BigDecimal("4750.00"),
+                    expense = BigDecimal("1868.32"),
+                ),
+                upcoming = LegacyDueSection(
+                    trns = persistentListOf(),
+                    stats = IncomeExpensePair.zero(),
+                    expanded = false,
+                ),
+                overdue = LegacyDueSection(
+                    trns = persistentListOf(),
+                    stats = IncomeExpensePair.zero(),
+                    expanded = false,
+                ),
+                period = TimePeriod(month = Month.monthsList()[2], year = 2025),
+                hideBalance = false,
+                hideIncome = false,
+                expanded = true,
+                celebrateSavingsGoal = false,
             ),
-            balance = BigDecimal("11918.65"),
-            buffer = BufferInfo(
-                amount = BigDecimal("2000"),
-                bufferDiff = BigDecimal("9918.65"),
-            ),
-            customerJourneyCards = persistentListOf(),
-            history = persistentListOf(
-                TransactionHistoryDateDivider(day1, income = 0.0, expenses = 91.2),
-                trn(everyday, com.ivy.base.model.TransactionType.EXPENSE, "86.40", day1, 1, title = "Groceries"),
-                trn(cash, com.ivy.base.model.TransactionType.EXPENSE, "4.80", day1, 2, title = "Coffee"),
-                TransactionHistoryDateDivider(day2, income = 4250.0, expenses = 0.0),
-                trn(everyday, com.ivy.base.model.TransactionType.INCOME, "4250.00", day2, 3, title = "Salary"),
-            ),
-            stats = IncomeExpensePair(
-                income = BigDecimal("4750.00"),
-                expense = BigDecimal("1868.32"),
-            ),
-            upcoming = LegacyDueSection(
-                trns = persistentListOf(),
-                stats = IncomeExpensePair.zero(),
-                expanded = false,
-            ),
-            overdue = LegacyDueSection(
-                trns = persistentListOf(),
-                stats = IncomeExpensePair.zero(),
-                expanded = false,
-            ),
-            period = TimePeriod(month = Month.monthsList()[2], year = 2025),
-            hideBalance = false,
-            hideIncome = false,
-            expanded = true,
-            shouldShowAccountSpecificColorInTransactions = true
-        ),
-        onEvent = {},
-        initialPeriodModalOpen = overlay == HomeSampleOverlay.PeriodPicker,
-        initialMoreMenuExpanded = if (overlay == HomeSampleOverlay.MoreMenu) true else null,
-    )
+            onEvent = {},
+            initialPeriodModalOpen = overlay == HomeSampleOverlay.PeriodPicker,
+            initialMoreMenuExpanded = if (overlay == HomeSampleOverlay.MoreMenu) true else null,
+            tabSelected = tabSelected,
+            animateInitialHistory = false,
+            modifier = modifier,
+        )
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
@@ -529,6 +621,6 @@ fun HomeUiTest(isDark: Boolean, overlay: HomeSampleOverlay = HomeSampleOverlay.N
         false -> Theme.LIGHT
     }
     IvyWalletPreview(theme) {
-        HomeSampleUi(overlay)
+        HomeSampleUi(overlay = overlay)
     }
 }

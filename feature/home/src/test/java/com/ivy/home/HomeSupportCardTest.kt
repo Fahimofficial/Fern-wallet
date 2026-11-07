@@ -31,7 +31,7 @@ class HomeSupportCardTest : PaparazziRenderTest() {
                             .fillMaxSize()
                             .onGloballyPositioned { if (!clicked) clicked = view.performClickOnTag(SupportCardTag) }
                     ) {
-                        HomeSampleUi(HomeSampleOverlay.MoreMenu)
+                        HomeSampleUi(overlay = HomeSampleOverlay.MoreMenu)
                     }
                 }
             }

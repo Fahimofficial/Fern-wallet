@@ -1,5 +1,8 @@
 package com.ivy.main
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -28,6 +31,16 @@ class MainViewModel @Inject constructor(
 
     private val _currency = MutableLiveData<String>()
     val currency = _currency.asLiveData()
+
+    /** The + button says "Add" only in the first session after install, until it's tapped. */
+    var fabLabelVisible by mutableStateOf(!sharedPrefs.getBoolean(SharedPrefs.FAB_LABEL_SHOWN, false))
+        private set
+
+    fun onFabLabelSeen() {
+        if (!fabLabelVisible) return
+        sharedPrefs.putBoolean(SharedPrefs.FAB_LABEL_SHOWN, true)
+        fabLabelVisible = false
+    }
 
     fun start() {
         viewModelScope.launch {

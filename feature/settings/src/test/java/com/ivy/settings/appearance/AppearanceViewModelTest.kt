@@ -1,5 +1,9 @@
 package com.ivy.settings.appearance
 
+import com.ivy.domain.features.BoolFeature
+import com.ivy.domain.features.Features
+import com.ivy.domain.features.IvyFeatures
+import io.mockk.every
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModelProvider
@@ -53,6 +57,8 @@ class AppearanceViewModelTest {
     private val settings = mockk<Settings>(relaxed = true)
     private val settingsAct = mockk<SettingsAct> { coEvery { getSettings() } returns settings }
     private val updateSettingsAct = mockk<UpdateSettingsAct>(relaxed = true)
+    private val accountColorsFlag = mockk<BoolFeature>(relaxed = true)
+    private val features = mockk<Features> { every { showAccountColorsInTransactions } returns accountColorsFlag }
     private val mainDispatcher = UnconfinedTestDispatcher()
     private lateinit var applicationScope: CoroutineScope
     private lateinit var viewModel: AppearanceViewModel
@@ -61,7 +67,15 @@ class AppearanceViewModelTest {
     fun setUp() {
         Dispatchers.setMain(mainDispatcher)
         applicationScope = CoroutineScope(mainDispatcher + SupervisorJob())
-        viewModel = AppearanceViewModel(ivyContext, dataSource, settingsAct, updateSettingsAct, applicationScope)
+        viewModel = AppearanceViewModel(
+            ivyContext,
+            dataSource,
+            settingsAct,
+            updateSettingsAct,
+            applicationScope,
+            features,
+            mockk(relaxed = true),
+        )
     }
 
     @After
@@ -90,7 +104,15 @@ class AppearanceViewModelTest {
             store,
             viewModelFactory {
                 initializer {
-                    AppearanceViewModel(ivyContext, dataSource, settingsAct, updateSettingsAct, applicationScope)
+                    AppearanceViewModel(
+                        ivyContext,
+                        dataSource,
+                        settingsAct,
+                        updateSettingsAct,
+                        applicationScope,
+                        features,
+                        mockk(relaxed = true),
+                    )
                 }
             },
         )[AppearanceViewModel::class.java]
@@ -119,5 +141,16 @@ class AppearanceViewModelTest {
 
         ivyContext.theme shouldBe Theme.AMOLED_DARK
         coVerify(exactly = 1) { updateSettingsAct(any()) }
+    }
+
+    @Test
+    fun `the account colours switch writes the shared feature flag`() {
+        viewModel.setAccountColorsInTransactions(true)
+        coVerify { accountColorsFlag.set(any(), true) }
+    }
+
+    @Test
+    fun `account colours on transactions are off by default`() {
+        IvyFeatures().showAccountColorsInTransactions.defaultValue shouldBe false
     }
 }

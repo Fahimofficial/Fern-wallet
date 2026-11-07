@@ -1,5 +1,13 @@
 package com.ivy.transactions
 
+import com.ivy.legacy.ui.component.account.accountBackground
+import com.ivy.legacy.ui.component.account.accountPaint
+import com.ivy.legacy.ui.component.account.primaryColors
+import com.ivy.ui.logo.AccountLogo
+import com.ivy.ui.logo.hasAccountLogo
+import androidx.compose.ui.graphics.graphicsLayer
+import com.ivy.navigation.screenEnterSettled
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -142,7 +150,6 @@ fun BoxWithConstraintsScope.TransactionsScreen(screen: TransactionsScreen) {
         treatTransfersAsIncomeExpense = uiState.treatTransfersAsIncomeExpense,
 
         history = uiState.history,
-        shouldShowAccountSpecificColorInTransactions = uiState.showAccountColorsInTransactions,
 
         upcoming = uiState.upcoming,
         upcomingExpanded = uiState.upcomingExpanded,
@@ -237,7 +244,6 @@ private fun BoxWithConstraintsScope.UI(
     choosePeriodModal: ChoosePeriodModalData?,
 
     history: ImmutableList<TransactionHistoryItem>,
-    shouldShowAccountSpecificColorInTransactions: Boolean,
 
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
@@ -269,6 +275,8 @@ private fun BoxWithConstraintsScope.UI(
 ) {
     val ivyContext = ivyWalletCtx()
     val itemColor = (account?.color ?: category?.color?.value)?.toComposeColor() ?: Gray
+    // Behind the rounded list top and the status bar: blends with the header's background.
+    val backdropColor = account?.appearance?.primaryColors(itemColor)?.first() ?: itemColor
 
     var categoryModalData: CategoryModalData? by remember { mutableStateOf(null) }
     var accountModalData: AccountModalData? by remember { mutableStateOf(null) }
@@ -278,7 +286,7 @@ private fun BoxWithConstraintsScope.UI(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(itemColor)
+            .background(backdropColor)
             .thenIf(!initWithTransactions) {
                 horizontalSwipeListener(
                     sensitivity = 150,
@@ -300,6 +308,7 @@ private fun BoxWithConstraintsScope.UI(
         val timeProvider = LocalTimeProvider.current
         val timeConverter = LocalTimeConverter.current
         val timeFormatter = LocalTimeFormatter.current
+        val listReady = screenEnterSettled()
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -310,7 +319,7 @@ private fun BoxWithConstraintsScope.UI(
                 .testTag("item_stats_lazy_column"),
             state = listState,
         ) {
-            item {
+            item(key = "header", contentType = "header") {
                 Header(
                     screen = screen,
                     history = history,
@@ -398,6 +407,14 @@ private fun BoxWithConstraintsScope.UI(
                 )
             }
 
+            if (!listReady) {
+                // Same-size stand-ins while the screen lands; the real rows compose after it.
+                items(count = SkeletonRows, key = { "skeleton-$it" }, contentType = { "skeleton" }) {
+                    SkeletonRow()
+                }
+                return@LazyColumn
+            }
+
             choosePeriodModal(
                 period = period,
                 itemColor = itemColor,
@@ -453,7 +470,6 @@ private fun BoxWithConstraintsScope.UI(
                         timeFormatter = timeFormatter,
                     )
                 ),
-                shouldShowAccountSpecificColorInTransactions = shouldShowAccountSpecificColorInTransactions
             )
         }
     }
@@ -608,6 +624,20 @@ private fun BoxWithConstraintsScope.DeleteModals(
     }
 }
 
+private const val SkeletonRows = 4
+
+@Composable
+private fun SkeletonRow() {
+    Box(
+        Modifier
+            .padding(horizontal = 16.dp)
+            .padding(top = 10.dp)
+            .fillMaxWidth()
+            .height(96.dp)
+            .background(UI.colors.medium, UI.shapes.r4)
+    )
+}
+
 @Suppress("LongParameterList")
 @Composable
 private fun Header(
@@ -630,16 +660,24 @@ private fun Header(
     showAccountModal: () -> Unit,
     treatTransfersAsIncomeExpense: Boolean = false,
 ) {
-    val contrastColor = findContrastTextColor(itemColor)
+    val accountPaint = account?.let {
+        val surface = UI.colors.medium
+        remember(it.appearance, itemColor, surface) { accountPaint(it.appearance, itemColor, surface) }
+    }
+    val contrastColor = accountPaint?.ink ?: findContrastTextColor(itemColor)
 
     val darkColor = isDarkColor(itemColor)
-    setStatusBarDarkTextCompat(darkText = !darkColor)
+    // A window side effect: once per colour, not on every recomposition of the header.
+    val view = LocalView.current
+    LaunchedEffect(darkColor) { setStatusBarDarkTextCompat(view = view, darkText = !darkColor) }
 
     Column(
         modifier = Modifier
             // The account card the user tapped grows into this header.
-            .sharedContainer(screen.sharedKey, UI.shapes.r4)
-            .background(itemColor)
+            .sharedContainer(screen.sharedKey, RectangleShape)
+            .then(
+                if (accountPaint != null) Modifier.accountBackground(accountPaint) else Modifier.background(itemColor)
+            )
     ) {
         Spacer(Modifier.height(20.dp))
 
@@ -684,16 +722,18 @@ private fun Header(
             }
         )
 
-        if (currency != baseCurrency && balanceBaseCurrency != null) {
+        if (currency != baseCurrency && baseCurrency.isNotEmpty()) {
+            // Laid out (invisible) before the converted balance is known: no jump when it lands.
             BalanceRowMedium(
                 modifier = Modifier
+                    .graphicsLayer { alpha = if (balanceBaseCurrency == null) 0f else 1f }
                     .padding(start = 32.dp)
                     .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
                         onBalanceClick()
                     },
-                textColor = itemColor.dynamicContrast(),
+                textColor = accountPaint?.secondaryInk ?: itemColor.dynamicContrast(),
                 currency = baseCurrency,
-                balance = balanceBaseCurrency,
+                balance = balanceBaseCurrency ?: 0.0,
                 balanceAmountPrefix = if (category != null) {
                     balancePrefix(
                         income = income,
@@ -783,11 +823,21 @@ private fun Item(
     ) {
         when {
             account != null -> {
-                ItemIconMDefaultIcon(
-                    iconName = account.icon,
-                    defaultIcon = R.drawable.ic_custom_account_m,
-                    tint = contrastColor
-                )
+                if (hasAccountLogo(account.appearance.logoKey, account.appearance.customLogoPath)) {
+                    AccountLogo(
+                        logoKey = account.appearance.logoKey,
+                        customLogoPath = account.appearance.customLogoPath,
+                        name = account.name,
+                        color = account.color.toComposeColor(),
+                        size = 36.dp,
+                    )
+                } else {
+                    ItemIconMDefaultIcon(
+                        iconName = account.icon,
+                        defaultIcon = R.drawable.ic_custom_account_m,
+                        tint = contrastColor
+                    )
+                }
 
                 Spacer(Modifier.width(8.dp))
 
@@ -888,7 +938,6 @@ private fun BoxWithConstraintsScope.Preview_empty() {
             onChoosePeriodModal = {},
             choosePeriodModal = null,
             screen = TransactionsScreen(),
-            shouldShowAccountSpecificColorInTransactions = false
         )
     }
 }
@@ -935,7 +984,6 @@ private fun BoxWithConstraintsScope.Preview_crypto() {
             onChoosePeriodModal = {},
             choosePeriodModal = null,
             screen = TransactionsScreen(),
-            shouldShowAccountSpecificColorInTransactions = false
         )
     }
 }
@@ -982,7 +1030,6 @@ private fun BoxWithConstraintsScope.Preview_empty_upcoming() {
             onChoosePeriodModal = {},
             choosePeriodModal = null,
             screen = TransactionsScreen(),
-            shouldShowAccountSpecificColorInTransactions = false
         )
     }
 }

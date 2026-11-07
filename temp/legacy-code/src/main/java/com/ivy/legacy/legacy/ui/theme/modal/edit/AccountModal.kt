@@ -1,7 +1,25 @@
 package com.ivy.wallet.ui.theme.modal.edit
 
+import androidx.compose.foundation.layout.size
+import com.ivy.data.model.AccountBackgroundStyle
+import com.ivy.legacy.ui.component.account.AccountBackgroundSheet
+import com.ivy.legacy.ui.component.account.accountBackground
+import com.ivy.legacy.ui.component.account.accountPaint
+import android.widget.Toast
+import com.ivy.legacy.ui.component.account.rememberImagePicker
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.semantics.Role
+import com.ivy.data.model.AccountAppearance
+import com.ivy.legacy.ui.component.account.LocalAccountMediaStore
+import com.ivy.ui.logo.AccountLogo
+import com.ivy.ui.logo.LogoChoice
+import com.ivy.ui.logo.LogoPickerSheet
+import com.ivy.ui.logo.Logos
+import com.ivy.ui.logo.hasAccountLogo
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -62,6 +80,7 @@ data class AccountModalData(
 )
 
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
+@Suppress("CyclomaticComplexMethod", "LongMethod") // one form; the branches are its fields
 @Composable
 fun BoxWithConstraintsScope.AccountModal(
     modal: AccountModalData?,
@@ -88,6 +107,13 @@ fun BoxWithConstraintsScope.AccountModal(
     var includeInBalance by remember(modal) {
         mutableStateOf(account?.includeInBalance ?: true)
     }
+    var appearance by remember(modal) {
+        mutableStateOf(account?.appearance ?: AccountAppearance.Default)
+    }
+    // Images imported while this modal is open; the ones not kept are deleted when it closes.
+    val importedFiles = remember(modal) { mutableListOf<String>() }
+    var logoPickerVisible by remember(modal) { mutableStateOf(false) }
+    var backgroundSheetVisible by remember(modal) { mutableStateOf(false) }
 
     var amountModalVisible by remember { mutableStateOf(false) }
     var currencyModalVisible by remember { mutableStateOf(false) }
@@ -97,10 +123,51 @@ fun BoxWithConstraintsScope.AccountModal(
 
     val forceNonZeroBalance = modal?.forceNonZeroBalance ?: false
 
+    val mediaStore = LocalAccountMediaStore.current
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    // Unsaved imports are deleted, saved ones replaced later are deleted by the repository.
+    val close = { saved: AccountAppearance? ->
+        val unused = importedFiles.filterNot { saved?.files?.contains(it) == true }
+        importedFiles.clear()
+        if (unused.isNotEmpty() && mediaStore != null) scope.launch { mediaStore.delete(unused) }
+        dismiss()
+    }
+    val pickLogo = rememberImagePicker { uri ->
+        if (mediaStore != null) {
+            scope.launch {
+                val path = mediaStore.importLogo(uri)
+                if (path == null) {
+                    Toast.makeText(context, R.string.logo_upload_failed, Toast.LENGTH_SHORT).show()
+                } else {
+                    importedFiles += path
+                    appearance = appearance.copy(customLogoPath = path)
+                }
+            }
+        }
+    }
+
+    val pickBackground = rememberImagePicker { uri ->
+        if (mediaStore != null) {
+            scope.launch {
+                val path = mediaStore.importBackground(uri)
+                if (path == null) {
+                    Toast.makeText(context, R.string.logo_upload_failed, Toast.LENGTH_SHORT).show()
+                } else {
+                    importedFiles += path
+                    appearance = appearance.copy(
+                        backgroundStyle = AccountBackgroundStyle.Image,
+                        backgroundImagePath = path,
+                    )
+                }
+            }
+        }
+    }
+
     IvyModal(
         id = modal?.id,
         visible = modal != null,
-        dismiss = dismiss,
+        dismiss = { close(null) },
         shiftIfKeyboardShown = false,
         PrimaryAction = {
             ModalAddSave(
@@ -115,10 +182,11 @@ fun BoxWithConstraintsScope.AccountModal(
                     icon = icon,
                     amount = amount,
                     includeInBalance = includeInBalance,
+                    appearance = appearance,
 
                     onCreateAccount = onCreateAccount,
                     onEditAccount = onEditAccount,
-                    dismiss = dismiss
+                    dismiss = { close(appearance) }
                 )
             }
         }
@@ -157,6 +225,18 @@ fun BoxWithConstraintsScope.AccountModal(
                 chooseIconModalVisible = true
             }
         )
+
+        Spacer(Modifier.height(16.dp))
+
+        AccountLogoSelectorRow(
+            appearance = appearance,
+            name = nameTextFieldValue.text,
+            color = color,
+        ) { logoPickerVisible = true }
+
+        Spacer(Modifier.height(8.dp))
+
+        AccountBackgroundSelectorRow(appearance = appearance, color = color) { backgroundSheetVisible = true }
 
         Spacer(Modifier.height(24.dp))
 
@@ -221,15 +301,50 @@ fun BoxWithConstraintsScope.AccountModal(
                 icon = icon,
                 amount = newAmount,
                 includeInBalance = includeInBalance,
+                appearance = appearance,
 
                 onCreateAccount = onCreateAccount,
                 onEditAccount = onEditAccount,
-                dismiss = dismiss
+                dismiss = { close(appearance) }
             )
         }
     }
 
-    val context = LocalContext.current
+    if (logoPickerVisible) {
+        LogoPickerSheet(
+            accountName = nameTextFieldValue.text,
+            accountColor = color,
+            selectedKey = appearance.logoKey,
+            hasCustomLogo = appearance.customLogoPath != null,
+            onChoice = { choice ->
+                logoPickerVisible = false
+                // A registry logo, initials or none replace an upload; Upload keeps the key for later.
+                fun pick(key: String?) {
+                    appearance = appearance.copy(logoKey = key, customLogoPath = null)
+                }
+                when (choice) {
+                    LogoChoice.Upload -> pickLogo?.invoke()
+                    LogoChoice.Initials -> pick(Logos.InitialsKey)
+                    LogoChoice.None -> pick(null)
+                    is LogoChoice.Registry -> pick(choice.key)
+                }
+            },
+            onDismiss = { logoPickerVisible = false },
+        )
+    }
+
+    if (backgroundSheetVisible) {
+        AccountBackgroundSheet(
+            appearance = appearance,
+            accountName = nameTextFieldValue.text,
+            accountColor = color,
+            surface = UI.colors.medium,
+            onChange = { appearance = it },
+            onPickImage = pickBackground,
+            onDismiss = { backgroundSheetVisible = false },
+        )
+    }
+
     CurrencyModal(
         title = stringResource(R.string.choose_currency),
         initialCurrency = IvyCurrency.fromCode(currencyCode),
@@ -263,6 +378,7 @@ private fun save(
     icon: String?,
     amount: Double,
     includeInBalance: Boolean,
+    appearance: AccountAppearance,
 
     onCreateAccount: (CreateAccountData) -> Unit,
     onEditAccount: (Account, balance: Double) -> Unit,
@@ -275,7 +391,8 @@ private fun save(
                 currency = currency,
                 includeInBalance = includeInBalance,
                 icon = icon,
-                color = color.toArgb()
+                color = color.toArgb(),
+                appearance = appearance,
             ),
             amount
         )
@@ -287,12 +404,83 @@ private fun save(
                 color = color,
                 icon = icon,
                 balance = amount,
-                includeBalance = includeInBalance
+                includeBalance = includeInBalance,
+                appearance = appearance,
             )
         )
     }
 
     dismiss()
+}
+
+/** Shows the selected account logo and opens its picker. */
+@Composable
+private fun AccountLogoSelectorRow(
+    appearance: AccountAppearance,
+    name: String,
+    color: Color,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(UI.shapes.r4)
+            .background(UI.colors.medium, UI.shapes.r4)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 12.dp)
+            .testTag("account_modal_logo"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = stringResource(R.string.logo),
+            style = UI.typo.b2.style(fontWeight = FontWeight.Bold),
+        )
+        if (hasAccountLogo(appearance.logoKey, appearance.customLogoPath)) {
+            AccountLogo(
+                logoKey = appearance.logoKey,
+                customLogoPath = appearance.customLogoPath,
+                name = name,
+                color = color,
+                size = 32.dp,
+                contentDescription = stringResource(R.string.account_logo_description, name),
+            )
+        } else {
+            Text(
+                text = stringResource(R.string.logo_none),
+                style = UI.typo.b2.style(color = Gray, fontWeight = FontWeight.SemiBold),
+            )
+        }
+    }
+}
+
+/** Shows the selected account background and opens its editor. */
+@Composable
+private fun AccountBackgroundSelectorRow(appearance: AccountAppearance, color: Color, onClick: () -> Unit) {
+    val surface = UI.colors.medium
+    val paint = remember(appearance, color, surface) { accountPaint(appearance, color, surface) }
+    Row(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .clip(UI.shapes.r4)
+            .background(surface, UI.shapes.r4)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 12.dp)
+            .testTag("account_modal_background"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = stringResource(R.string.account_background),
+            style = UI.typo.b2.style(fontWeight = FontWeight.Bold),
+        )
+        Box(
+            Modifier
+                .size(width = 56.dp, height = 32.dp)
+                .clip(UI.shapes.rFull)
+                .accountBackground(paint)
+        )
+    }
 }
 
 @Composable

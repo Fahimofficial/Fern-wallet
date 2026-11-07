@@ -15,7 +15,6 @@ import com.ivy.base.time.TimeProvider
 import com.ivy.data.model.primitive.AssetCode
 import com.ivy.data.repository.CategoryRepository
 import com.ivy.data.repository.mapper.TransactionMapper
-import com.ivy.domain.features.Features
 import com.ivy.domain.usecase.exchange.SyncExchangeRatesUseCase
 import com.ivy.frp.fixUnit
 import com.ivy.frp.then
@@ -65,6 +64,13 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import javax.inject.Inject
 import com.ivy.data.DataObserver
+import com.ivy.base.legacy.SharedPrefs
+import com.ivy.base.legacy.refreshWidget
+import com.ivy.data.model.TransactionId
+import com.ivy.data.repository.TransactionRepository
+import com.ivy.ui.R
+import com.ivy.ui.undo.UndoController
+import com.ivy.widget.balance.WalletBalanceWidgetReceiver
 import com.ivy.data.DataWriteEvent
 
 @Stable
@@ -94,8 +100,10 @@ class HomeViewModel @Inject constructor(
     private val transactionMapper: TransactionMapper,
     private val timeProvider: TimeProvider,
     private val timeConverter: TimeConverter,
-    private val features: Features,
     private val dataObserver: DataObserver,
+    private val transactionRepo: TransactionRepository,
+    private val undoController: UndoController,
+    private val sharedPrefs: SharedPrefs,
 ) : ComposeViewModel<HomeState, HomeEvent>() {
     init {
         // e.g. a deleted transaction restored by Undo while Home is already showing.
@@ -144,6 +152,7 @@ class HomeViewModel @Inject constructor(
     private var hideBalance by mutableStateOf(false)
     private var hideIncome by mutableStateOf(false)
     private var expanded by mutableStateOf(true)
+    private var celebrateSavingsGoal by mutableStateOf(false)
 
     @Composable
     override fun uiState(): HomeState {
@@ -166,13 +175,8 @@ class HomeViewModel @Inject constructor(
             hideBalance = getHideBalance(),
             expanded = getExpanded(),
             hideIncome = getHideIncome(),
-            shouldShowAccountSpecificColorInTransactions = getShouldShowAccountSpecificColorInTransactions()
+            celebrateSavingsGoal = celebrateSavingsGoal,
         )
-    }
-
-    @Composable
-    fun getShouldShowAccountSpecificColorInTransactions(): Boolean {
-        return features.showAccountColorsInTransactions.asEnabledState()
     }
 
     @Composable
@@ -245,6 +249,8 @@ class HomeViewModel @Inject constructor(
         return hideIncome
     }
 
+    // One branch per event: the complexity is the dispatch table, not logic.
+    @Suppress("CyclomaticComplexMethod")
     override fun onEvent(event: HomeEvent) {
         viewModelScope.launch {
             when (event) {
@@ -265,6 +271,9 @@ class HomeViewModel @Inject constructor(
                 is HomeEvent.DismissCustomerJourneyCard -> dismissCustomerJourneyCard(event.card)
                 is HomeEvent.SetExpanded -> setExpanded(event.expanded)
                 HomeEvent.Refresh -> start()
+                is HomeEvent.DeleteTransaction -> deleteTransaction(event.transaction)
+                HomeEvent.ToggleHideBalance -> toggleHideBalance()
+                HomeEvent.SavingsGoalCelebrated -> savingsGoalCelebrated()
             }
         }
     }
@@ -366,7 +375,18 @@ class HomeViewModel @Inject constructor(
             )
         )
 
+        val goal = settings.bufferAmount
+        val celebrated = ioThread { sharedPrefs.getString(SharedPrefs.SAVINGS_GOAL_CELEBRATED, null) }
+        celebrateSavingsGoal = goal > BigDecimal.ZERO && balance >= goal &&
+            celebrated != goal.stripTrailingZeros().toPlainString()
+
         return settings.baseCurrency to timeRange
+    }
+
+    private suspend fun savingsGoalCelebrated() {
+        celebrateSavingsGoal = false
+        val goal = buffer.amount.stripTrailingZeros().toPlainString()
+        ioThread { sharedPrefs.putString(SharedPrefs.SAVINGS_GOAL_CELEBRATED, goal) }
     }
 
     private suspend fun loadTrnHistory(
@@ -437,6 +457,25 @@ class HomeViewModel @Inject constructor(
             ivyContext.selectMainTab(MainTab.ACCOUNTS)
             nav.navigateTo(MainScreen)
         }
+    }
+
+    // Same restorable delete + Undo as the edit screen.
+    private suspend fun deleteTransaction(transaction: Transaction) {
+        val deleted = transactionRepo.deleteByIdRestorable(TransactionId(transaction.id))
+        refreshWidget(WalletBalanceWidgetReceiver::class.java)
+        reload()
+        if (deleted != null) {
+            undoController.show(text = R.string.transaction_deleted) {
+                deleted.restore()
+                refreshWidget(WalletBalanceWidgetReceiver::class.java)
+                dataObserver.post(DataWriteEvent.TransactionsChanged)
+            }
+        }
+    }
+
+    private suspend fun toggleHideBalance() {
+        hideBalance = !hideBalance
+        ioThread { sharedPrefs.putBoolean(SharedPrefs.HIDE_CURRENT_BALANCE, hideBalance) }
     }
 
     private suspend fun onHiddenBalanceClick() {

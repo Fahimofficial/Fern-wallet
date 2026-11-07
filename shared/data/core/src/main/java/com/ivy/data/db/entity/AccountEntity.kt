@@ -34,6 +34,24 @@ data class AccountEntity(
     @ColumnInfo(defaultValue = AccountTypeAsset)
     val type: String = AccountTypeAsset,
 
+    // Appearance (logo, card background). All nullable: null means "as before", so existing
+    // accounts and older backups (which lack these fields) look exactly as they did.
+    @SerialName("logoKey")
+    val logoKey: String? = null,
+    @SerialName("customLogoPath")
+    val customLogoPath: String? = null,
+    @SerialName("backgroundStyle")
+    val backgroundStyle: String? = null,
+    /** Comma-separated ARGB hex, e.g. "FFE91E63,FF3F51B5". */
+    @SerialName("backgroundColors")
+    val backgroundColors: String? = null,
+    @SerialName("backgroundAngle")
+    val backgroundAngle: Float? = null,
+    @SerialName("backgroundImagePath")
+    val backgroundImagePath: String? = null,
+    @SerialName("backgroundDim")
+    val backgroundDim: Float? = null,
+
     @Deprecated("Obsolete field used for cloud sync. Can't be deleted because of backwards compatibility")
     @SerialName("isSynced")
     val isSynced: Boolean = false,

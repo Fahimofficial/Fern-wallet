@@ -15,7 +15,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import com.ivy.design.system.motion.IvyMotion
+import com.ivy.design.system.motion.MotionPreferences
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,11 +42,12 @@ import kotlin.math.abs
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
 @Composable
 fun BufferBattery(
-    modifier: Modifier = Modifier,
     buffer: Double,
     balance: Double,
     currency: String,
+    modifier: Modifier = Modifier,
     backgroundNotFilled: Color = UI.colors.pure,
+    animateIn: Boolean = false,
     onClick: (() -> Unit)? = null,
 ) {
     val bufferExceeded = balance < buffer
@@ -66,6 +72,17 @@ fun BufferBattery(
         else -> White
     }
 
+    // The fill grows to its value when the card appears and glides when the value changes.
+    val fill = remember {
+        Animatable(if (animateIn && !MotionPreferences.reduceMotion) 0f else bufferExceededPercent.toFloat())
+    }
+    LaunchedEffect(bufferExceededPercent) {
+        fill.animateTo(
+            bufferExceededPercent.toFloat(),
+            IvyMotion.standard(IvyMotion.Duration.Long),
+        )
+    }
+
     val palette = FernTheme.palette
     val progressColor = palette[ColorToken.SavingsProgress]
     val warningColor = palette[ColorToken.Upcoming]
@@ -88,7 +105,7 @@ fun BufferBattery(
                         else -> overColor
                     },
                     size = size.copy(
-                        width = (size.width * bufferExceededPercent).toFloat()
+                        width = size.width * fill.value.coerceIn(0f, 1f)
                     )
                 )
             }

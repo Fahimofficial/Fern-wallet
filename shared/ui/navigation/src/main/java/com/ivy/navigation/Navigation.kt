@@ -65,6 +65,22 @@ class Navigation @Inject constructor() {
     val onBackPressed: () -> Boolean
   )
 
+  /**
+   * Lets an open modal handle back until the returned function is called. Each registration is
+   * removed by identity, so modals may close in any order: removing only the top one leaked the
+   * others, and a leaked handler kept swallowing back on every screen.
+   */
+  @Suppress("DEPRECATION")
+  @Synchronized
+  fun registerModalBack(id: UUID, onBack: () -> Unit): () -> Unit {
+    val handler = ModalBackHandler(id) {
+      onBack()
+      true
+    }
+    modalBackHandling.add(handler)
+    return { synchronized(this) { modalBackHandling.remove(handler) } }
+  }
+
   @Deprecated("Legacy code. Don't use it, please.")
   fun lastModalBackHandlerId(): UUID? {
     return if (modalBackHandling.isEmpty()) {
