@@ -163,7 +163,7 @@ private fun TransactionRow(
     }
 }
 
-/** A transaction's account chip: the account's colour with account colours on, else neutral. */
+/** Shows a transaction account chip using its configured or neutral colour. */
 @Composable
 private fun PreviewAccountColorChip(accountColors: Boolean, neutral: Color) {
     val fill by animateColorAsState(
