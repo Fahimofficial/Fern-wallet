@@ -1,4 +1,5 @@
-"""Import account logos from an unpacked `simple-icons` npm package.
+"""
+Import account logos from an unpacked `simple-icons` npm package.
 
 Usage: python3 scripts/logos/import_simple_icons.py path/to/simple-icons/package
 
@@ -74,7 +75,8 @@ BRANDS = [
 
 
 def clean(slug):
-    """Check that a Simple Icons entry has no guidelines or licence restrictions.
+    """
+    Check that a Simple Icons entry has no guidelines or licence restrictions.
 
     Its source must not be a brand-guidelines page.
     """
