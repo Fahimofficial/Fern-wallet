@@ -290,10 +290,7 @@ fun BoxWithConstraintsScope.MoreMenu(
 }
 
 /**
- * The chevron: a tap toggles the hub; a drag past touch slop moves it, and the release settles
- * to the state the fling would land in. Clickable and draggable share one hit area (48dp around
- * the 40dp circle), and touch slop decides which one gets the gesture; nothing consumes events
- * by hand.
+ * A tap toggles the hub; dragging moves the chevron and settles it on release.
  */
 @Suppress("LongParameterList")
 @Composable
@@ -624,7 +621,7 @@ private fun LinkCard(
 
 private const val HeartBeatScale = 1.25f
 
-/** One fact about this month, in the space below the cards. */
+/** Shows the most frequent category for this month. */
 @Composable
 private fun TopCategoryInsightCard(topCategory: TopCategory) {
     Row(
