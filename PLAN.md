@@ -59,3 +59,15 @@ Images
 - shields.io "Support me on Ko-fi" badge (`FF5E5B`, logo kofi), height 44, alt "Support me on Ko-fi"
 
 The separate `## 📬 Contact` section is not part of the Support section and only gets the username fix.
+
+## Phase 4 verification
+
+Every item above is still in the Support section, unchanged: the H2 (same text, so the
+`#-support-the-project` anchor and ToC link still work), the description sentence, the H3,
+payee, "UPI ID" label, the `SimplyFahim@sbi` code block, the `<sub>` note, both
+`simplyfahim.pages.dev/pay/` links, the Ko-fi link, the QR image (width 220, same alt) and both
+shields badges (same URLs, height 44, same alt). Checked by exact-string search and by rendering
+the README through GitHub's Markdown API (`<picture>`, the code block and headings survive).
+
+Layout change: UPI and Ko-fi are stacked rows of one table instead of side by side, because the
+QR (220 px) plus the 44 px Ko-fi badge (320 px wide) don't fit a phone in two columns.

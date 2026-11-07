@@ -122,15 +122,20 @@ Fern Wallet is free software under the [GNU General Public License v3.0](LICENSE
 
 ## 💚 Support the Project
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/support/banner-dark.svg">
+  <img src="docs/assets/support/banner-light.svg" width="100%" alt="Support the Project: Fern Wallet">
+</picture>
+
 Fern Wallet is free and ad-free. If it helps you keep your money in order, a small donation keeps development going.
+
+<table>
+<tr>
+<td align="center" valign="top">
 
 <a href="https://simplyfahim.pages.dev/pay/"><img src="docs/assets/support/upi-qr.png" width="220" alt="UPI QR code to pay Md Fahim, UPI ID SimplyFahim@sbi. Tap to open UPI payment options."></a>
 
 ### 👆 **Tap the QR to open UPI payment options**
-
-<table>
-<tr>
-<td align="center">
 
 **Payee:** Md Fahim<br>
 **UPI ID**
@@ -139,14 +144,34 @@ Fern Wallet is free and ad-free. If it helps you keep your money in order, a sma
 SimplyFahim@sbi
 ```
 
+<a href="https://simplyfahim.pages.dev/pay/"><img src="https://img.shields.io/badge/Pay_with-UPI-009E3B?style=for-the-badge&logo=googlepay&logoColor=white" height="44" alt="Pay with UPI"></a>
+
+<sub>You choose the amount. Check that your UPI app shows <b>Md Fahim</b> before you pay.</sub>
+
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+
+<a href="https://ko-fi.com/simplyfahim"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/support/kofi-card-dark.svg"><img src="docs/assets/support/kofi-card-light.svg" width="160" alt="Ko-fi cup logo. Opens ko-fi.com/simplyfahim"></picture></a>
+
+<a href="https://ko-fi.com/simplyfahim"><img src="https://img.shields.io/badge/Support_me_on-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" height="44" alt="Support me on Ko-fi"></a>
+
 </td>
 </tr>
 </table>
 
-<a href="https://simplyfahim.pages.dev/pay/"><img src="https://img.shields.io/badge/Pay_with-UPI-009E3B?style=for-the-badge&logo=googlepay&logoColor=white" height="44" alt="Pay with UPI"></a>
-&nbsp;
-<a href="https://ko-fi.com/simplyfahim"><img src="https://img.shields.io/badge/Support_me_on-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" height="44" alt="Support me on Ko-fi"></a>
+### Community
 
-<sub>You choose the amount. Check that your UPI app shows <b>Md Fahim</b> before you pay.</sub>
+<a href="https://t.me/Fernwallet"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/support/telegram-card-dark.svg"><img src="docs/assets/support/telegram-card-light.svg" width="100%" alt="Join the Fern Wallet Telegram group: get updates, ask for help and share feedback with other users. Opens t.me/Fernwallet"></picture></a>
+
+**[Join the Fern Wallet group on Telegram → t.me/Fernwallet](https://t.me/Fernwallet)**
+
+<sub><b>Personal contact</b></sub><br>
+<a href="https://instagram.com/SimplyFahimofficial"><img src="https://img.shields.io/badge/Instagram-@SimplyFahimofficial-E4405F?style=flat-square&logo=instagram&logoColor=white" height="20" alt="Instagram: @SimplyFahimofficial"></a>
+<a href="mailto:simplyfahimofficial@gmail.com?subject=Fern%20Wallet%20feedback"><img src="https://img.shields.io/badge/Email-simplyfahimofficial@gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white" height="20" alt="Email: simplyfahimofficial@gmail.com"></a>
+<!-- TODO: personal Telegram badge. Add it once the username is set in SupportDestinations.PERSONAL_TELEGRAM_USERNAME:
+<a href="https://t.me/USERNAME"><img src="https://img.shields.io/badge/Telegram-@USERNAME-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram: @USERNAME"></a>
+-->
 
 </div>
