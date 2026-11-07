@@ -746,7 +746,7 @@ private fun Account(
     }
 }
 
-/** Grab handle: drag the sheet, or tap (TalkBack: activate) to show or hide the accounts. */
+/** Lets users drag the sheet or activate it to show and hide the accounts. */
 @Composable
 private fun AccountSelectionDragHandle(expanded: Boolean, onToggle: () -> Unit) {
     val label = stringResource(if (expanded) R.string.collapse else R.string.expand)
@@ -768,7 +768,7 @@ private fun AccountSelectionDragHandle(expanded: Boolean, onToggle: () -> Unit) 
 
 private const val HandleAlpha = 0.5f
 
-/** The From → To arrow, which is also the swap button: it turns half a turn per swap. */
+/** Shows the transfer direction and rotates when the accounts are swapped. */
 @Composable
 private fun AccountSwapConnector(enabled: Boolean, onSwap: () -> Unit) {
     var turns by remember { mutableIntStateOf(0) }
