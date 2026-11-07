@@ -83,8 +83,6 @@ fun BoxWithConstraintsScope.AccountsTab(modifier: Modifier = Modifier, selected:
     val viewModel: AccountsViewModel = screenScopedViewModel()
     val uiState = viewModel.uiState()
 
-    // The tab stays composed while Home is shown: reload when it's shown again, as re-entering
-    // it used to (e.g. balances after a planned payment was paid on Home).
     var wasHidden by remember { mutableStateOf(false) }
     LaunchedEffect(selected) {
         if (!selected) wasHidden = true else if (wasHidden) viewModel.onEvent(AccountsEvent.Refresh)
