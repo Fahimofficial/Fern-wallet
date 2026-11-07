@@ -10,8 +10,8 @@ Accounts, budgets, credit cards and reports. No ads, no account, your data stays
 
 [![Platform: Android 9.0+](https://img.shields.io/badge/Android-9.0%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-download)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue?style=for-the-badge)](LICENSE)
-[![Latest release](https://img.shields.io/github/v/release/Fahimofficial/Fern-wallet?include_prereleases&style=for-the-badge&logo=github&label=Release)](https://github.com/Fahimofficial/Fern-wallet/releases)
-[![GitHub stars](https://img.shields.io/github/stars/Fahimofficial/Fern-wallet?style=for-the-badge&logo=github)](https://github.com/Fahimofficial/Fern-wallet/stargazers)
+[![Latest release](https://img.shields.io/github/v/release/SimplyFahimOfficial/Fern-wallet?include_prereleases&style=for-the-badge&logo=github&label=Release)](https://github.com/SimplyFahimOfficial/Fern-wallet/releases)
+[![GitHub stars](https://img.shields.io/github/stars/SimplyFahimOfficial/Fern-wallet?style=for-the-badge&logo=github)](https://github.com/SimplyFahimOfficial/Fern-wallet/stargazers)
 
 [Features](#-features) · [Download](#-download) · [Build](#-build-from-source) · [Credits](#-credits) · [Contact](#-contact) · [Support](#-support-the-project)
 
@@ -49,13 +49,13 @@ Accounts, budgets, credit cards and reports. No ads, no account, your data stays
 
 ## 📥 Download
 
-Signed builds are published on [GitHub Releases](https://github.com/Fahimofficial/Fern-wallet/releases) with an APK, an AAB, an SBOM, `SHA256SUMS.txt` and a build-provenance attestation. No release has been published yet, so for now [build it from source](#-build-from-source). Fern Wallet needs Android 9.0 (API 28) or newer and is not on Google Play or F-Droid yet.
+Signed builds are published on [GitHub Releases](https://github.com/SimplyFahimOfficial/Fern-wallet/releases) with an APK, an AAB, an SBOM, `SHA256SUMS.txt` and a build-provenance attestation. No release has been published yet, so for now [build it from source](#-build-from-source). Fern Wallet needs Android 9.0 (API 28) or newer and is not on Google Play or F-Droid yet.
 
 Verify a download:
 
 ```bash
 sha256sum -c SHA256SUMS.txt --ignore-missing
-gh attestation verify FernWallet-<version>.apk --repo Fahimofficial/Fern-wallet
+gh attestation verify FernWallet-<version>.apk --repo SimplyFahimOfficial/Fern-wallet
 ```
 
 > [!NOTE]
@@ -66,7 +66,7 @@ gh attestation verify FernWallet-<version>.apk --repo Fahimofficial/Fern-wallet
 **Requirements:** JDK 21 (the build targets Java 17 bytecode) and Android SDK platform 37. The Gradle wrapper downloads Gradle 9.8.2.
 
 ```bash
-git clone https://github.com/Fahimofficial/Fern-wallet.git
+git clone https://github.com/SimplyFahimOfficial/Fern-wallet.git
 cd Fern-wallet
 
 ./gradlew :app:assembleDebug     # app/build/outputs/apk/debug/app-debug.apk
@@ -111,7 +111,7 @@ Fern Wallet is free software under the [GNU General Public License v3.0](LICENSE
 <a href="mailto:simplyfahimofficial@gmail.com"><img src="https://img.shields.io/badge/Email-simplyfahimofficial@gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Email: simplyfahimofficial@gmail.com"></a>
 <br>
 <a href="https://SimplyFahim.pages.dev"><img src="https://img.shields.io/badge/Website-SimplyFahim.pages.dev-111827?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website: SimplyFahim.pages.dev"></a>
-<a href="https://github.com/Fahimofficial"><img src="https://img.shields.io/badge/GitHub-Fahimofficial-24292F?style=for-the-badge&logo=github&logoColor=white" alt="GitHub: Fahimofficial"></a>
+<a href="https://github.com/SimplyFahimOfficial"><img src="https://img.shields.io/badge/GitHub-SimplyFahimOfficial-24292F?style=for-the-badge&logo=github&logoColor=white" alt="GitHub: SimplyFahimOfficial"></a>
 
 </div>
 

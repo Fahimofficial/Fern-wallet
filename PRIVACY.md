@@ -48,4 +48,4 @@ Fern Wallet does not request location, contacts, or storage permissions.
 
 ## Contact
 
-Questions: open an issue at https://github.com/Fahimofficial/Fern-wallet/issues.
+Questions: open an issue at https://github.com/SimplyFahimOfficial/Fern-wallet/issues.

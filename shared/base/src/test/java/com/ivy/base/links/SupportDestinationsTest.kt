@@ -31,21 +31,21 @@ class SupportDestinationsTest {
         SupportDestinations.UPI_CURRENCY shouldBe "INR"
         SupportDestinations.KOFI_URL shouldBe "https://ko-fi.com/simplyfahim"
         SupportDestinations.WEBSITE shouldBe "https://SimplyFahim.pages.dev"
-        SupportDestinations.GITHUB_PROFILE shouldBe "https://github.com/Fahimofficial/"
+        SupportDestinations.GITHUB_PROFILE shouldBe "https://github.com/SimplyFahimOfficial/"
     }
 
     @Test
     fun `support screen links to Fern Wallet's own repository`() {
-        SupportDestinations.APP_REPOSITORY shouldBe "https://github.com/Fahimofficial/Fern-wallet"
+        SupportDestinations.APP_REPOSITORY shouldBe "https://github.com/SimplyFahimOfficial/Fern-wallet"
         SupportDestinations.APP_REPOSITORY shouldNotContain "QuantumMPV"
     }
 
     @Test
     fun `Fern Wallet links point to its own repository, not QuantumMPV or upstream`() {
-        FernLinks.REPOSITORY shouldBe "https://github.com/Fahimofficial/Fern-wallet"
+        FernLinks.REPOSITORY shouldBe "https://github.com/SimplyFahimOfficial/Fern-wallet"
         FernLinks.NEW_ISSUE shouldStartWith FernLinks.REPOSITORY
         FernLinks.API_RELEASES shouldBe
-            "https://api.github.com/repos/Fahimofficial/Fern-wallet/releases"
+            "https://api.github.com/repos/SimplyFahimOfficial/Fern-wallet/releases"
         FernLinks.REPOSITORY shouldNotContain "QuantumMPV"
         FernLinks.REPOSITORY shouldNotContain "Ivy-Apps"
     }

@@ -1,1 +1,1 @@
-Fern Wallet release. See https://github.com/Fahimofficial/Fern-wallet/releases for the changelog. Please report issues at https://github.com/Fahimofficial/Fern-wallet/issues.
+Fern Wallet release. See https://github.com/SimplyFahimOfficial/Fern-wallet/releases for the changelog. Please report issues at https://github.com/SimplyFahimOfficial/Fern-wallet/issues.

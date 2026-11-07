@@ -1,12 +1,12 @@
 # Contributing to Fern Wallet
 
 Thanks for helping! Fern Wallet is a GPL-3.0 fork of [Ivy Wallet](https://github.com/Ivy-Apps/ivy-wallet),
-maintained at https://github.com/Fahimofficial/Fern-wallet.
+maintained at https://github.com/SimplyFahimOfficial/Fern-wallet.
 
 ## 1. Find or open an issue
 
-Browse [the issues](https://github.com/Fahimofficial/Fern-wallet/issues) or
-[open a new one](https://github.com/Fahimofficial/Fern-wallet/issues/new/choose). For bigger changes, discuss
+Browse [the issues](https://github.com/SimplyFahimOfficial/Fern-wallet/issues) or
+[open a new one](https://github.com/SimplyFahimOfficial/Fern-wallet/issues/new/choose). For bigger changes, discuss
 the idea in an issue first.
 
 ## 2. Fork, branch, build

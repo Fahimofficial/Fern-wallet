@@ -31,7 +31,7 @@ attribute.environment=assertion.environment
 ```
 
 Set the provider condition to require all three values:
-`assertion.repository == 'Fahimofficial/Fern-wallet'`,
+`assertion.repository == 'SimplyFahimOfficial/Fern-wallet'`,
 `assertion.ref == 'refs/heads/main'`, and
 `assertion.environment == 'play-store'`.
 
