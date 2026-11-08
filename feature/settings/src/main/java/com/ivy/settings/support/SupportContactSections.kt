@@ -101,30 +101,20 @@ private fun EntranceReveal(content: @Composable () -> Unit) {
 
 /** Tap: light tick and [onClick]. Long-press: long-press haptic and [onCopy]. */
 @OptIn(ExperimentalFoundationApi::class)
-@Composable
 private fun Modifier.contactClickable(
     description: String,
+    onLongClickLabel: String,
     onClick: () -> Unit,
-    onCopy: () -> Unit,
-): Modifier {
-    val view = LocalView.current
-    val haptics = LocalHapticFeedback.current
-    return this
-        .combinedClickable(
-            role = Role.Button,
-            onLongClickLabel = stringResource(R.string.support_copy_action),
-            onLongClick = {
-                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                onCopy()
-            },
-            onClick = {
-                IvyHaptics.tick(view)
-                onClick()
-            },
-        )
-        // The tile is read as one item; the click and long-click actions above are kept.
-        .clearAndSetSemantics { contentDescription = description }
-}
+    onLongClick: () -> Unit,
+): Modifier = this
+    .combinedClickable(
+        role = Role.Button,
+        onLongClickLabel = onLongClickLabel,
+        onLongClick = onLongClick,
+        onClick = onClick,
+    )
+    // The tile is read as one item; the click and long-click actions above are kept.
+    .clearAndSetSemantics { contentDescription = description }
 
 @Composable
 private fun TelegramGroupCard(actions: SupportScreenActions) {
@@ -132,6 +122,9 @@ private fun TelegramGroupCard(actions: SupportScreenActions) {
     val title = stringResource(R.string.support_telegram_group_title)
     val subtitle = stringResource(R.string.support_telegram_group_subtitle)
     val cta = stringResource(R.string.support_telegram_group_cta)
+    val copyLabel = stringResource(R.string.support_copy_action)
+    val view = LocalView.current
+    val haptics = LocalHapticFeedback.current
 
     // Fern green (or the user's accent), nudged just enough to keep text at 4.5:1 with any accent.
     val content = UI.colors.primary.contentColor()
@@ -145,8 +138,15 @@ private fun TelegramGroupCard(actions: SupportScreenActions) {
             .background(container, UI.shapes.r2)
             .contactClickable(
                 description = "$cta. $title. $subtitle",
-                onClick = { actions.onOpenLink(url, url) },
-                onCopy = { actions.onCopy(url) },
+                onLongClickLabel = copyLabel,
+                onClick = {
+                    IvyHaptics.tick(view)
+                    actions.onOpenLink(url, url)
+                },
+                onLongClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    actions.onCopy(url)
+                },
             )
             .padding(20.dp),
     ) {
@@ -227,6 +227,9 @@ private fun PersonalContactSection(actions: SupportScreenActions) {
 
 @Composable
 private fun ContactTile(link: ContactLink, actions: SupportScreenActions) {
+    val copyLabel = stringResource(R.string.support_copy_action)
+    val view = LocalView.current
+    val haptics = LocalHapticFeedback.current
     Row(
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -236,8 +239,15 @@ private fun ContactTile(link: ContactLink, actions: SupportScreenActions) {
             .background(UI.colors.medium, UI.shapes.r4)
             .contactClickable(
                 description = stringResource(R.string.support_contact_description, link.label, link.value),
-                onClick = { actions.onOpenLink(link.uri, link.copyValue) },
-                onCopy = { actions.onCopy(link.copyValue) },
+                onLongClickLabel = copyLabel,
+                onClick = {
+                    IvyHaptics.tick(view)
+                    actions.onOpenLink(link.uri, link.copyValue)
+                },
+                onLongClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    actions.onCopy(link.copyValue)
+                },
             )
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
