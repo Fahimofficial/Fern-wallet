@@ -45,7 +45,7 @@ import com.ivy.design.system.appearance.contentColor
 import com.ivy.design.system.appearance.readableOn
 import com.ivy.design.system.motion.IvyHaptics
 import com.ivy.design.system.motion.IvyMotion
-import com.ivy.legacy.utils.MotionPreferences
+import com.ivy.design.system.motion.MotionPreferences
 import com.ivy.settings.SettingsSectionDivider
 import com.ivy.ui.R
 import com.ivy.settings.R as SettingsR
