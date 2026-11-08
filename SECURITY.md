@@ -2,14 +2,14 @@
 
 ## Supported versions
 
-Only the latest release on the [Releases page](https://github.com/Fahimofficial/Fern-wallet/releases) receives fixes.
+Only the latest release on the [Releases page](https://github.com/SimplyFahimOfficial/Fern-wallet/releases) receives fixes.
 
 ## Reporting a vulnerability
 
 Please **do not** open a public issue for security problems.
 
 Use GitHub's private vulnerability reporting:
-[Report a vulnerability](https://github.com/Fahimofficial/Fern-wallet/security/advisories/new).
+[Report a vulnerability](https://github.com/SimplyFahimOfficial/Fern-wallet/security/advisories/new).
 
 Include the affected version, device/Android version, reproduction steps and impact. Never include real
 financial data, backups or credentials.
@@ -21,7 +21,7 @@ bundled dependency, and a build-provenance attestation:
 
 ```sh
 sha256sum -c SHA256SUMS.txt --ignore-missing
-gh attestation verify FernWallet-<version>.apk --repo Fahimofficial/Fern-wallet
+gh attestation verify FernWallet-<version>.apk --repo SimplyFahimOfficial/Fern-wallet
 ```
 
 ## Scope notes

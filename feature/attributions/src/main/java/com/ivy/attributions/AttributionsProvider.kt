@@ -22,6 +22,10 @@ class AttributionsProvider @Inject constructor() {
             name = "coolicons",
             link = "https://github.com/krystonschwarze/coolicons"
         ),
+        AttributionItem.Attribution(
+            name = "Simple Icons (CC0-1.0): Ko-fi, Telegram and Instagram marks",
+            link = "https://simpleicons.org"
+        ),
 
         AttributionItem.Divider(sectionName = "Fonts"),
         AttributionItem.Attribution(

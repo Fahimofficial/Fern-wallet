@@ -31,21 +31,41 @@ class SupportDestinationsTest {
         SupportDestinations.UPI_CURRENCY shouldBe "INR"
         SupportDestinations.KOFI_URL shouldBe "https://ko-fi.com/simplyfahim"
         SupportDestinations.WEBSITE shouldBe "https://SimplyFahim.pages.dev"
-        SupportDestinations.GITHUB_PROFILE shouldBe "https://github.com/Fahimofficial/"
+        SupportDestinations.GITHUB_PROFILE shouldBe "https://github.com/SimplyFahimOfficial/"
+    }
+
+    @Test
+    fun `mailto link has the address and an encoded subject`() {
+        SupportDestinations.mailtoUri("simplyfahimofficial@gmail.com") shouldBe
+            "mailto:simplyfahimofficial@gmail.com?subject=Fern%20Wallet%20feedback"
+        SupportDestinations.mailtoUri("a@b.c", subject = "Hi & bye") shouldBe "mailto:a@b.c?subject=Hi%20%26%20bye"
+    }
+
+    @Test
+    fun `telegram links use t_me and drop a leading at sign`() {
+        SupportDestinations.telegramUrl(SupportDestinations.TELEGRAM_GROUP_USERNAME) shouldBe "https://t.me/Fernwallet"
+        SupportDestinations.telegramUrl("@someone") shouldBe "https://t.me/someone"
+    }
+
+    @Test
+    fun `instagram link uses the handle`() {
+        SupportDestinations.instagramUrl(SupportDestinations.INSTAGRAM_HANDLE) shouldBe
+            "https://instagram.com/SimplyFahimofficial"
+        SupportDestinations.instagramUrl("@someone") shouldBe "https://instagram.com/someone"
     }
 
     @Test
     fun `support screen links to Fern Wallet's own repository`() {
-        SupportDestinations.APP_REPOSITORY shouldBe "https://github.com/Fahimofficial/Fern-wallet"
+        SupportDestinations.APP_REPOSITORY shouldBe "https://github.com/SimplyFahimOfficial/Fern-wallet"
         SupportDestinations.APP_REPOSITORY shouldNotContain "QuantumMPV"
     }
 
     @Test
     fun `Fern Wallet links point to its own repository, not QuantumMPV or upstream`() {
-        FernLinks.REPOSITORY shouldBe "https://github.com/Fahimofficial/Fern-wallet"
+        FernLinks.REPOSITORY shouldBe "https://github.com/SimplyFahimOfficial/Fern-wallet"
         FernLinks.NEW_ISSUE shouldStartWith FernLinks.REPOSITORY
         FernLinks.API_RELEASES shouldBe
-            "https://api.github.com/repos/Fahimofficial/Fern-wallet/releases"
+            "https://api.github.com/repos/SimplyFahimOfficial/Fern-wallet/releases"
         FernLinks.REPOSITORY shouldNotContain "QuantumMPV"
         FernLinks.REPOSITORY shouldNotContain "Ivy-Apps"
     }

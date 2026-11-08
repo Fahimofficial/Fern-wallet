@@ -50,7 +50,7 @@ subprojects {
 wrapperUpgrade {
     gradle {
         create("fernWallet") {
-            repo.set("Fahimofficial/Fern-wallet")
+            repo.set("SimplyFahimOfficial/Fern-wallet")
             baseBranch.set("main")
         }
     }

@@ -103,7 +103,7 @@ These are GitHub settings; nothing in the repository can configure them.
 
 ```sh
 sha256sum -c SHA256SUMS.txt --ignore-missing
-gh attestation verify FernWallet-<…>.apk --repo Fahimofficial/Fern-wallet
+gh attestation verify FernWallet-<…>.apk --repo SimplyFahimOfficial/Fern-wallet
 apksigner verify --print-certs FernWallet-<…>.apk   # compare with the published certificate SHA-256
 ```
 

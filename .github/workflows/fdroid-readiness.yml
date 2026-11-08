@@ -42,7 +42,7 @@ jobs:
           fi
 
           summary "## F-Droid readiness audit"
-          summary "Repository: Fahimofficial/Fern-wallet"
+          summary "Repository: SimplyFahimOfficial/Fern-wallet"
           summary ""
           summary "### Known policy-sensitive Gradle dependencies"
           if grep -RniE --include='*.gradle' --include='*.gradle.kts' --include='*.toml' \

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="240" viewBox="0 0 900 240" role="img" aria-labelledby="t">
+  <title id="t">Support the Project</title>
+  <style>
+  .sway { transform-origin: 790px 250px; animation: sway 7s ease-in-out infinite alternate; }
+  .sway2 { transform-origin: 90px 250px; animation: sway 9s ease-in-out infinite alternate-reverse; }
+  @keyframes sway { from { transform: rotate(-2.5deg); } to { transform: rotate(2.5deg); } }
+  @media (prefers-reduced-motion: reduce) { .sway, .sway2 { animation: none; } }
+</style>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0A3F33"/><stop offset="0.55" stop-color="#0F6B55"/><stop offset="1" stop-color="#13876A"/>
+    </linearGradient>
+    <clipPath id="c"><rect width="900" height="240" rx="28"/></clipPath>
+  </defs>
+  <g clip-path="url(#c)">
+    <rect width="900" height="240" fill="url(#bg)"/>
+    <g class="sway" fill="#9BE7CF" stroke="#9BE7CF" opacity="0.14">
+    <path d="M790 270 q-10 -112.5 37.5 -237.5" fill="none" stroke-width="5.0" stroke-linecap="round"/>
+    <ellipse cx="758.4" cy="270.0" rx="31.6" ry="7.5" transform="rotate(-25 790.0 270.0)"/>
+    <ellipse cx="821.6" cy="270.0" rx="31.6" ry="7.5" transform="rotate(25 790.0 270.0)"/>
+    <ellipse cx="759.6" cy="243.6" rx="28.9" ry="7.5" transform="rotate(-25 788.5 243.6)"/>
+    <ellipse cx="817.4" cy="243.6" rx="28.9" ry="7.5" transform="rotate(25 788.5 243.6)"/>
+    <ellipse cx="762.3" cy="217.2" rx="26.1" ry="7.5" transform="rotate(-25 788.4 217.2)"/>
+    <ellipse cx="814.5" cy="217.2" rx="26.1" ry="7.5" transform="rotate(25 788.4 217.2)"/>
+    <ellipse cx="766.3" cy="190.8" rx="23.4" ry="7.5" transform="rotate(-25 789.7 190.8)"/>
+    <ellipse cx="813.1" cy="190.8" rx="23.4" ry="7.5" transform="rotate(25 789.7 190.8)"/>
+    <ellipse cx="771.8" cy="164.4" rx="20.6" ry="7.5" transform="rotate(-25 792.5 164.4)"/>
+    <ellipse cx="813.1" cy="164.4" rx="20.6" ry="7.5" transform="rotate(25 792.5 164.4)"/>
+    <ellipse cx="778.8" cy="138.1" rx="17.9" ry="7.5" transform="rotate(-25 796.6 138.1)"/>
+    <ellipse cx="814.5" cy="138.1" rx="17.9" ry="7.5" transform="rotate(25 796.6 138.1)"/>
+    <ellipse cx="787.1" cy="111.7" rx="15.1" ry="7.5" transform="rotate(-25 802.2 111.7)"/>
+    <ellipse cx="817.3" cy="111.7" rx="15.1" ry="7.5" transform="rotate(25 802.2 111.7)"/>
+    <ellipse cx="796.9" cy="85.3" rx="12.4" ry="7.5" transform="rotate(-25 809.2 85.3)"/>
+    <ellipse cx="821.6" cy="85.3" rx="12.4" ry="7.5" transform="rotate(25 809.2 85.3)"/>
+    <ellipse cx="808.0" cy="58.9" rx="9.6" ry="7.5" transform="rotate(-25 817.7 58.9)"/>
+    <ellipse cx="827.3" cy="58.9" rx="9.6" ry="7.5" transform="rotate(25 817.7 58.9)"/>
+    </g>
+    <g class="sway2" fill="#9BE7CF" stroke="#9BE7CF" opacity="0.14">
+    <path d="M90 270 q10 -85.5 -28.5 -180.5" fill="none" stroke-width="3.8" stroke-linecap="round"/>
+    <ellipse cx="66.0" cy="270.0" rx="24.0" ry="5.7" transform="rotate(-25 90.0 270.0)"/>
+    <ellipse cx="114.0" cy="270.0" rx="24.0" ry="5.7" transform="rotate(25 90.0 270.0)"/>
+    <ellipse cx="69.7" cy="249.9" rx="21.9" ry="5.7" transform="rotate(-25 91.6 249.9)"/>
+    <ellipse cx="113.6" cy="249.9" rx="21.9" ry="5.7" transform="rotate(25 91.6 249.9)"/>
+    <ellipse cx="72.2" cy="229.9" rx="19.9" ry="5.7" transform="rotate(-25 92.0 229.9)"/>
+    <ellipse cx="111.9" cy="229.9" rx="19.9" ry="5.7" transform="rotate(25 92.0 229.9)"/>
+    <ellipse cx="73.5" cy="209.8" rx="17.8" ry="5.7" transform="rotate(-25 91.3 209.8)"/>
+    <ellipse cx="109.0" cy="209.8" rx="17.8" ry="5.7" transform="rotate(25 91.3 209.8)"/>
+    <ellipse cx="73.6" cy="189.8" rx="15.7" ry="5.7" transform="rotate(-25 89.3 189.8)"/>
+    <ellipse cx="105.0" cy="189.8" rx="15.7" ry="5.7" transform="rotate(25 89.3 189.8)"/>
+    <ellipse cx="72.6" cy="169.7" rx="13.6" ry="5.7" transform="rotate(-25 86.1 169.7)"/>
+    <ellipse cx="99.7" cy="169.7" rx="13.6" ry="5.7" transform="rotate(25 86.1 169.7)"/>
+    <ellipse cx="70.3" cy="149.7" rx="11.5" ry="5.7" transform="rotate(-25 81.8 149.7)"/>
+    <ellipse cx="93.3" cy="149.7" rx="11.5" ry="5.7" transform="rotate(25 81.8 149.7)"/>
+    <ellipse cx="66.8" cy="129.6" rx="9.4" ry="5.7" transform="rotate(-25 76.2 129.6)"/>
+    <ellipse cx="85.6" cy="129.6" rx="9.4" ry="5.7" transform="rotate(25 76.2 129.6)"/>
+    <ellipse cx="62.1" cy="109.6" rx="7.3" ry="5.7" transform="rotate(-25 69.5 109.6)"/>
+    <ellipse cx="76.8" cy="109.6" rx="7.3" ry="5.7" transform="rotate(25 69.5 109.6)"/>
+    </g>
+  </g>
+  <rect x="1" y="1" width="898" height="238" rx="27" fill="none" stroke="#1FA383" stroke-opacity="0.6" stroke-width="2"/>
+  <path transform="translate(426 42) scale(2)" fill="#FFFFFF" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+  <text x="450" y="160" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="54" font-weight="800" fill="#FFFFFF">Support the Project</text>
+  <text x="450" y="200" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="20" font-weight="600" fill="#FFFFFF" opacity="0.92">Fern Wallet</text>
+</svg>

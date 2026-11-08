@@ -7,7 +7,7 @@ Privacy disclosures: [`/PRIVACY.md`](../PRIVACY.md).
 ## Reporting a vulnerability
 
 Use GitHub's private vulnerability reporting (enabled):
-[Report a vulnerability](https://github.com/Fahimofficial/Fern-wallet/security/advisories/new). Don't open a public
+[Report a vulnerability](https://github.com/SimplyFahimOfficial/Fern-wallet/security/advisories/new). Don't open a public
 issue. Include the version, device/Android version, steps and impact, and never real financial data, backups or
 credentials. Fixes go into the next release; only the latest release is supported.
 

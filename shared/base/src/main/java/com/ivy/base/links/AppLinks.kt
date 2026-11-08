@@ -3,12 +3,12 @@ package com.ivy.base.links
 /**
  * Single source of truth for Fern Wallet's own public project links.
  *
- * Derived from the canonical `origin` remote: https://github.com/Fahimofficial/Fern-wallet
+ * Derived from the canonical `origin` remote: https://github.com/SimplyFahimOfficial/Fern-wallet
  * Fern Wallet is a fork of Ivy Wallet (https://github.com/Ivy-Apps/ivy-wallet, GPL-3.0);
  * upstream links that are kept for attribution live in [UpstreamLinks].
  */
 object FernLinks {
-    const val GITHUB_OWNER = "Fahimofficial"
+    const val GITHUB_OWNER = "SimplyFahimOfficial"
     const val GITHUB_REPO = "Fern-wallet"
 
     const val REPOSITORY = "https://github.com/$GITHUB_OWNER/$GITHUB_REPO"
@@ -49,10 +49,30 @@ object SupportDestinations {
     const val WEBSITE = "https://SimplyFahim.pages.dev"
 
     /** The developer's GitHub profile, listing all public projects. */
-    const val GITHUB_PROFILE = "https://github.com/Fahimofficial/"
+    const val GITHUB_PROFILE = "https://github.com/SimplyFahimOfficial/"
 
     /** This app's own repository. */
     const val APP_REPOSITORY = FernLinks.REPOSITORY
+
+    /** Fern Wallet's Telegram group (updates, help, feedback): the primary contact. */
+    const val TELEGRAM_GROUP_USERNAME = "Fernwallet"
+
+    /** Personal contact, shown with less emphasis than the group. */
+    const val INSTAGRAM_HANDLE = "SimplyFahimofficial"
+    val EMAILS: List<String> = listOf("simplyfahimofficial@gmail.com")
+
+    /** TODO: set the personal Telegram username (without `@`). Its tile is hidden while this is null. */
+    val PERSONAL_TELEGRAM_USERNAME: String? = null
+
+    const val EMAIL_SUBJECT = "Fern Wallet feedback"
+
+    fun telegramUrl(username: String): String = "https://t.me/${username.removePrefix("@")}"
+
+    fun instagramUrl(handle: String): String = "https://instagram.com/${handle.removePrefix("@")}"
+
+    /** `mailto:` link with a short subject, e.g. `mailto:a@b.c?subject=Fern%20Wallet%20feedback`. */
+    fun mailtoUri(email: String, subject: String = EMAIL_SUBJECT): String =
+        "mailto:$email?subject=${encodeQueryValue(subject)}"
 
     /** Public UPI ID (VPA) and the payee name UPI apps show before the user confirms. */
     const val UPI_ID = "SimplyFahim@sbi"

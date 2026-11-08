@@ -1,7 +1,7 @@
 # Changelog
 
 Release notes for published builds are generated on the
-[Releases page](https://github.com/Fahimofficial/Fern-wallet/releases). This file summarizes notable changes.
+[Releases page](https://github.com/SimplyFahimOfficial/Fern-wallet/releases). This file summarizes notable changes.
 
 ## Unreleased
 

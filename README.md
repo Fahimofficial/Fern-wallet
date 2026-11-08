@@ -10,8 +10,9 @@ Accounts, budgets, credit cards and reports. No ads, no account, your data stays
 
 [![Platform: Android 9.0+](https://img.shields.io/badge/Android-9.0%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-download)
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue?style=for-the-badge)](LICENSE)
-[![Latest release](https://img.shields.io/github/v/release/Fahimofficial/Fern-wallet?include_prereleases&style=for-the-badge&logo=github&label=Release)](https://github.com/Fahimofficial/Fern-wallet/releases)
-[![GitHub stars](https://img.shields.io/github/stars/Fahimofficial/Fern-wallet?style=for-the-badge&logo=github)](https://github.com/Fahimofficial/Fern-wallet/stargazers)
+[![Latest release](https://img.shields.io/github/v/release/SimplyFahimOfficial/Fern-wallet?include_prereleases&style=for-the-badge&logo=github&label=Release)](https://github.com/SimplyFahimOfficial/Fern-wallet/releases)
+[![GitHub stars](https://img.shields.io/github/stars/SimplyFahimOfficial/Fern-wallet?style=for-the-badge&logo=github)](https://github.com/SimplyFahimOfficial/Fern-wallet/stargazers)
+[![Join the Fern Wallet Telegram group](https://img.shields.io/badge/Join_the-Telegram_group-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Fernwallet)
 
 [Features](#-features) · [Download](#-download) · [Build](#-build-from-source) · [Credits](#-credits) · [Contact](#-contact) · [Support](#-support-the-project)
 
@@ -49,13 +50,13 @@ Accounts, budgets, credit cards and reports. No ads, no account, your data stays
 
 ## 📥 Download
 
-Signed builds are published on [GitHub Releases](https://github.com/Fahimofficial/Fern-wallet/releases) with an APK, an AAB, an SBOM, `SHA256SUMS.txt` and a build-provenance attestation. No release has been published yet, so for now [build it from source](#-build-from-source). Fern Wallet needs Android 9.0 (API 28) or newer and is not on Google Play or F-Droid yet.
+Signed builds are published on [GitHub Releases](https://github.com/SimplyFahimOfficial/Fern-wallet/releases) with an APK, an AAB, an SBOM, `SHA256SUMS.txt` and a build-provenance attestation. No release has been published yet, so for now [build it from source](#-build-from-source). Fern Wallet needs Android 9.0 (API 28) or newer and is not on Google Play or F-Droid yet.
 
 Verify a download:
 
 ```bash
 sha256sum -c SHA256SUMS.txt --ignore-missing
-gh attestation verify FernWallet-<version>.apk --repo Fahimofficial/Fern-wallet
+gh attestation verify FernWallet-<version>.apk --repo SimplyFahimOfficial/Fern-wallet
 ```
 
 > [!NOTE]
@@ -66,7 +67,7 @@ gh attestation verify FernWallet-<version>.apk --repo Fahimofficial/Fern-wallet
 **Requirements:** JDK 21 (the build targets Java 17 bytecode) and Android SDK platform 37. The Gradle wrapper downloads Gradle 9.8.2.
 
 ```bash
-git clone https://github.com/Fahimofficial/Fern-wallet.git
+git clone https://github.com/SimplyFahimOfficial/Fern-wallet.git
 cd Fern-wallet
 
 ./gradlew :app:assembleDebug     # app/build/outputs/apk/debug/app-debug.apk
@@ -112,7 +113,7 @@ Fern Wallet is free software under the [GNU General Public License v3.0](LICENSE
 <a href="mailto:simplyfahimofficial@gmail.com"><img src="https://img.shields.io/badge/Gmail-simplyfahimofficial@gmail.com-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Gmail: simplyfahimofficial@gmail.com"></a>
 <br>
 <a href="https://SimplyFahim.pages.dev"><img src="https://img.shields.io/badge/Website-SimplyFahim.pages.dev-111827?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website: SimplyFahim.pages.dev"></a>
-<a href="https://github.com/Fahimofficial"><img src="https://img.shields.io/badge/GitHub-Fahimofficial-24292F?style=for-the-badge&logo=github&logoColor=white" alt="GitHub: Fahimofficial"></a>
+<a href="https://github.com/SimplyFahimOfficial"><img src="https://img.shields.io/badge/GitHub-SimplyFahimOfficial-24292F?style=for-the-badge&logo=github&logoColor=white" alt="GitHub: SimplyFahimOfficial"></a>
 
 </div>
 
@@ -122,15 +123,20 @@ Fern Wallet is free software under the [GNU General Public License v3.0](LICENSE
 
 ## 💚 Support the Project
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/support/banner-dark.svg">
+  <img src="docs/assets/support/banner-light.svg" width="100%" alt="Support the Project: Fern Wallet">
+</picture>
+
 Fern Wallet is free and ad-free. If it helps you keep your money in order, a small donation keeps development going.
+
+<table>
+<tr>
+<td align="center" valign="top">
 
 <a href="https://simplyfahim.pages.dev/pay/"><img src="docs/assets/support/upi-qr.png" width="220" alt="UPI QR code to pay Md Fahim, UPI ID SimplyFahim@sbi. Tap to open UPI payment options."></a>
 
 ### 👆 **Tap the QR to open UPI payment options**
-
-<table>
-<tr>
-<td align="center">
 
 **Payee:** Md Fahim<br>
 **UPI ID**
@@ -139,14 +145,34 @@ Fern Wallet is free and ad-free. If it helps you keep your money in order, a sma
 SimplyFahim@sbi
 ```
 
+<a href="https://simplyfahim.pages.dev/pay/"><img src="https://img.shields.io/badge/Pay_with-UPI-009E3B?style=for-the-badge&logo=googlepay&logoColor=white" height="44" alt="Pay with UPI"></a>
+
+<sub>You choose the amount. Check that your UPI app shows <b>Md Fahim</b> before you pay.</sub>
+
+</td>
+</tr>
+<tr>
+<td align="center" valign="top">
+
+<a href="https://ko-fi.com/simplyfahim"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/support/kofi-card-dark.svg"><img src="docs/assets/support/kofi-card-light.svg" width="160" alt="Ko-fi cup logo. Opens ko-fi.com/simplyfahim"></picture></a>
+
+<a href="https://ko-fi.com/simplyfahim"><img src="https://img.shields.io/badge/Support_me_on-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" height="44" alt="Support me on Ko-fi"></a>
+
 </td>
 </tr>
 </table>
 
-<a href="https://simplyfahim.pages.dev/pay/"><img src="https://img.shields.io/badge/Pay_with-UPI-009E3B?style=for-the-badge&logo=googlepay&logoColor=white" height="44" alt="Pay with UPI"></a>
-&nbsp;
-<a href="https://ko-fi.com/simplyfahim"><img src="https://img.shields.io/badge/Support_me_on-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" height="44" alt="Support me on Ko-fi"></a>
+### Community
 
-<sub>You choose the amount. Check that your UPI app shows <b>Md Fahim</b> before you pay.</sub>
+<a href="https://t.me/Fernwallet"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/support/telegram-card-dark.svg"><img src="docs/assets/support/telegram-card-light.svg" width="100%" alt="Join the Fern Wallet Telegram group: get updates, ask for help and share feedback with other users. Opens t.me/Fernwallet"></picture></a>
+
+**[Join the Fern Wallet group on Telegram → t.me/Fernwallet](https://t.me/Fernwallet)**
+
+<sub><b>Personal contact</b></sub><br>
+<a href="https://instagram.com/SimplyFahimofficial"><img src="https://img.shields.io/badge/Instagram-@SimplyFahimofficial-E4405F?style=flat-square&logo=instagram&logoColor=white" height="20" alt="Instagram: @SimplyFahimofficial"></a>
+<a href="mailto:simplyfahimofficial@gmail.com?subject=Fern%20Wallet%20feedback"><img src="https://img.shields.io/badge/Email-simplyfahimofficial@gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white" height="20" alt="Email: simplyfahimofficial@gmail.com"></a>
+<!-- TODO: personal Telegram badge. Add it once the username is set in SupportDestinations.PERSONAL_TELEGRAM_USERNAME:
+<a href="https://t.me/USERNAME"><img src="https://img.shields.io/badge/Telegram-@USERNAME-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram: @USERNAME"></a>
+-->
 
 </div>
