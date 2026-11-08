@@ -11,5 +11,4 @@ data class SearchState(
     val baseCurrency: String,
     val accounts: ImmutableList<Account>,
     val categories: ImmutableList<Category>,
-    val shouldShowAccountSpecificColorInTransactions: Boolean
 )

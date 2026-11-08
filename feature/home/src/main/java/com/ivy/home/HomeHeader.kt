@@ -8,6 +8,8 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,11 +58,21 @@ import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.Gray
 import com.ivy.wallet.ui.theme.findContrastTextColor
 import com.ivy.wallet.ui.theme.incomeTextColor
-import com.ivy.wallet.ui.theme.components.BalanceRow
 import com.ivy.wallet.ui.theme.components.BalanceRowMini
 import com.ivy.wallet.ui.theme.components.IvyIcon
-import com.ivy.wallet.ui.theme.components.IvyOutlinedButton
-import com.ivy.wallet.ui.theme.wallet.AmountCurrencyB1
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.sp
+import com.ivy.design.system.motion.AnimatedAmountText
+import com.ivy.legacy.utils.shortenAmount
+import com.ivy.legacy.utils.shouldShortAmount
 import kotlin.math.absoluteValue
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -198,7 +210,7 @@ private fun HeaderStickyRow(
             }
         }
 
-        IvyOutlinedButton(
+        HomeMonthSelectorButton(
             modifier = Modifier.horizontalSwipeListener(
                 sensitivity = 75,
                 state = rememberSwipeListenerState(),
@@ -211,21 +223,58 @@ private fun HeaderStickyRow(
                     onSelectPreviousMonth()
                 },
             ),
-            iconStart = R.drawable.ic_calendar,
             text = period.toDisplayShort(
                 startDateOfMonth = ivyWalletCtx().startDayOfMonth,
                 timeConverter = LocalTimeConverter.current,
                 timeProvider = LocalTimeProvider.current,
                 timeFormatter = LocalTimeFormatter.current,
             ),
-            minWidth = 130.dp,
-        ) {
-            onShowMonthModal()
-        }
+            onClick = onShowMonthModal,
+        )
 
         Spacer(Modifier.width(12.dp))
 
         Spacer(Modifier.width(40.dp)) // settings menu button spacer
+    }
+}
+
+/**
+ * Opens the month picker; horizontal swipes step the month.
+ */
+@Composable
+private fun HomeMonthSelectorButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val label = stringResource(R.string.select_month)
+    Row(
+        modifier = modifier
+            .pressScale(interactionSource)
+            .clip(UI.shapes.rFull)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                role = Role.Button,
+                onClickLabel = label,
+                onClick = onClick,
+            )
+            .defaultMinSize(minWidth = 130.dp, minHeight = 48.dp)
+            .border(2.dp, UI.colors.medium, UI.shapes.rFull)
+            .padding(start = 12.dp, end = 8.dp)
+            .testTag("home_month_selector"),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        IvyIcon(icon = R.drawable.ic_calendar, tint = UI.colors.pureInverse)
+        Spacer(Modifier.width(4.dp))
+        Text(
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp),
+            text = text,
+            style = UI.typo.b2.style(fontWeight = FontWeight.Bold, color = UI.colors.pureInverse),
+        )
+        IvyIcon(icon = R.drawable.ic_expand_more, tint = UI.colors.gray)
     }
 }
 
@@ -242,7 +291,9 @@ fun CashFlowInfo(
     onOpenMoreMenu: () -> Unit,
     onBalanceClick: () -> Unit,
     onHiddenBalanceClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCashflowClick: () -> Unit = {},
+    onToggleHideBalance: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -254,21 +305,13 @@ fun CashFlowInfo(
                 },
             ),
     ) {
-        BalanceRow(
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .clickableNoIndication(rememberInteractionSource(), role = Role.Button) {
-                    if (hideBalance) {
-                        onHiddenBalanceClick()
-                    } else {
-                        onBalanceClick()
-                    }
-                }
-                .testTag("home_balance"),
+        HomeBalanceAmountDisplay(
             currency = currency,
             balance = balance,
-            shortenBigNumbers = true,
-            hiddenMode = hideBalance
+            hidden = hideBalance,
+            onHiddenClick = onHiddenBalanceClick,
+            onOpenDetails = onBalanceClick,
+            onToggleHidden = onToggleHideBalance,
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -285,19 +328,15 @@ fun CashFlowInfo(
         if (cashflow != 0.0 && !hideBalance) {
             Spacer(Modifier.height(12.dp))
 
-            Text(
-                modifier = Modifier.padding(
-                    start = 24.dp,
-                ),
+            CashflowChip(
                 text = stringResource(
                     R.string.cashflow,
                     (if (cashflow > 0) "+" else ""),
                     cashflow.format(currency),
                     currency,
                 ),
-                style = UI.typo.nB2.style(
-                    color = if (cashflow < 0) Gray else incomeTextColor(),
-                ),
+                color = if (cashflow < 0) Gray else incomeTextColor(),
+                onClick = onCashflowClick,
             )
 
             Spacer(Modifier.height(4.dp))
@@ -306,6 +345,109 @@ fun CashFlowInfo(
         }
     }
 }
+
+/**
+ * The big balance. It counts to each new value; a tap switches between compact ("114.64k") and
+ * exact, a long press (or the TalkBack action) opens the balance details, and the eye hides it.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Suppress("LongParameterList")
+@Composable
+private fun HomeBalanceAmountDisplay(
+    currency: String,
+    balance: Double,
+    hidden: Boolean,
+    onHiddenClick: () -> Unit,
+    onOpenDetails: () -> Unit,
+    onToggleHidden: () -> Unit,
+) {
+    var compact by rememberSaveable { mutableStateOf(true) }
+    val short = compact && shouldShortAmount(balance)
+    // Compose memoizes this lambda: it only changes with currency and short.
+    val format = { value: Double -> "$currency ${if (short) shortenAmount(value) else value.format(currency)}" }
+    val detailsLabel = stringResource(R.string.balance_details)
+    val toggleLabel = stringResource(if (compact) R.string.show_exact_amount else R.string.show_compact_amount)
+    Row(
+        modifier = Modifier.padding(start = 20.dp, end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .combinedClickable(
+                    interactionSource = rememberInteractionSource(),
+                    indication = null,
+                    role = Role.Button,
+                    onClickLabel = if (hidden) null else toggleLabel,
+                    onLongClickLabel = detailsLabel,
+                    onLongClick = onOpenDetails,
+                    onClick = {
+                        if (hidden) onHiddenClick() else compact = !compact
+                    },
+                )
+                .semantics {
+                    customActions = listOf(
+                        CustomAccessibilityAction(detailsLabel) {
+                            onOpenDetails()
+                            true
+                        }
+                    )
+                }
+                .testTag("home_balance"),
+        ) {
+            val style = UI.typo.nH1.style(fontWeight = FontWeight.ExtraBold, color = UI.colors.pureInverse)
+            if (hidden) {
+                Text(text = "$currency ****", style = style)
+            } else {
+                // Exact amounts of 7+ digits don't fit at 40sp on a phone: step down instead of wrapping.
+                val fitted = if (format(balance).length > ExactBalanceMaxChars) style.copy(fontSize = 30.sp) else style
+                AnimatedAmountText(amount = balance, format = format, style = fitted)
+            }
+        }
+        IconButton(onClick = onToggleHidden) {
+            IvyIcon(
+                icon = if (hidden) R.drawable.ic_hidden else R.drawable.ic_visible,
+                tint = UI.colors.gray,
+                contentDescription = stringResource(if (hidden) R.string.show_balance else R.string.hide_balance),
+            )
+        }
+    }
+}
+
+private const val ExactBalanceMaxChars = 13
+
+@Composable
+private fun CashflowChip(
+    text: String,
+    color: Color,
+    onClick: () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Row(
+        modifier = Modifier
+            .padding(start = 16.dp)
+            .pressScale(interactionSource)
+            .clip(UI.shapes.rFull)
+            .background(color.copy(alpha = ChipTintAlpha), UI.shapes.rFull)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                role = Role.Button,
+                onClickLabel = stringResource(R.string.reports),
+                onClick = onClick,
+            )
+            .defaultMinSize(minHeight = 48.dp)
+            .padding(horizontal = 12.dp)
+            .testTag("home_cashflow_chip"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = text, style = UI.typo.nB2.style(color = color, fontWeight = FontWeight.Bold))
+        Spacer(Modifier.width(4.dp))
+        IvyIcon(icon = R.drawable.ic_arrow_right, tint = color)
+    }
+}
+
+private const val ChipTintAlpha = 0.12f
 
 @Composable
 private fun IncomeExpenses(
@@ -419,13 +561,19 @@ private fun RowScope.HeaderCard(
 
         Spacer(Modifier.height(10.dp))
 
-        // AmountCurrencyB1 emits amount + currency as siblings: keep them on one baseline.
         Row(verticalAlignment = Alignment.CenterVertically) {
-            AmountCurrencyB1(
+            val short = shouldShortAmount(amount)
+            AnimatedAmountText(
+                modifier = Modifier.alignByBaseline(),
                 amount = amount,
-                currency = currency,
-                textColor = UI.colors.pureInverse,
-                shortenBigNumbers = true,
+                format = { value: Double -> if (short) shortenAmount(value) else value.format(currency) },
+                style = UI.typo.nB1.style(fontWeight = FontWeight.Bold, color = UI.colors.pureInverse),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                modifier = Modifier.alignByBaseline(),
+                text = currency,
+                style = UI.typo.nB1.style(fontWeight = FontWeight.Normal, color = UI.colors.pureInverse),
             )
         }
     }

@@ -1,5 +1,6 @@
 package com.ivy.creditcards.edit
 
+import com.ivy.data.model.AccountAppearance
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -299,6 +300,7 @@ class EditCreditCardViewModel @Inject constructor(
                     includeInBalance = result.includeInBalance,
                     orderNum = existing?.orderNum ?: (accountRepository.findMaxOrderNum() + 1),
                     type = AccountType.CREDIT_CARD,
+                    appearance = existing?.appearance ?: AccountAppearance.Default,
                 )
                 // One transaction: the new schedule, its moved statement values and the account
                 // are written together, so they can never be left out of step.

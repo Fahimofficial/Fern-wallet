@@ -351,6 +351,7 @@ class EditTransactionViewModel @Inject constructor(
 
             is EditTransactionViewEvent.OnTitleChanged -> onTitleChanged(event.newTitle)
             is EditTransactionViewEvent.OnToAccountChanged -> onToAccountChanged(event.newAccount)
+            EditTransactionViewEvent.SwapAccounts -> onSwapAccounts()
             is EditTransactionViewEvent.Save -> save(event.closeScreen)
             is EditTransactionViewEvent.SetHasChanges -> setHasChanges(event.hasChangesValue)
             is EditTransactionViewEvent.UpdateExchangeRate -> updateExchangeRate(event.exRate)
@@ -537,6 +538,21 @@ class EditTransactionViewModel @Inject constructor(
 
     private suspend fun updateCurrency(account: Account) {
         currency = account.currency ?: baseCurrency()
+    }
+
+    private fun onSwapAccounts() {
+        val from = account ?: return
+        val to = toAccount ?: return
+        viewModelScope.launch {
+            loadedTransaction = loadedTransaction().copy(accountId = to.id, toAccountId = from.id)
+            account = to
+            toAccount = from
+            accountsChanged = true
+            updateCurrency(account = to)
+            // Saves in edit mode once both sides are set.
+            updateCustomExchangeRateState(toAccountValue = from, fromAccount = to, resetRate = true)
+            saveIfEditMode()
+        }
     }
 
     private fun onToAccountChanged(newAccount: Account) {

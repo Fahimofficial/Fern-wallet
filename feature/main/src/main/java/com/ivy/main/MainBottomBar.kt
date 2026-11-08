@@ -1,6 +1,21 @@
 package com.ivy.main
 
 import androidx.annotation.DrawableRes
+import android.view.accessibility.AccessibilityManager
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import com.ivy.design.system.motion.MotionPreferences
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.ivy.legacy.utils.drawColoredShadow
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -88,7 +103,11 @@ import com.ivy.design.system.motion.pressScale
 import kotlinx.coroutines.launch
 
 private const val MenuVisibleThreshold = 0.01f
-private const val NavBarAlpha = 0.95f
+private const val NavBarZIndex = 50f
+private const val TabIconPressedScale = 0.8f
+
+// Covers the + rising 34dp above the bar, so list text fades out before it reaches it.
+private val NavScrimHeight = 40.dp
 
 // What the FAB does right now, for screen readers.
 private fun fabLabel(tab: MainTab, expanded: Boolean): Int = when {
@@ -107,7 +126,7 @@ val FAB_BUTTON_SIZE = 56.dp
 
 /** @param initiallyExpanded only used by screenshot tests to render the add menu open. */
 @Deprecated("Old design system. Use `:ivy-design` and Material3")
-@Suppress("LongMethod")
+@Suppress("LongMethod", "CyclomaticComplexMethod")
 @Composable
 fun BoxWithConstraintsScope.BottomBar(
     tab: MainTab,
@@ -120,10 +139,22 @@ fun BoxWithConstraintsScope.BottomBar(
 
     showAddAccountModal: () -> Unit,
     initiallyExpanded: Boolean = false,
+    barsVisible: Boolean = true,
+    fabExtended: Boolean = false,
+    onFabLabelSeen: () -> Unit = {},
 ) {
     val ivyContext = ivyWalletCtx()
 
     var expanded by remember { mutableStateOf(initiallyExpanded) }
+
+    // Hidden while scrolling down Home; never while the add menu is open or TalkBack is on
+    // (a screen-reader user can't scroll up to bring back controls they can't see).
+    val touchExploration = rememberTouchExplorationEnabled()
+    val hideProgress = animateFloatAsState(
+        targetValue = if (!barsVisible && !expanded && !touchExploration) 1f else 0f,
+        animationSpec = IvyMotion.standard(IvyMotion.Duration.Medium),
+        label = "bars_hide",
+    )
 
     val modalId = remember { UUID.randomUUID() }
 
@@ -149,11 +180,29 @@ fun BoxWithConstraintsScope.BottomBar(
     )
     val menuOnScreen by remember { derivedStateOf { buttonsShown.value > MenuVisibleThreshold } }
 
+    val navBarColor = FernTheme.palette[ColorToken.NavBar]
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .align(Alignment.BottomCenter)
-            .background(FernTheme.palette[ColorToken.NavBar].copy(alpha = NavBarAlpha))
+            // Above the tabs (zIndex 1), below their sheets and menus (500+).
+            .zIndex(NavBarZIndex)
+            .graphicsLayer { translationY = hideProgress.value * (size.height + NavScrimHeight.toPx()) }
+            // Content scrolling under the bar fades out instead of meeting it at a hard edge.
+            .drawBehind {
+                val scrim = NavScrimHeight.toPx()
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, navBarColor),
+                        startY = -scrim,
+                        endY = 0f,
+                    ),
+                    topLeft = Offset(0f, -scrim),
+                    size = Size(size.width, scrim),
+                )
+            }
+            // Opaque: at 95% the list's text showed through the tab labels.
+            .background(navBarColor)
             .graphicsLayer { alpha = (1f - buttonsShown.value).coerceIn(0f, 1f) }
             .navigationBarsPadding()
             .clickableNoIndication(rememberInteractionSource()) {
@@ -226,23 +275,33 @@ fun BoxWithConstraintsScope.BottomBar(
     val scope = rememberCoroutineScope()
     val view = LocalView.current
     val fabPullRangePx = FAB_BUTTON_SIZE.toDensityPx()
-    // + & x button
-    IvyCircleButton(
+    // + & x button. A pill that shows "Add" in the first session, then a round button.
+    val fabInteraction = remember { MutableInteractionSource() }
+    val fabGradient = if (tab == MainTab.HOME && expanded) {
+        Gradient.solid(UI.colors.gray)
+    } else {
+        paletteGradient(ColorToken.Fab)
+    }
+    val fabTint = if (expanded) UI.colors.gray.contentColor() else FernTheme.palette[ColorToken.Fab].contentColor()
+    val fabDescription = stringResource(fabLabel(tab, expanded))
+    val fabHiddenOffset = ivyContext.screenHeight - fabStartY
+    Row(
         modifier = Modifier
             .layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
                 layout(placeable.width, placeable.height) {
                     placeable.place(
-                        x = fabStartX.roundToInt(),
+                        // Centred on its own width, so the pill grows to both sides.
+                        x = (ivyContext.screenWidth - placeable.width) / 2,
                         y = fabStartY.roundToInt()
                     )
                 }
             }
-            .size(FAB_BUTTON_SIZE)
+            .height(FAB_BUTTON_SIZE)
+            .widthIn(min = FAB_BUTTON_SIZE)
             .graphicsLayer {
-                rotationZ = fabRotation.value
                 translationX = fabPull.value.x
-                translationY = fabPull.value.y
+                translationY = fabPull.value.y + hideProgress.value * fabHiddenOffset
             }
             .zIndex(200f)
             .thenIf(tab == MainTab.HOME) {
@@ -299,33 +358,78 @@ fun BoxWithConstraintsScope.BottomBar(
                     )
                 }
             }
-            .testTag("fab_add"),
-        backgroundPadding = 8.dp,
-        icon = R.drawable.ic_add,
-        contentDescription = stringResource(fabLabel(tab, expanded)),
-        backgroundGradient = when (tab) {
-            MainTab.HOME -> {
-                if (!expanded) paletteGradient(ColorToken.Fab) else Gradient.solid(UI.colors.gray)
+            .pressScale(fabInteraction)
+            .thenIf(!expanded) {
+                drawColoredShadow(
+                    color = fabGradient.startColor,
+                    borderRadius = 0.dp,
+                    shadowRadius = 16.dp,
+                    offsetX = 0.dp,
+                    offsetY = 8.dp
+                )
             }
+            .clip(UI.shapes.rFull)
+            .background(fabGradient.asHorizontalBrush(), UI.shapes.rFull)
+            .clickable(
+                interactionSource = fabInteraction,
+                indication = LocalIndication.current,
+                role = Role.Button,
+            ) {
+                onFabLabelSeen()
+                when (tab) {
+                    MainTab.HOME -> {
+                        expanded = !expanded
+                    }
 
-            // One primary-action color across tabs (was purple on Home, green on Accounts).
-            MainTab.ACCOUNTS -> {
-                paletteGradient(ColorToken.Fab)
+                    MainTab.ACCOUNTS -> {
+                        showAddAccountModal()
+                    }
+                }
             }
-        },
-        hasShadow = !expanded,
-        tint = if (expanded) UI.colors.gray.contentColor() else FernTheme.palette[ColorToken.Fab].contentColor()
+            .semantics { contentDescription = fabDescription }
+            .testTag("fab_add")
+            .padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
     ) {
-        when (tab) {
-            MainTab.HOME -> {
-                expanded = !expanded
-            }
-
-            MainTab.ACCOUNTS -> {
-                showAddAccountModal()
-            }
+        IvyIcon(
+            modifier = Modifier
+                .size(FAB_BUTTON_SIZE - 16.dp)
+                .graphicsLayer { rotationZ = fabRotation.value },
+            icon = R.drawable.ic_add,
+            tint = fabTint,
+        )
+        AnimatedVisibility(
+            visible = fabExtended && tab == MainTab.HOME && !expanded,
+            enter = fadeIn(IvyMotion.standard(IvyMotion.Duration.Medium)) +
+                expandHorizontally(IvyMotion.standard(IvyMotion.Duration.Medium)),
+            exit = fadeOut(IvyMotion.standard(IvyMotion.Duration.Short)) +
+                shrinkHorizontally(IvyMotion.standard(IvyMotion.Duration.Medium)),
+            label = "fab_label",
+        ) {
+            Text(
+                // The button's description already says what it does.
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .clearAndSetSemantics { },
+                text = stringResource(R.string.home_add_short),
+                style = UI.typo.b2.style(fontWeight = FontWeight.ExtraBold, color = fabTint),
+            )
         }
     }
+}
+
+@Composable
+private fun rememberTouchExplorationEnabled(): Boolean {
+    val context = LocalContext.current
+    val manager = remember(context) { context.getSystemService(AccessibilityManager::class.java) }
+    var enabled by remember(manager) { mutableStateOf(manager?.isTouchExplorationEnabled == true) }
+    DisposableEffect(manager) {
+        val listener = AccessibilityManager.TouchExplorationStateChangeListener { enabled = it }
+        manager?.addTouchExplorationStateChangeListener(listener)
+        onDispose { manager?.removeTouchExplorationStateChangeListener(listener) }
+    }
+    return enabled
 }
 
 @Composable
@@ -707,7 +811,21 @@ private fun RowScope.Tab(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // A small spring bounce when this tab becomes selected (not on first show).
+        val iconScale = remember { Animatable(1f) }
+        var wasSelected by remember { mutableStateOf(selected) }
+        LaunchedEffect(selected) {
+            if (selected && !wasSelected && !MotionPreferences.reduceMotion) {
+                iconScale.snapTo(TabIconPressedScale)
+                iconScale.animateTo(1f, IvyMotion.Springs.bouncy())
+            }
+            wasSelected = selected
+        }
         IvyIcon(
+            modifier = Modifier.graphicsLayer {
+                scaleX = iconScale.value
+                scaleY = iconScale.value
+            },
             icon = icon,
             tint = tint,
             // The label text is only visible when selected; otherwise the icon carries the name.

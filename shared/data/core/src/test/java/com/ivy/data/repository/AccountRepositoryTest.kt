@@ -1,5 +1,6 @@
 package com.ivy.data.repository
 
+import com.ivy.data.media.FakeAccountMediaFiles
 import com.ivy.base.TestDispatchersProvider
 import com.ivy.data.DataObserver
 import com.ivy.data.db.dao.fake.FakeSettingsDao
@@ -33,6 +34,8 @@ class AccountRepositoryTest {
 
     @Before
     fun setup() {
+        // No stored row by default: nothing to compare appearance files against.
+        coEvery { accountDao.findById(any()) } returns null
         val settingsDao = FakeSettingsDao()
         repository = AccountRepository(
             mapper = AccountMapper(
@@ -46,6 +49,7 @@ class AccountRepositoryTest {
             writeAccountDao = writeAccountDao,
             dispatchersProvider = TestDispatchersProvider,
             memoFactory = fakeRepositoryMemoFactory(),
+            mediaFiles = FakeAccountMediaFiles(),
         )
     }
 

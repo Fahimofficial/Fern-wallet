@@ -131,6 +131,30 @@ class NavigationTest {
     }
 
     @Test
+    fun `modals closed out of order leave no handler behind, so back pops the screen again`() {
+        val nav = Navigation()
+        nav.navigateTo(MainScreen)
+        nav.navigateTo(cardA)
+        var amountClosed = 0
+        var categoryClosed = 0
+
+        // The amount keypad opens, then the category picker opens on top of it...
+        val closeAmount = nav.registerModalBack(UUID(0, 1)) { amountClosed++ }
+        val closeCategory = nav.registerModalBack(UUID(0, 2)) { categoryClosed++ }
+        // ...and the keypad closes first (the order that used to leak its handler).
+        closeAmount()
+        nav.onBackPressed().shouldBeTrue()
+        categoryClosed shouldBe 1
+        amountClosed shouldBe 0
+        closeCategory()
+
+        nav.hasOpenModal().shouldBeFalse()
+        nav.predictiveBackTarget()!!.screen shouldBe MainScreen
+        nav.onBackPressed().shouldBeTrue()
+        nav.currentScreen shouldBe MainScreen
+    }
+
+    @Test
     fun `before-back hooks run when leaving their screen by back only`() {
         val nav = Navigation()
         var calls = 0

@@ -45,6 +45,9 @@ sealed interface EditTransactionViewEvent {
     data class OnCategoryChanged(val newCategory: Category?) : EditTransactionViewEvent
     data class OnAccountChanged(val newAccount: Account) : EditTransactionViewEvent
     data class OnToAccountChanged(val newAccount: Account) : EditTransactionViewEvent
+
+    /** Transfer: From and To trade places in one step (two changes would pass through From == To). */
+    data object SwapAccounts : EditTransactionViewEvent
     data class OnDueDateChanged(val newDueDate: LocalDateTime?) : EditTransactionViewEvent
     data object OnChangeDate : EditTransactionViewEvent
     data object OnChangeTime : EditTransactionViewEvent

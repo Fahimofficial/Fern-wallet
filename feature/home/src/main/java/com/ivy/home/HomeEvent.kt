@@ -30,6 +30,15 @@ sealed interface HomeEvent {
     data object SelectNextMonth : HomeEvent
     data object SelectPreviousMonth : HomeEvent
 
+    /** Swiped away on Home: deleted at once, with Undo. */
+    data class DeleteTransaction(val transaction: Transaction) : HomeEvent
+
+    /** The eye next to the balance: hide or show it, remembered like the Settings switch. */
+    data object ToggleHideBalance : HomeEvent
+
+    /** The savings-goal celebration played: don't play it again for this goal amount. */
+    data object SavingsGoalCelebrated : HomeEvent
+
     /** The tab is shown again after another tab: reload its data. */
     data object Refresh : HomeEvent
 }

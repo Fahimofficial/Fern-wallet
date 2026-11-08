@@ -3,8 +3,9 @@ package com.ivy.legacy.utils
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.spring
+import com.ivy.design.system.motion.MotionPreferences
 
-/**
+/*
  * Motion tokens for the legacy UI.
  *
  * - Damping 0.85 (was 0.75): keeps the springy, interruptible feel but cuts overshoot from
@@ -12,10 +13,6 @@ import androidx.compose.animation.core.spring
  * - Reduced motion: when the user turns animations off in Android's accessibility/developer
  *   settings (animator duration scale = 0), springs become critically damped and near-instant.
  */
-object MotionPreferences {
-    @Volatile
-    var reduceMotion: Boolean = false
-}
 
 private const val DampingRatio = 0.85f
 private const val ReducedMotionStiffness = 10_000f
