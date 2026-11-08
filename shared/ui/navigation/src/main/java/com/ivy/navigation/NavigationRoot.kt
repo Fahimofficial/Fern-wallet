@@ -1,5 +1,14 @@
 package com.ivy.navigation
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import android.annotation.SuppressLint
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContent
@@ -39,9 +48,16 @@ private val LocalNavigation = compositionLocalOf<Navigation> { error("No LocalNa
 @SuppressLint("ComposeCompositionLocalUsage")
 val LocalHostScreen = staticCompositionLocalOf<Screen?> { null }
 
-/** Default screen transition: shared-axis X, direction taken from the back-stack order. */
-fun AnimatedContentTransitionScope<NavEntry>.defaultScreenTransition(): ContentTransform =
-    IvyMotion.screenTransform(forward = targetState.id >= initialState.id)
+/**
+ * Default screen transition, direction taken from the back-stack order. A screen that can grow
+ * out of an element of the previous one (see [sharedContainer]) only fades: the shared bounds
+ * carry the motion, so nothing else competes with them.
+ */
+fun AnimatedContentTransitionScope<NavEntry>.defaultScreenTransition(): ContentTransform {
+    val forward = targetState.id >= initialState.id
+    val front = if (forward) targetState.screen else initialState.screen
+    return IvyMotion.screenTransform(forward = forward, container = front.containerKey() != null)
+}
 
 /**
  * Shows the current screen and animates between screens.
@@ -85,19 +101,70 @@ fun NavigationRoot(
             PredictiveBack(navigation, seekState, onUnhandledBack)
 
             // Lets elements of the outgoing and incoming screen connect (see sharedContainer).
+            val containerShapes = remember { ContainerShapes() }
             SharedTransitionLayout {
-                CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                    rememberTransition(seekState, label = "screen").AnimatedContent(
+                CompositionLocalProvider(
+                    LocalSharedTransitionScope provides this,
+                    LocalContainerShapes provides containerShapes,
+                ) {
+                    val screens = rememberTransition(seekState, label = "screen")
+                    screens.AnimatedContent(
                         transitionSpec = transitionSpec,
                         contentKey = { it.id },
                     ) { shown ->
-                        CompositionLocalProvider(LocalScreenAnimationScope provides this) {
-                            ScreenContent(shown, navigation, stores, parentOwner, navGraph)
+                        val visibility = transition
+                        // Settled unless this screen is arriving in front (back reveals it at once).
+                        val enterSettled = remember(shown) {
+                            derivedStateOf {
+                                val arrivingInFront = screens.targetState.id == shown.id &&
+                                    screens.currentState.id < shown.id
+                                !arrivingInFront || visibility.currentState == EnterExitState.Visible
+                            }
+                        }
+                        val other = if (shown.id == screens.targetState.id) {
+                            screens.currentState
+                        } else {
+                            screens.targetState
+                        }
+                        val behind = shown.id < other.id
+                        val covered by visibility.animateFloat(
+                            transitionSpec = { IvyMotion.recedeSpec() },
+                            label = "screen_recede",
+                        ) { state ->
+                            if (state == EnterExitState.Visible || !behind) 0f else 1f
+                        }
+                        CompositionLocalProvider(
+                            LocalScreenAnimationScope provides this,
+                            LocalScreenEnterSettled provides enterSettled,
+                        ) {
+                            Box(
+                                Modifier.applyPreviousScreenRecedeEffect(behind, covered),
+                            ) {
+                                ScreenContent(shown, navigation, stores, parentOwner, navGraph)
+                            }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+/**
+ * Scales and dims the older screen as the newer screen enters, following predictive back progress.
+ */
+private fun Modifier.applyPreviousScreenRecedeEffect(
+    behind: Boolean,
+    covered: Float,
+): Modifier {
+    if (!behind) return this
+    return graphicsLayer {
+        val scale = 1f - (1f - IvyMotion.RecededScale) * covered
+        scaleX = scale
+        scaleY = scale
+    }.drawWithContent {
+        drawContent()
+        drawRect(Color.Black, alpha = IvyMotion.RecededDim * covered)
     }
 }
 
@@ -163,6 +230,17 @@ private fun PredictiveBack(
         }
     }
 }
+
+@SuppressLint("ComposeCompositionLocalUsage")
+private val LocalScreenEnterSettled = staticCompositionLocalOf<State<Boolean>?> { null }
+
+/**
+ * False while the screen is still sliding or growing in front of the previous one; true once it
+ * has landed (and always when it is revealed by back, in previews and in tests). Use it to defer
+ * heavy content, e.g. a long list, so the transition's frames stay cheap.
+ */
+@Composable
+fun screenEnterSettled(): Boolean = LocalScreenEnterSettled.current?.value ?: true
 
 @Composable
 fun navigation(): Navigation {

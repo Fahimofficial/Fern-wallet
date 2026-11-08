@@ -76,7 +76,7 @@ private fun BoxWithConstraintsScope.UI(
     AnimatedContent(
         targetState = onboardingState,
         transitionSpec = {
-            IvyMotion.screenTransform(forward = targetState.ordinal >= initialState.ordinal)
+            IvyMotion.sharedAxisX(forward = targetState.ordinal >= initialState.ordinal)
         },
         // Splash and login are one screen with its own internal animation.
         contentKey = { if (it == OnboardingState.LOGIN) OnboardingState.SPLASH else it },

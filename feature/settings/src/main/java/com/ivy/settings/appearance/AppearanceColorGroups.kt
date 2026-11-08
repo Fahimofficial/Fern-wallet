@@ -1,5 +1,7 @@
 package com.ivy.settings.appearance
 
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -85,7 +87,11 @@ internal fun GroupSection(
             GroupColorDots(tokens.take(MaxGroupDots).map { palette[it] })
             Spacer(Modifier.width(14.dp))
             GroupTitle(group, customised, palette[ColorToken.Accent], Modifier.weight(1f))
-            if (customised > 0) {
+            AnimatedVisibility(
+                visible = customised > 0,
+                enter = fadeIn(IvyMotion.standard(IvyMotion.Duration.Medium)),
+                exit = fadeOut(IvyMotion.standard(IvyMotion.Duration.Short)),
+            ) {
                 TextButton(onClick = onReset) {
                     Text(stringResource(R.string.appearance_reset_group))
                 }

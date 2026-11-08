@@ -1,5 +1,8 @@
 package com.ivy.settings.appearance
 
+import android.content.Context
+import com.ivy.domain.features.Features
+import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.lifecycle.ViewModel
 import com.ivy.base.di.AppCoroutineScope
 import com.ivy.base.legacy.Theme
@@ -15,6 +18,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Edits the app-wide appearance. Changes go to [IvyWalletCtx] first, so every screen (and the
@@ -27,6 +35,8 @@ class AppearanceViewModel @Inject constructor(
     private val settingsAct: SettingsAct,
     private val updateSettingsAct: UpdateSettingsAct,
     @AppCoroutineScope private val applicationScope: CoroutineScope,
+    private val features: Features,
+    @ApplicationContext private val appContext: Context,
 ) : ViewModel() {
     private val saveLock = Mutex()
 
@@ -34,12 +44,31 @@ class AppearanceViewModel @Inject constructor(
     val appearance: AppearanceSettings get() = ivyContext.appearance
     val theme: Theme get() = ivyContext.theme
 
+    /** null until the first change on this screen; then whether a save is still running. */
+    var saving: Boolean? by mutableStateOf(null)
+        private set
+    private var pendingSaves = 0
+
     fun update(transform: (AppearanceSettings) -> AppearanceSettings) {
         ivyContext.appearance = transform(ivyContext.appearance)
+        pendingSaves++
+        saving = true
         applicationScope.launch {
             // Encodes inside the lock, so the last write always holds the latest choice.
             saveLock.withLock { appearanceDataSource.set(ivyContext.appearance.encode()) }
+            withContext(Dispatchers.Main) {
+                pendingSaves--
+                if (pendingSaves == 0) saving = false
+            }
         }
+    }
+
+    /**
+     * "Use account colours on transactions": the existing feature flag, so Settings > Features
+     * and this switch stay one setting. The app root collects it; every list updates at once.
+     */
+    fun setAccountColorsInTransactions(enabled: Boolean) {
+        applicationScope.launch { features.showAccountColorsInTransactions.set(appContext, enabled) }
     }
 
     fun setTheme(theme: Theme) {

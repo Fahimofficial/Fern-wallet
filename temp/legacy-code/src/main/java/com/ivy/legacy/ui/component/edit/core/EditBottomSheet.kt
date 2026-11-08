@@ -1,5 +1,19 @@
 package com.ivy.wallet.ui.edit.core
 
+import com.ivy.legacy.ui.component.account.AccountMark
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.get
+import com.ivy.design.system.motion.IvyHaptics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -54,7 +68,6 @@ import com.ivy.legacy.utils.format
 import com.ivy.legacy.utils.hideKeyboard
 import com.ivy.legacy.utils.lerp
 import com.ivy.legacy.utils.onScreenStart
-import com.ivy.design.utils.thenIf
 import com.ivy.base.model.TransactionType
 import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.ui.R
@@ -68,7 +81,6 @@ import com.ivy.wallet.ui.theme.IvyDark
 import com.ivy.wallet.ui.theme.components.ActionsRow
 import com.ivy.wallet.ui.theme.components.BalanceRow
 import com.ivy.wallet.ui.theme.components.CircleButton
-import com.ivy.wallet.ui.theme.components.ItemIconSDefaultIcon
 import com.ivy.wallet.ui.theme.components.IvyButton
 import com.ivy.wallet.ui.theme.components.IvyIcon
 import com.ivy.wallet.ui.theme.findContrastTextColor
@@ -182,6 +194,7 @@ fun BoxWithConstraintsScope.EditBottomSheet(
     modifier: Modifier = Modifier, // Modifier comes after other parameters
     convertedAmount: Double? = null,
     convertedAmountCurrencyCode: String? = null,
+    onSwapAccounts: () -> Unit = {},
 ) {
     val rootView = LocalView.current
     var keyboardShown by remember { mutableStateOf(false) }
@@ -211,8 +224,10 @@ fun BoxWithConstraintsScope.EditBottomSheet(
     val percentExpanded = expansion.progress
     val percentCollapsed = 1f - percentExpanded
 
+    // Only a real conversion earns a second line; the same currency would just repeat the amount.
+    val converted = convertedAmountCurrencyCode != null && convertedAmountCurrencyCode != currency
     val showConvertedAmountText by remember(convertedAmount) {
-        if (type == TransactionType.TRANSFER && convertedAmount != null && convertedAmountCurrencyCode != null) {
+        if (type == TransactionType.TRANSFER && convertedAmount != null && converted) {
             mutableStateOf(
                 "${
                     convertedAmount.format(
@@ -262,6 +277,14 @@ fun BoxWithConstraintsScope.EditBottomSheet(
             )
             .consumeClicks(rememberInteractionSource())
     ) {
+        AccountSheetDragHandle(
+            expanded = expanded,
+            onToggle = {
+                hideKeyboard(rootView)
+                internalExpanded = !expanded
+            },
+        )
+
         // Accounts label
         val label = when (type) {
             TransactionType.INCOME -> stringResource(R.string.add_money_to)
@@ -279,7 +302,8 @@ fun BoxWithConstraintsScope.EditBottomSheet(
             toAccount = toAccount,
             onSelectedAccountChanged = onSelectedAccountChanged,
             onToAccountChanged = onToAccountChanged,
-            onAddNewAccount = onAddNewAccount
+            onAddNewAccount = onAddNewAccount,
+            onSwapAccounts = onSwapAccounts,
         )
 
         val spacerAboveAmount = lerp(40, 16, percentCollapsed)
@@ -519,6 +543,7 @@ private fun SheetHeader(
     onSelectedAccountChanged: (Account) -> Unit,
     onToAccountChanged: (Account) -> Unit,
     onAddNewAccount: () -> Unit,
+    onSwapAccounts: () -> Unit,
 ) {
     if (percentExpanded > 0.01f) {
         Column(
@@ -560,16 +585,32 @@ private fun SheetHeader(
             )
 
             if (type == TransactionType.TRANSFER) {
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(4.dp))
 
-                Text(
-                    modifier = Modifier.padding(start = 32.dp),
-                    text = stringResource(R.string.to),
-                    style = UI.typo.b1.style(
-                        color = UI.colors.pureInverse,
-                        fontWeight = FontWeight.ExtraBold
+                Row(
+                    modifier = Modifier.padding(start = 20.dp, end = 24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TransferAccountSwapControl(
+                        enabled = selectedAccount != null && toAccount != null,
+                        onSwap = onSwapAccounts,
                     )
-                )
+                    Spacer(Modifier.width(4.dp))
+                    // With From chosen and To still empty, To is the next step: say so in the accent.
+                    val toPending = selectedAccount != null && toAccount == null
+                    val toColor by animateColorAsState(
+                        targetValue = if (toPending) FernTheme.palette[ColorToken.Accent] else UI.colors.pureInverse,
+                        animationSpec = IvyMotion.standard(IvyMotion.Duration.Medium),
+                        label = "to_label",
+                    )
+                    Text(
+                        text = stringResource(R.string.to),
+                        style = UI.typo.b1.style(
+                            color = toColor,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    )
+                }
 
                 Spacer(Modifier.height(8.dp))
 
@@ -644,6 +685,10 @@ private fun AccountsRow(
     }
 }
 
+/**
+ * One selected style everywhere: the account's colour fills the chip and a check replaces the
+ * icon, so selection doesn't rely on colour alone. Colours cross-fade when the choice changes.
+ */
 @Composable
 private fun Account(
     account: Account,
@@ -652,33 +697,39 @@ private fun Account(
     onClick: () -> Unit
 ) {
     val accountColor = account.color.toComposeColor()
-    val textColor =
-        if (selected) findContrastTextColor(accountColor) else UI.colors.pureInverse
-
-    val medium = UI.colors.medium
-    val rFull = UI.shapes.rFull
+    val spec = IvyMotion.standard<Color>(IvyMotion.Duration.Medium)
+    val fill by animateColorAsState(if (selected) accountColor else Color.Transparent, spec, label = "chip_fill")
+    val border by animateColorAsState(if (selected) accountColor else UI.colors.medium, spec, label = "chip_border")
+    val textColor by animateColorAsState(
+        if (selected) findContrastTextColor(accountColor) else UI.colors.pureInverse,
+        spec,
+        label = "chip_text",
+    )
 
     Row(
         modifier = Modifier
             .clip(UI.shapes.rFull)
-            .thenIf(!selected) {
-                border(2.dp, medium, rFull)
-            }
-            .thenIf(selected) {
-                background(accountColor, rFull)
-            }
-            .clickable(onClick = onClick)
+            .border(2.dp, border, UI.shapes.rFull)
+            .background(fill, UI.shapes.rFull)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .testTag(testTag)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(Modifier.width(12.dp))
 
-        ItemIconSDefaultIcon(
-            iconName = account.icon,
-            defaultIcon = R.drawable.ic_custom_account_s,
-            tint = textColor
-        )
+        if (selected) {
+            IvyIcon(icon = R.drawable.ic_check, tint = textColor)
+        } else {
+            AccountMark(
+                appearance = account.appearance,
+                name = account.name,
+                color = accountColor,
+                iconName = account.icon,
+                defaultIcon = R.drawable.ic_custom_account_s,
+                tint = textColor,
+            )
+        }
 
         Spacer(Modifier.width(4.dp))
 
@@ -692,6 +743,55 @@ private fun Account(
         )
 
         Spacer(Modifier.width(24.dp))
+    }
+}
+
+/** Lets users drag the sheet or activate it to show and hide the accounts. */
+@Composable
+private fun AccountSheetDragHandle(expanded: Boolean, onToggle: () -> Unit) {
+    val label = stringResource(if (expanded) R.string.collapse else R.string.expand)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(24.dp)
+            .clickableNoIndication(rememberInteractionSource(), role = Role.Button) { onToggle() }
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier
+                .size(width = 32.dp, height = 4.dp)
+                .background(UI.colors.gray.copy(alpha = HandleAlpha), UI.shapes.rFull)
+        )
+    }
+}
+
+private const val HandleAlpha = 0.5f
+
+/** Shows the transfer direction and rotates when the accounts are swapped. */
+@Composable
+private fun TransferAccountSwapControl(enabled: Boolean, onSwap: () -> Unit) {
+    var turns by remember { mutableIntStateOf(0) }
+    val rotation by animateFloatAsState(
+        targetValue = 90f + turns * 180f,
+        animationSpec = IvyMotion.Springs.bouncy(),
+        label = "swap_rotation",
+    )
+    val view = LocalView.current
+    IconButton(
+        enabled = enabled,
+        onClick = {
+            turns++
+            IvyHaptics.tick(view)
+            onSwap()
+        },
+    ) {
+        IvyIcon(
+            modifier = Modifier.graphicsLayer { rotationZ = rotation },
+            icon = R.drawable.ic_arrow_right,
+            tint = if (enabled) UI.colors.pureInverse else UI.colors.gray,
+            contentDescription = stringResource(R.string.swap_accounts),
+        )
     }
 }
 

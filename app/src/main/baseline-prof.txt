@@ -1,0 +1,38 @@
+# Hand-written baseline profile: the code on the path from launch to a scrolling Home list,
+# the add/edit transaction transition and the Quick-access menu. AGP compiles it into the APK and
+# profileinstaller (already pulled in by Compose) installs it, so these paths start AOT-compiled
+# instead of interpreted. Compose libraries ship their own profiles; this covers app code.
+#
+# Not generated on a device: when a Macrobenchmark / Baseline Profile Gradle plugin module is
+# added, replace this file with its output.
+
+# Startup: activity, theme, navigation host
+HSPLcom/ivy/wallet/RootActivity;->**(**)**
+HSPLcom/ivy/wallet/RootViewModel;->**(**)**
+HSPLcom/ivy/IvyNavGraphKt;->**(**)**
+HSPLcom/ivy/navigation/**;->**(**)**
+HSPLcom/ivy/design/l0_system/**;->**(**)**
+HSPLcom/ivy/design/api/**;->**(**)**
+HSPLcom/ivy/design/system/**;->**(**)**
+HSPLcom/ivy/legacy/IvyWalletCtx;->**(**)**
+
+# Home tab, header, list rows, bottom bar and Quick access
+HSPLcom/ivy/main/**;->**(**)**
+HSPLcom/ivy/home/**;->**(**)**
+HSPLcom/ivy/legacy/ui/component/transaction/**;->**(**)**
+HSPLcom/ivy/wallet/ui/theme/components/**;->**(**)**
+HSPLcom/ivy/wallet/ui/theme/wallet/**;->**(**)**
+HSPLcom/ivy/legacy/utils/**;->**(**)**
+
+# Data loaded for Home
+HSPLcom/ivy/data/repository/**;->**(**)**
+HSPLcom/ivy/wallet/domain/action/**;->**(**)**
+
+# Add/Edit transaction (the container transform target)
+HSPLcom/ivy/transaction/**;->**(**)**
+HSPLcom/ivy/wallet/ui/edit/**;->**(**)**
+
+Lcom/ivy/home/**;
+Lcom/ivy/main/**;
+Lcom/ivy/legacy/ui/component/transaction/**;
+Lcom/ivy/transaction/**;

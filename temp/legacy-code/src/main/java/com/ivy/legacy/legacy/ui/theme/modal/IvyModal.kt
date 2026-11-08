@@ -69,7 +69,6 @@ import com.ivy.legacy.utils.bottomInsetPadding
 import com.ivy.legacy.utils.consumeClicks
 import com.ivy.legacy.utils.densityScope
 import com.ivy.legacy.utils.hideKeyboard
-import com.ivy.navigation.Navigation
 import com.ivy.navigation.navigation
 import com.ivy.wallet.ui.theme.components.ActionsRow
 import com.ivy.wallet.ui.theme.components.CloseButton
@@ -353,39 +352,13 @@ fun AddModalBackHandling(
 ) {
     val latestAction by rememberUpdatedState(action)
     val nav = navigation()
-    DisposableEffect(visible) {
-        if (visible) {
-            val lastModalBackHandlingId = nav.lastModalBackHandlerId()
-
-            if (modalId != null && modalId != lastModalBackHandlingId) {
-                nav.modalBackHandling.add(
-                    Navigation.ModalBackHandler(
-                        id = modalId,
-                        onBackPressed = {
-                            if (visible) {
-                                latestAction()
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                    )
-                )
-            }
+    DisposableEffect(visible, modalId) {
+        val unregister = if (visible && modalId != null) {
+            nav.registerModalBack(modalId) { latestAction() }
+        } else {
+            null
         }
-
-        onDispose {
-            val lastModalBackHandlingId = nav.lastModalBackHandlerId()
-            if (modalId != null && lastModalBackHandlingId == modalId) {
-                removeLastBackHandlerSafe(nav)
-            }
-        }
-    }
-}
-
-private fun removeLastBackHandlerSafe(nav: Navigation) {
-    if (nav.modalBackHandling.isNotEmpty()) {
-        nav.modalBackHandling.pop()
+        onDispose { unregister?.invoke() }
     }
 }
 

@@ -1,5 +1,7 @@
 package com.ivy.legacy.datamodel
 
+import com.ivy.data.model.AccountAppearance
+import com.ivy.data.repository.mapper.withAppearance
 import androidx.compose.runtime.Immutable
 import arrow.core.Either
 import arrow.core.raise.either
@@ -26,6 +28,7 @@ data class Account(
     val orderNum: Double = 0.0,
     val includeInBalance: Boolean = true,
     val type: AccountType = AccountType.ASSET,
+    val appearance: AccountAppearance = AccountAppearance.Default,
 
     val isSynced: Boolean = false,
     val isDeleted: Boolean = false,
@@ -43,7 +46,7 @@ data class Account(
         isSynced = isSynced,
         isDeleted = isDeleted,
         id = id
-    )
+    ).withAppearance(appearance)
 
     @Suppress("DataClassFunctions")
     suspend fun toDomainAccount(
@@ -60,6 +63,7 @@ data class Account(
                 includeInBalance = includeInBalance,
                 orderNum = orderNum,
                 type = type,
+                appearance = appearance,
             )
         }
     }

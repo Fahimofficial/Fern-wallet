@@ -1,5 +1,7 @@
 package com.ivy.data.repository
 
+import com.ivy.data.media.AccountMediaFiles
+import com.ivy.data.repository.mapper.appearance
 import com.ivy.base.threading.DispatchersProvider
 import com.ivy.data.DataWriteEvent
 import com.ivy.data.db.dao.read.AccountDao
@@ -18,6 +20,7 @@ class AccountRepository @Inject constructor(
     private val writeAccountDao: WriteAccountDao,
     private val dispatchersProvider: DispatchersProvider,
     memoFactory: RepositoryMemoFactory,
+    private val mediaFiles: AccountMediaFiles,
 ) {
     private val memo = memoFactory.createMemo(
         getDataWriteSaveEvent = DataWriteEvent::SaveAccounts,
@@ -50,10 +53,15 @@ class AccountRepository @Inject constructor(
         }
     }
 
-    suspend fun save(value: Account): Unit = memo.save(value) {
-        writeAccountDao.save(
-            with(mapper) { it.toEntity() }
-        )
+    suspend fun save(value: Account) {
+        val replaced = mediaReplacedBy(value)
+        memo.save(value) {
+            writeAccountDao.save(
+                with(mapper) { it.toEntity() }
+            )
+        }
+        // After the write: a failed save must not lose the image the account still points at.
+        mediaFiles.delete(replaced)
     }
 
     suspend fun saveMany(values: List<Account>): Unit = memo.saveMany(values) {
@@ -62,11 +70,24 @@ class AccountRepository @Inject constructor(
         )
     }
 
-    suspend fun deleteById(id: AccountId): Unit = memo.deleteById(id) {
-        writeAccountDao.deleteById(id.value)
+    suspend fun deleteById(id: AccountId) {
+        val files = withContext(dispatchersProvider.io) { accountDao.findById(id.value)?.appearance()?.files }
+        memo.deleteById(id) {
+            writeAccountDao.deleteById(id.value)
+        }
+        mediaFiles.delete(files.orEmpty())
     }
 
-    suspend fun deleteAll(): Unit = memo.deleteAll(
-        deleteAllOperation = writeAccountDao::deleteAll
-    )
+    suspend fun deleteAll() {
+        memo.deleteAll(
+            deleteAllOperation = writeAccountDao::deleteAll
+        )
+        mediaFiles.deleteAll()
+    }
+
+    // Logo and background files the stored account uses that [value] no longer does.
+    private suspend fun mediaReplacedBy(value: Account): List<String> = withContext(dispatchersProvider.io) {
+        val before = accountDao.findById(value.id.value)?.appearance()?.files.orEmpty()
+        before - value.appearance.files.toSet()
+    }
 }

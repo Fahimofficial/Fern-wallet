@@ -37,5 +37,4 @@ data class TransactionsState(
     val skipAllModalVisible: Boolean,
     val deleteModal1Visible: Boolean,
     val choosePeriodModal: ChoosePeriodModalData?,
-    val showAccountColorsInTransactions: Boolean
 )

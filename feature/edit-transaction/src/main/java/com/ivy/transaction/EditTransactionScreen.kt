@@ -1,5 +1,29 @@
 package com.ivy.transaction
 
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.ivy.design.system.appearance.ColorToken
+import com.ivy.design.system.appearance.FernTheme
+import com.ivy.design.system.appearance.contentColor
+import com.ivy.design.system.appearance.get
+import com.ivy.design.system.motion.IvyHaptics
+import com.ivy.design.system.motion.IvyMotion
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.background
@@ -25,7 +49,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -150,6 +173,9 @@ fun BoxWithConstraintsScope.EditTransactionScreen(screen: EditTransactionScreen)
         onToAccountChange = {
             viewModel.onEvent(EditTransactionViewEvent.OnToAccountChanged(it))
         },
+        onSwapAccounts = {
+            viewModel.onEvent(EditTransactionViewEvent.SwapAccounts)
+        },
         onDueDateChange = {
             viewModel.onEvent(EditTransactionViewEvent.OnDueDateChanged(it))
         },
@@ -236,8 +262,8 @@ private fun BoxWithConstraintsScope.UI(
     loanData: EditTransactionDisplayLoan = EditTransactionDisplayLoan(),
     backgroundProcessing: Boolean = false,
     hasChanges: Boolean = false,
-
-    ) {
+    onSwapAccounts: () -> Unit = {},
+) {
     var chooseCategoryModalVisible by remember { mutableStateOf(false) }
     var tagModelVisible by remember { mutableStateOf(false) }
     var categoryModalData: CategoryModalData? by remember { mutableStateOf(null) }
@@ -281,7 +307,7 @@ private fun BoxWithConstraintsScope.UI(
         modifier = Modifier
             .fillMaxSize()
             // The opened transaction card grows into this screen.
-            .sharedContainer(screen.sharedKey, UI.shapes.r4)
+            .sharedContainer(screen.sharedKey, RectangleShape)
             // Opaque, so the screen covers what's behind while it grows out of the card.
             .background(UI.colors.pure)
             .statusBarsPadding()
@@ -349,15 +375,34 @@ private fun BoxWithConstraintsScope.UI(
 
         Spacer(Modifier.height(32.dp))
 
-        Category(category = category, onChooseCategory = {
-            chooseCategoryModalVisible = true
-        })
+        // Transfers rarely have a category or tags: keep them under "More" until one is set.
+        var moreOpen by rememberSaveable { mutableStateOf(false) }
+        val showDetails = transactionType != TransactionType.TRANSFER || moreOpen ||
+            category != null || transactionAssociatedTags.isNotEmpty()
+        if (!showDetails) {
+            AddPrimaryAttributeButton(
+                icon = R.drawable.ic_expand_more,
+                text = stringResource(R.string.more_details),
+                onClick = { moreOpen = true },
+            )
+        }
+        AnimatedVisibility(
+            visible = showDetails,
+            enter = IvyMotion.expandSection(),
+            exit = IvyMotion.collapseSection(),
+        ) {
+            Column {
+                Category(category = category, onChooseCategory = {
+                    chooseCategoryModalVisible = true
+                })
 
-        Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
 
-        AddTagButton(transactionAssociatedTags = transactionAssociatedTags, onClick = {
-            tagModelVisible = true
-        })
+                AddTagButton(transactionAssociatedTags = transactionAssociatedTags, onClick = {
+                    tagModelVisible = true
+                })
+            }
+        }
 
         Spacer(Modifier.height(32.dp))
 
@@ -453,8 +498,45 @@ private fun BoxWithConstraintsScope.UI(
         convertedAmount = customExchangeRateState.convertedAmount,
         convertedAmountCurrencyCode = customExchangeRateState.toCurrencyCode,
 
+        onSwapAccounts = onSwapAccounts,
         ActionButton = {
-            if (screen.initialTransactionId != null) {
+            // shortcut: mirrors the ViewModel's validTransaction() so feedback matches; keep in sync.
+            val canSave = amount > 0.0 && (
+                transactionType != TransactionType.TRANSFER ||
+                    (account != null && toAccount != null && account.id != toAccount.id)
+                )
+            val view = LocalView.current
+            var saving by remember { mutableStateOf(false) }
+            // Save closes the screen; if it didn't (e.g. a ViewModel-side refusal), come back.
+            LaunchedEffect(saving) {
+                if (saving) {
+                    delay(SaveFeedbackTimeoutMillis)
+                    saving = false
+                }
+            }
+            val save = { close: Boolean ->
+                if (canSave) {
+                    IvyHaptics.success(view)
+                    if (close) saving = true
+                } else {
+                    IvyHaptics.error(view)
+                }
+                onSave(close)
+            }
+            AnimatedContent(
+                targetState = saving,
+                transitionSpec = {
+                    val enter = fadeIn(IvyMotion.standard(IvyMotion.Duration.Short)) +
+                        scaleIn(initialScale = SaveButtonScale)
+                    val exit = fadeOut(IvyMotion.standard(IvyMotion.Duration.Short)) +
+                        scaleOut(targetScale = SaveButtonScale)
+                    enter.togetherWith(exit)
+                },
+                label = "save_button",
+            ) { inProgress ->
+            if (inProgress) {
+                SavingIndicator()
+            } else if (screen.initialTransactionId != null) {
                 // Edit mode
                 if (dueDate != null) {
                     // due date stuff
@@ -481,14 +563,15 @@ private fun BoxWithConstraintsScope.UI(
                 } else {
                     // normal transaction
                     ModalSave {
-                        onSave(true)
+                        save(true)
                     }
                 }
             } else {
                 // create new mode
                 ModalAdd {
-                    onSave(true)
+                    save(true)
                 }
+            }
             }
         },
 
@@ -713,5 +796,27 @@ fun EditTransactionScreenUiTest(isDark: Boolean) {
     }
     IvyWalletPreview(theme) {
         Preview(isDark)
+    }
+}
+
+private const val SaveFeedbackTimeoutMillis = 1_500L
+private const val SaveButtonScale = 0.8f
+
+@Composable
+private fun SavingIndicator() {
+    val accent = FernTheme.palette[ColorToken.Accent]
+    val label = stringResource(R.string.saving)
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .background(accent, CircleShape)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(24.dp),
+            color = accent.contentColor(),
+            strokeWidth = 3.dp,
+        )
     }
 }
