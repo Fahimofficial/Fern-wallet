@@ -91,8 +91,8 @@ internal fun SupportDestinationLinkRow(
 @Composable
 internal fun PaymentOptionsSection(actions: SupportScreenActions) {
     Column {
-        SettingsSectionDivider(text = stringResource(R.string.support_payment_options))
-        Spacer(Modifier.height(16.dp))
+        SettingsSectionDivider(text = stringResource(R.string.support_payment_options), topSpacing = 16.dp)
+        Spacer(Modifier.height(8.dp))
 
         UpiCard(actions)
 

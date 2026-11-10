@@ -1072,10 +1072,11 @@ private fun CurrencyButton(
 @Composable
 internal fun SettingsSectionDivider(
     text: String,
-    color: Color = Gray
+    color: Color = Gray,
+    topSpacing: Dp = 32.dp,
 ) {
     Column {
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(topSpacing))
 
         Text(
             modifier = Modifier.padding(start = 32.dp),

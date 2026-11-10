@@ -16,6 +16,9 @@ First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
   and adds **More Ways to Pay** (`simplyfahim.pages.dev/pay-options`). Ko-fi and the personal
   Instagram, email and GitHub links are gone from the app; the contact page lists them.
 - The UPI buttons wrap their labels at large font sizes instead of cutting them off.
+- **Support My Work** fits on one screen on most phones: the title sits beside the back button,
+  the QR code shares a row with the UPI heading, and spacing is tighter. Nothing was removed, and
+  the screen still scrolls on small phones or with large fonts.
 
 ### Fixes, connected motion, account logos and backgrounds
 Root causes are in `PLAN.md`.
