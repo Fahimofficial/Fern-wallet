@@ -238,10 +238,10 @@ private fun RowScope.SupportPillButton(
                     modifier = Modifier.size(18.dp),
                 )
                 Spacer(Modifier.width(6.dp))
+                // Wraps instead of truncating, so large font sizes still show the whole label.
                 Text(
                     text = shownText,
                     style = UI.typo.c.style(color = content, fontWeight = FontWeight.Bold),
-                    maxLines = 1,
                 )
             }
         }
