@@ -266,7 +266,7 @@
     <string name="ivy_telegram">Community</string>
     <string name="help_center">Help center</string>
     <string name="roadmap">Roadmap</string>
-    <string name="report_bug">Report a bug</string>
+    <string name="report_bug">Report a Bug</string>
     <string name="request_a_feature">Request a feature</string>
     <string name="contact_support">Community support</string>
     <string name="project_contributors">Contributors</string>
@@ -513,14 +513,31 @@
     <string name="app_icon_mono">Mono</string>
     <string name="app_icon_graphite">Graphite</string>
     <string name="app_icon_midnight">Midnight</string>
+    <!-- Help & Support -->
+    <string name="help_support">Help &amp; Support</string>
+    <string name="help_support_entry_description">Community, bug reports, project links and optional support</string>
+    <string name="help_get_help">Get help</string>
+    <string name="help_telegram_community">Telegram Community</string>
+    <string name="help_telegram_community_description">Ask questions, share feedback and get help.</string>
+    <string name="help_report_bug_description">Report issues and request improvements.</string>
+    <string name="help_project">Project</string>
+    <string name="help_project_website">Project Website</string>
+    <string name="help_project_website_description">Explore project links, downloads and resources.</string>
+    <string name="help_support_development">Support development</string>
+    <string name="help_developer">Developer</string>
+    <string name="help_contact_developer">Contact Developer</string>
+    <string name="help_contact_developer_description">Website, email and personal social links.</string>
     <!-- Support -->
-    <string name="support_my_work">Support my work</string>
-    <string name="support_my_work_entry_description">Ko-fi, UPI and project links. Always optional.</string>
+    <string name="support_my_work">Support My Work</string>
+    <string name="support_my_work_entry_description">Optional contributions via UPI and other payment methods.</string>
     <string name="support_my_work_home_description">Help keep Fern Wallet maintained and improving</string>
     <string name="support_intro">Your support helps me maintain existing applications, improve features and continue developing independent open-source projects. Every contribution is voluntary and appreciated.</string>
     <string name="support_payment_options">Payment options</string>
-    <string name="support_kofi">Support on Ko-fi</string>
-    <string name="support_upi">Pay with UPI</string>
+    <string name="support_more_ways_to_pay">More Ways to Pay</string>
+    <string name="support_more_ways_to_pay_description">Explore additional payment options</string>
+    <string name="support_optional_note">Contributions are optional. Fern Wallet stays free, with every feature, whether or not you contribute.</string>
+    <string name="support_opens_in_another_app">Opens in another app</string>
+    <string name="support_upi">UPI</string>
     <string name="support_upi_scan_hint">Scan this code with any UPI app, or open one on this phone. You choose the amount.</string>
     <string name="support_upi_id_label">UPI ID</string>
     <string name="support_upi_payee">Payee: %1$s</string>
@@ -528,7 +545,7 @@
     <string name="support_upi_qr_description">UPI QR code for %1$s, payee %2$s</string>
     <string name="support_copy_upi_id">Copy UPI ID</string>
     <string name="support_upi_id_copied">Copied</string>
-    <string name="support_open_upi_app">Open UPI app</string>
+    <string name="support_open_upi_app">Pay with UPI</string>
     <string name="support_choose_upi_app">Pay with</string>
     <string name="support_no_upi_app">No UPI app found on this device. The UPI ID was copied, so you can pay from another UPI app or scan the QR code with another phone.</string>
     <string name="support_share_qr">Share QR</string>
@@ -537,21 +554,7 @@
     <string name="support_save_qr">Save QR</string>
     <string name="support_qr_saved">QR code saved</string>
     <string name="support_qr_save_failed">Couldn\'t save the QR code</string>
-    <string name="support_project_and_contact">Project and contact</string>
     <string name="support_project_info">Fern Wallet is a free, open-source money manager with no ads or trackers. It is licensed under GPL-3.0 and is based on Ivy Wallet.</string>
-    <string name="support_app_repository">Fern Wallet on GitHub</string>
-    <string name="support_website">Personal website</string>
-    <string name="support_github_profile">More projects on GitHub</string>
-    <string name="support_community">Community</string>
-    <string name="support_telegram_group_title">Fern Wallet on Telegram</string>
-    <string name="support_telegram_group_subtitle">Get updates, ask for help and share feedback with other users.</string>
-    <string name="support_telegram_group_cta">Join the group</string>
-    <string name="support_personal_contact">Personal contact</string>
-    <string name="support_instagram">Instagram</string>
-    <string name="support_email">Email</string>
-    <string name="support_personal_telegram">Telegram</string>
-    <string name="support_contact_description">%1$s: %2$s</string>
-    <string name="support_copy_action">Copy</string>
     <!-- Credit cards -->
     <string name="cc_credit_card">Credit card</string>
     <string name="cc_credit_cards">Credit cards</string>

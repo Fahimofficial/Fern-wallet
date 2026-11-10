@@ -515,7 +515,7 @@ private fun OpenSource() {
     }
 }
 
-// Opens the in-app Support screen, which holds the verified Ko-fi and UPI destinations.
+// Shortcut to the in-app Support My Work screen, the same one Settings → Help & Support opens.
 @Composable
 private fun SupportMyWork() {
     val nav = navigation()
@@ -655,10 +655,10 @@ private fun MonthlyTopCategoryInsightCard(topCategory: TopCategory) {
     }
 }
 
-/** Test tag of the Home menu's "Support my work" card. */
+/** Test tag of the Home menu's "Support My Work" card. */
 const val SupportCardTag = "home_support_card"
 
-// Same heart colour as the Ko-fi button on the Support screen.
+// Warm red that sets the donation card apart from the wallet actions around it.
 private val SupportHeart = Color(0xFFFF5E5B)
 
 @Composable

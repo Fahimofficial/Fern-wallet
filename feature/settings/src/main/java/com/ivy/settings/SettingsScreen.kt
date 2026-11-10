@@ -50,11 +50,11 @@ import com.ivy.navigation.AttributionsScreen
 import com.ivy.navigation.ContributorsScreen
 import com.ivy.navigation.ExchangeRatesScreen
 import com.ivy.navigation.FeaturesScreen
+import com.ivy.navigation.HelpSupportScreen
 import com.ivy.navigation.ImportScreen
 import com.ivy.navigation.Navigation
 import com.ivy.navigation.ReleasesScreen
 import com.ivy.navigation.AppearanceScreen
-import com.ivy.navigation.SupportScreen
 import com.ivy.navigation.navigation
 import com.ivy.navigation.screenScopedViewModel
 import com.ivy.ui.R
@@ -453,16 +453,6 @@ private fun BoxWithConstraintsScope.UI(
 
             Spacer(Modifier.height(12.dp))
 
-            ReportBug()
-
-            Spacer(Modifier.height(12.dp))
-
-            RequestFeature {
-                rootScreen.openUrlInBrowser(Constants.URL_GITHUB_NEW_ISSUE)
-            }
-
-            Spacer(Modifier.height(12.dp))
-
             Contributors(nav = nav)
 
             Spacer(Modifier.height(12.dp))
@@ -475,17 +465,17 @@ private fun BoxWithConstraintsScope.UI(
         }
 
         item {
-            SettingsSectionDivider(text = stringResource(R.string.support_my_work))
+            SettingsSectionDivider(text = stringResource(R.string.help_support))
 
             Spacer(Modifier.height(16.dp))
 
             SettingsDefaultButton(
-                icon = R.drawable.ic_vue_support_heart,
+                icon = R.drawable.ic_vue_messages_msg,
                 iconPadding = 6.dp,
-                text = stringResource(R.string.support_my_work),
-                description = stringResource(R.string.support_my_work_entry_description),
+                text = stringResource(R.string.help_support),
+                description = stringResource(R.string.help_support_entry_description),
             ) {
-                nav.navigateTo(SupportScreen)
+                nav.navigateTo(HelpSupportScreen)
             }
         }
 
@@ -652,30 +642,6 @@ private fun CustomFeatures(
                 fontWeight = FontWeight.Bold
             )
         )
-    }
-}
-
-@Composable
-private fun ReportBug() {
-    val rootScreen = rootScreen()
-    SettingsDefaultButton(
-        icon = R.drawable.ic_vue_dev_arrow,
-        text = stringResource(R.string.report_bug),
-        iconPadding = 10.dp,
-    ) {
-        rootScreen.openUrlInBrowser(Constants.URL_GITHUB_NEW_ISSUE)
-    }
-}
-
-@Composable
-private fun RequestFeature(
-    onClick: () -> Unit
-) {
-    SettingsDefaultButton(
-        icon = R.drawable.ic_custom_programming_m,
-        text = stringResource(R.string.request_a_feature),
-    ) {
-        onClick()
     }
 }
 
