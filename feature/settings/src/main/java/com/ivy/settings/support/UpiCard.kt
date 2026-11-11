@@ -73,7 +73,7 @@ private val QrTilePadding = 8.dp
 // Enlarged QR: the white tile is at most 420dp, and always fits the window with the Close button.
 private val EnlargedCardPadding = 20.dp
 private const val EnlargedWidthReservedDp = 80 // card padding and a margin on each side
-private const val EnlargedHeightReservedDp = 280 // card padding, gap, Close button and system bars
+private const val EnlargedHeightReservedDp = 380 // card padding, gaps, UPI ID and payee, Close button, system bars
 private const val EnlargedMinSideDp = 160
 private const val EnlargedMaxSideDp = 420
 
@@ -262,6 +262,9 @@ internal fun UpiQrEnlarged(onClose: () -> Unit) {
             imageSize = side - QrTilePadding * 2,
             modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = description },
         )
+        Spacer(Modifier.height(16.dp))
+        // So the payer can check who they are paying while scanning.
+        UpiIdentityDetails()
         Spacer(Modifier.height(16.dp))
         Row {
             SupportPillButton(

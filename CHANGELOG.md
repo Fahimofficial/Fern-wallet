@@ -20,7 +20,8 @@ First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
   border; **More Ways to Pay** gets an outlined accent border of its own. They follow the accent
   colour you pick in Appearance.
 - **Tap the QR code** on Support My Work to see it enlarged (up to 420dp) with a **Close** button
-  below it. Back and tapping outside also close it. Save, Share and Copy are unchanged.
+  below it, plus the UPI ID and payee name so you can check who you are paying. Back and tapping
+  outside also close it. Save, Share and Copy are unchanged.
 - **Support My Work** fits on one screen on most phones: the title sits beside the back button,
   the QR code shares a row with the UPI heading, and spacing is tighter. Nothing was removed, and
   the screen still scrolls on small phones or with large fonts.
