@@ -2,6 +2,7 @@ package com.ivy.settings.support
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,8 +31,21 @@ import androidx.compose.ui.unit.sp
 import com.ivy.base.links.SupportDestinations
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
+import com.ivy.design.system.appearance.readableOn
+import com.ivy.design.utils.thenIf
 import com.ivy.settings.SettingsSectionDivider
 import com.ivy.ui.R
+
+/** How much a link row stands out from the plain rows around it. */
+internal enum class LinkEmphasis {
+    None,
+
+    /** Accent-tinted fill and accent border. */
+    Filled,
+
+    /** Accent border on the normal row colour: visibly different from [Filled]. */
+    Outlined,
+}
 
 /**
  * A Settings-style link row: same shape, colours and spacing as the rows in Settings.
@@ -44,13 +59,29 @@ internal fun SupportDestinationLinkRow(
     external: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    emphasis: LinkEmphasis = LinkEmphasis.None,
 ) {
+    // The user's accent, nudged just enough to stay 3:1 against the row in light and dark themes.
+    val accent = UI.colors.primary.readableOn(UI.colors.medium, minContrast = 3f)
+    val container = if (emphasis == LinkEmphasis.Filled) {
+        accent.copy(alpha = 0.14f).compositeOver(UI.colors.medium)
+    } else {
+        UI.colors.medium
+    }
+    val emphasised = emphasis != LinkEmphasis.None
+    val descriptionColor = if (emphasis == LinkEmphasis.Filled) {
+        UI.colors.pureInverse.copy(alpha = 0.72f)
+    } else {
+        UI.colors.gray
+    }
+    val shape = UI.shapes.r4
     Row(
         modifier = modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
-            .clip(UI.shapes.r4)
-            .background(UI.colors.medium, UI.shapes.r4)
+            .clip(shape)
+            .background(container, shape)
+            .thenIf(emphasised) { border(2.dp, accent, shape) }
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -58,7 +89,7 @@ internal fun SupportDestinationLinkRow(
         Icon(
             painter = painterResource(icon),
             contentDescription = null,
-            tint = UI.colors.pureInverse,
+            tint = if (emphasised) accent else UI.colors.pureInverse,
             modifier = Modifier.size(28.dp),
         )
         Spacer(Modifier.width(16.dp))
@@ -69,7 +100,8 @@ internal fun SupportDestinationLinkRow(
             )
             Text(
                 text = description,
-                style = UI.typo.nB2.style(color = UI.colors.gray, fontWeight = FontWeight.Normal)
+                // Grey on the accent tint is too faint, so filled rows use a softened main text colour.
+                style = UI.typo.nB2.style(color = descriptionColor, fontWeight = FontWeight.Normal)
                     .copy(fontSize = 14.sp),
             )
         }
@@ -82,7 +114,7 @@ internal fun SupportDestinationLinkRow(
             },
             // Read with the row, so screen-reader users know the link leaves the app.
             contentDescription = if (external) stringResource(R.string.support_opens_in_another_app) else null,
-            tint = UI.colors.gray,
+            tint = if (emphasised) accent else UI.colors.gray,
             modifier = Modifier.size(20.dp),
         )
     }
@@ -104,6 +136,7 @@ internal fun PaymentOptionsSection(actions: SupportScreenActions) {
             description = stringResource(R.string.support_more_ways_to_pay_description),
             external = true,
             onClick = { actions.onOpenUrl(SupportDestinations.MORE_WAYS_TO_PAY) },
+            emphasis = LinkEmphasis.Outlined,
         )
     }
 }

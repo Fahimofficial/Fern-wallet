@@ -537,6 +537,7 @@
     <string name="support_more_ways_to_pay_description">Explore additional payment options</string>
     <string name="support_optional_note">Contributions are optional. Fern Wallet stays free, with every feature, whether or not you contribute.</string>
     <string name="support_opens_in_another_app">Opens in another app</string>
+    <string name="support_enlarge_qr">Enlarge QR code</string>
     <string name="support_upi">UPI</string>
     <string name="support_upi_scan_hint">Scan this code with any UPI app, or open one on this phone. You choose the amount.</string>
     <string name="support_upi_id_label">UPI ID</string>
