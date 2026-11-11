@@ -536,6 +536,9 @@
     <string name="support_more_ways_to_pay">More Ways to Pay</string>
     <string name="support_more_ways_to_pay_description">Explore additional payment options</string>
     <string name="support_optional_note">Contributions are optional. Fern Wallet stays free, with every feature, whether or not you contribute.</string>
+    <string name="home_help_card_description">Community, bug reports and project links</string>
+    <string name="home_support_card_description">Help keep Fern Wallet improving</string>
+    <string name="home_card_dismiss">Dismiss %1$s</string>
     <string name="support_opens_in_another_app">Opens in another app</string>
     <string name="support_enlarge_qr">Enlarge QR code</string>
     <string name="support_upi">UPI</string>
@@ -906,6 +909,9 @@
     <string name="account_background_replace_image">Replace image</string>
     <string name="account_background_dim">Dim (keeps text readable)</string>
     <string name="appearance_transactions">Transactions</string>
+    <string name="appearance_home_menu">Home menu</string>
+    <string name="appearance_support_card">Show Support My Work card</string>
+    <string name="appearance_support_card_description">Keeps a Support My Work shortcut in the Home menu. The one-time Help &amp; Support and Support My Work cards shown after an install or update are not affected.</string>
     <string name="appearance_account_colors">Use account colours on transactions</string>
     <string name="appearance_account_colors_description">Fill each transaction\'s account chip with the account\'s colour and logo; transfers blend from one account to the other.</string>
     <string name="appearance_preview_account">Wallet</string>

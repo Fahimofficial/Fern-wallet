@@ -39,6 +39,12 @@ sealed interface HomeEvent {
     /** The savings-goal celebration played: don't play it again for this goal amount. */
     data object SavingsGoalCelebrated : HomeEvent
 
+    /** The one-time Help & Support card was dismissed: hidden until the next install or update. */
+    data object DismissHelpCard : HomeEvent
+
+    /** The one-time Support My Work card was dismissed: hidden until the next install or update. */
+    data object DismissSupportCard : HomeEvent
+
     /** The tab is shown again after another tab: reload its data. */
     data object Refresh : HomeEvent
 }

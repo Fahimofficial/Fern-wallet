@@ -13,6 +13,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.ivy.base.legacy.Theme
 import com.ivy.base.legacy.appContext
 import com.ivy.data.datasource.AppearanceDataSource
+import com.ivy.data.datasource.SupportCardsDataSource
+import com.ivy.data.datasource.SupportCardsPrefs
 import com.ivy.design.system.appearance.AppearancePreset
 import com.ivy.design.system.appearance.AppearanceSettings
 import com.ivy.design.system.appearance.ColorToken
@@ -31,6 +33,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -59,6 +62,14 @@ class AppearanceViewModelTest {
     private val updateSettingsAct = mockk<UpdateSettingsAct>(relaxed = true)
     private val accountColorsFlag = mockk<BoolFeature>(relaxed = true)
     private val features = mockk<Features> { every { showAccountColorsInTransactions } returns accountColorsFlag }
+
+    /** Defaults of a fresh install; [SupportCardsPrefs] itself has none. */
+    private fun prefs(permanentSupportCard: Boolean = true) = SupportCardsPrefs(permanentSupportCard, null, null)
+
+    private val supportCardsPrefs = MutableStateFlow(prefs())
+    private val supportCards = mockk<SupportCardsDataSource>(relaxed = true) {
+        every { prefs } returns supportCardsPrefs
+    }
     private val mainDispatcher = UnconfinedTestDispatcher()
     private lateinit var applicationScope: CoroutineScope
     private lateinit var viewModel: AppearanceViewModel
@@ -75,6 +86,7 @@ class AppearanceViewModelTest {
             applicationScope,
             features,
             mockk(relaxed = true),
+            supportCards,
         )
     }
 
@@ -112,6 +124,7 @@ class AppearanceViewModelTest {
                         applicationScope,
                         features,
                         mockk(relaxed = true),
+                        supportCards,
                     )
                 }
             },
@@ -122,6 +135,27 @@ class AppearanceViewModelTest {
         testScheduler.advanceUntilIdle()
 
         decodeAppearance(stored).preset shouldBe AppearancePreset.Midnight
+    }
+
+    @Test
+    fun `the support card switch follows the stored value`() {
+        viewModel.showSupportCard shouldBe true
+
+        supportCardsPrefs.value = prefs(permanentSupportCard = false)
+        viewModel.showSupportCard shouldBe false
+
+        supportCardsPrefs.value = prefs(permanentSupportCard = true)
+        viewModel.showSupportCard shouldBe true
+    }
+
+    @Test
+    fun `turning the support card off only changes the permanent card`() {
+        viewModel.setSupportCardEnabled(false)
+
+        coVerify { supportCards.setPermanentSupportCard(false) }
+        // The one-time cards shown after an install or update are not touched.
+        coVerify(exactly = 0) { supportCards.dismissHelpCard(any()) }
+        coVerify(exactly = 0) { supportCards.dismissSupportCard(any()) }
     }
 
     @Test

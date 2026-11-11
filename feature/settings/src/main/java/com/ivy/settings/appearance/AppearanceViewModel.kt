@@ -4,9 +4,11 @@ import android.content.Context
 import com.ivy.domain.features.Features
 import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.ivy.base.di.AppCoroutineScope
 import com.ivy.base.legacy.Theme
 import com.ivy.data.datasource.AppearanceDataSource
+import com.ivy.data.datasource.SupportCardsDataSource
 import com.ivy.design.system.appearance.AppearanceSettings
 import com.ivy.design.system.appearance.encode
 import com.ivy.legacy.IvyWalletCtx
@@ -37,6 +39,7 @@ class AppearanceViewModel @Inject constructor(
     @AppCoroutineScope private val applicationScope: CoroutineScope,
     private val features: Features,
     @ApplicationContext private val appContext: Context,
+    private val supportCardsDataSource: SupportCardsDataSource,
 ) : ViewModel() {
     private val saveLock = Mutex()
 
@@ -48,6 +51,17 @@ class AppearanceViewModel @Inject constructor(
     var saving: Boolean? by mutableStateOf(null)
         private set
     private var pendingSaves = 0
+
+    /**
+     * "Show Support My Work card": the permanent card in the Home menu. Follows the stored value;
+     * it doesn't touch the one-time cards shown after an install or update.
+     */
+    var showSupportCard: Boolean by mutableStateOf(true)
+        private set
+
+    init {
+        viewModelScope.launch { supportCardsDataSource.prefs.collect { showSupportCard = it.permanentSupportCard } }
+    }
 
     fun update(transform: (AppearanceSettings) -> AppearanceSettings) {
         ivyContext.appearance = transform(ivyContext.appearance)
@@ -69,6 +83,10 @@ class AppearanceViewModel @Inject constructor(
      */
     fun setAccountColorsInTransactions(enabled: Boolean) {
         applicationScope.launch { features.showAccountColorsInTransactions.set(appContext, enabled) }
+    }
+
+    fun setSupportCardEnabled(enabled: Boolean) {
+        applicationScope.launch { supportCardsDataSource.setPermanentSupportCard(enabled) }
     }
 
     fun setTheme(theme: Theme) {

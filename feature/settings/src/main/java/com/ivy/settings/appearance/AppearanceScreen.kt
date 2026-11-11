@@ -40,6 +40,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,6 +81,7 @@ internal class AppearanceActions(
     val onUpdate: ((AppearanceSettings) -> AppearanceSettings) -> Unit,
     val onOpenCategories: () -> Unit,
     val onAccountColors: (Boolean) -> Unit = {},
+    val onSupportCard: (Boolean) -> Unit = {},
 )
 
 /** Settings > Appearance: theme mode, presets and every customisable colour, grouped. */
@@ -92,6 +94,7 @@ fun AppearanceScreenImpl() {
         theme = viewModel.theme,
         palette = FernTheme.palette,
         saving = viewModel.saving,
+        supportCard = viewModel.showSupportCard,
         actions = remember(viewModel, nav) {
             AppearanceActions(
                 onBack = { nav.onBackPressed() },
@@ -99,6 +102,7 @@ fun AppearanceScreenImpl() {
                 onUpdate = viewModel::update,
                 onOpenCategories = { nav.navigateTo(CategoriesScreen) },
                 onAccountColors = viewModel::setAccountColorsInTransactions,
+                onSupportCard = viewModel::setSupportCardEnabled,
             )
         },
     )
@@ -111,6 +115,7 @@ private fun AppearanceUi(
     palette: FernPalette,
     actions: AppearanceActions,
     saving: Boolean? = null,
+    supportCard: Boolean = true,
 ) {
     // The colours being edited are those of the theme on screen now.
     val dark = !palette.isLight
@@ -146,7 +151,22 @@ private fun AppearanceUi(
         EditingThemeHint(dark)
 
         SectionTitle(R.string.appearance_transactions)
-        TransactionAccountColorsSwitch(accountColors, actions.onAccountColors)
+        AppearanceSwitch(
+            title = R.string.appearance_account_colors,
+            description = R.string.appearance_account_colors_description,
+            checked = accountColors,
+            testTag = "appearance_account_colors",
+            onChange = actions.onAccountColors,
+        )
+
+        SectionTitle(R.string.appearance_home_menu)
+        AppearanceSwitch(
+            title = R.string.appearance_support_card,
+            description = R.string.appearance_support_card_description,
+            checked = supportCard,
+            testTag = "appearance_support_card",
+            onChange = actions.onSupportCard,
+        )
 
         ColorGroup.entries.forEach { group ->
             GroupSection(
@@ -306,9 +326,15 @@ private fun LocalAppearanceSaveStatusIndicator(saving: Boolean?) {
     }
 }
 
-/** Toggles account-specific colours in transaction rows. */
+/** A row that is one switch: tap anywhere on it to turn the setting on or off. */
 @Composable
-private fun TransactionAccountColorsSwitch(checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun AppearanceSwitch(
+    @StringRes title: Int,
+    @StringRes description: Int,
+    checked: Boolean,
+    testTag: String,
+    onChange: (Boolean) -> Unit,
+) {
     val view = LocalView.current
     Row(
         modifier = Modifier
@@ -321,17 +347,17 @@ private fun TransactionAccountColorsSwitch(checked: Boolean, onChange: (Boolean)
                 onChange(it)
             }
             .padding(horizontal = 20.dp, vertical = 14.dp)
-            .testTag("appearance_account_colors"),
+            .testTag(testTag),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
             Text(
-                text = stringResource(R.string.appearance_account_colors),
+                text = stringResource(title),
                 style = UI.typo.b2.style(fontWeight = FontWeight.Bold),
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = stringResource(R.string.appearance_account_colors_description),
+                text = stringResource(description),
                 style = UI.typo.c.style(color = UI.colors.gray, fontWeight = FontWeight.Medium),
             )
         }

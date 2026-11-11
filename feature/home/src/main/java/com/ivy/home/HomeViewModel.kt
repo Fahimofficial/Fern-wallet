@@ -1,5 +1,6 @@
 package com.ivy.home
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -56,6 +57,7 @@ import com.ivy.wallet.domain.deprecated.logic.PlannedPaymentsLogic
 import com.ivy.wallet.domain.pure.data.ClosedTimeRange
 import com.ivy.wallet.domain.pure.data.IncomeExpensePair
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -64,6 +66,8 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import javax.inject.Inject
 import com.ivy.data.DataObserver
+import com.ivy.data.datasource.SupportCardsDataSource
+import com.ivy.data.datasource.SupportCardsPrefs
 import com.ivy.base.legacy.SharedPrefs
 import com.ivy.base.legacy.refreshWidget
 import com.ivy.data.model.TransactionId
@@ -104,7 +108,15 @@ class HomeViewModel @Inject constructor(
     private val transactionRepo: TransactionRepository,
     private val undoController: UndoController,
     private val sharedPrefs: SharedPrefs,
+    private val supportCardsDataSource: SupportCardsDataSource,
+    @ApplicationContext appContext: Context,
 ) : ComposeViewModel<HomeState, HomeEvent>() {
+    // When the app was last installed or updated. The one-time cards come back whenever it changes,
+    // which a version code can't promise: test builds and re-installs keep the same one.
+    @Suppress("DEPRECATION") // the Flags overload needs API 33; this works on every supported version
+    private val installStamp = appContext.packageManager
+        .getPackageInfo(appContext.packageName, 0).lastUpdateTime
+
     init {
         // e.g. a deleted transaction restored by Undo while Home is already showing.
         viewModelScope.launch {
@@ -154,6 +166,13 @@ class HomeViewModel @Inject constructor(
     private var expanded by mutableStateOf(true)
     private var celebrateSavingsGoal by mutableStateOf(false)
 
+    /** null until the stored values are read, so a dismissed card never flashes in. */
+    private var supportCardsPrefs by mutableStateOf<SupportCardsPrefs?>(null)
+
+    init {
+        viewModelScope.launch { supportCardsDataSource.prefs.collect { supportCardsPrefs = it } }
+    }
+
     @Composable
     override fun uiState(): HomeState {
         LaunchedEffect(Unit) {
@@ -176,6 +195,7 @@ class HomeViewModel @Inject constructor(
             expanded = getExpanded(),
             hideIncome = getHideIncome(),
             celebrateSavingsGoal = celebrateSavingsGoal,
+            supportCards = supportCardsUi(supportCardsPrefs, installStamp),
         )
     }
 
@@ -274,6 +294,8 @@ class HomeViewModel @Inject constructor(
                 is HomeEvent.DeleteTransaction -> deleteTransaction(event.transaction)
                 HomeEvent.ToggleHideBalance -> toggleHideBalance()
                 HomeEvent.SavingsGoalCelebrated -> savingsGoalCelebrated()
+                HomeEvent.DismissHelpCard -> supportCardsDataSource.dismissHelpCard(installStamp)
+                HomeEvent.DismissSupportCard -> supportCardsDataSource.dismissSupportCard(installStamp)
             }
         }
     }
