@@ -140,7 +140,10 @@ data object AttributionsScreen : Screen
 
 data object ContributorsScreen : Screen
 
-/** "Support my work": Ko-fi, UPI (with an on-device QR code) and project links. */
+/** Help & Support: community, bug reports, project website, Support My Work and developer contact. */
+data object HelpSupportScreen : Screen
+
+/** "Support My Work": UPI (with an on-device QR code) and a link to more ways to pay. */
 data object SupportScreen : Screen
 
 data object AppearanceScreen : Screen

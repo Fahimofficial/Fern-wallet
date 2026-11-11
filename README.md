@@ -43,7 +43,7 @@ Accounts, budgets, credit cards and reports. No ads, no account, your data stays
   <br><br>
   <img src="docs/screenshots/home-dark.png" width="23%" alt="Home screen in dark theme">
   <img src="docs/screenshots/more-menu-light.png" width="23%" alt="Quick access menu">
-  <img src="docs/screenshots/support-light.png" width="23%" alt="Support my work screen">
+  <img src="docs/screenshots/support-light.png" width="23%" alt="Support My Work screen">
   <br>
   <sub>Rendered from Compose previews with sample data (Paparazzi). Regenerate with <code>./gradlew recordPaparazziDebug && python3 scripts/readme_screenshots.py</code>.</sub>
 </div>
@@ -151,16 +151,9 @@ SimplyFahim@sbi
 
 </td>
 </tr>
-<tr>
-<td align="center" valign="top">
-
-<a href="https://ko-fi.com/simplyfahim"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/support/kofi-card-dark.svg"><img src="docs/assets/support/kofi-card-light.svg" width="160" alt="Ko-fi cup logo. Opens ko-fi.com/simplyfahim"></picture></a>
-
-<a href="https://ko-fi.com/simplyfahim"><img src="https://img.shields.io/badge/Support_me_on-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" height="44" alt="Support me on Ko-fi"></a>
-
-</td>
-</tr>
 </table>
+
+**[More ways to pay → simplyfahim.pages.dev/pay-options](https://simplyfahim.pages.dev/pay-options)**
 
 ### Community
 
@@ -168,11 +161,8 @@ SimplyFahim@sbi
 
 **[Join the Fern Wallet group on Telegram → t.me/Fernwallet](https://t.me/Fernwallet)**
 
-<sub><b>Personal contact</b></sub><br>
-<a href="https://instagram.com/SimplyFahimofficial"><img src="https://img.shields.io/badge/Instagram-@SimplyFahimofficial-E4405F?style=flat-square&logo=instagram&logoColor=white" height="20" alt="Instagram: @SimplyFahimofficial"></a>
-<a href="mailto:simplyfahimofficial@gmail.com?subject=Fern%20Wallet%20feedback"><img src="https://img.shields.io/badge/Email-simplyfahimofficial@gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white" height="20" alt="Email: simplyfahimofficial@gmail.com"></a>
-<!-- TODO: personal Telegram badge. Add it once the username is set in SupportDestinations.PERSONAL_TELEGRAM_USERNAME:
-<a href="https://t.me/USERNAME"><img src="https://img.shields.io/badge/Telegram-@USERNAME-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram: @USERNAME"></a>
--->
+In the app, all of this is under **Settings → Help & Support**. Project page:
+[simplyfahim.pages.dev/fernwallet](https://simplyfahim.pages.dev/fernwallet) ·
+Contact the developer: [simplyfahim.pages.dev/contactme](https://simplyfahim.pages.dev/contactme)
 
 </div>

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -40,9 +41,6 @@ import com.ivy.wallet.ui.theme.components.IvyToolbar
 internal class SupportScreenActions(
     val onBack: () -> Unit,
     val onOpenUrl: (String) -> Unit,
-    /** Opens an https or mailto link; copies `copyValue` if no app can open it. */
-    val onOpenLink: (uri: String, copyValue: String) -> Unit,
-    val onCopy: (String) -> Unit,
     val onCopyUpiId: () -> Unit,
     val onOpenUpiApp: () -> Unit,
     val onShareQr: () -> Unit,
@@ -50,7 +48,8 @@ internal class SupportScreenActions(
 )
 
 /**
- * "Support my work": UPI and Ko-fi, the Telegram group, personal contact, then this app's project links.
+ * "Support My Work": the UPI QR code and actions, then a link to more ways to pay.
+ * Reached from Help & Support and from the Home menu.
  *
  * Nothing is collected or stored. Paying always happens in another app the user picks, and this
  * screen never reports a payment as made.
@@ -83,8 +82,6 @@ fun SupportScreenImpl() {
         actions = SupportScreenActions(
             onBack = { nav.onBackPressed() },
             onOpenUrl = { url -> rootScreen.openUrlInBrowser(url) },
-            onOpenLink = { uri, copyValue -> openLink(context, uri, copyValue) },
-            onCopy = { text -> rootScreen.copyToClipboard(label = text, text = text) },
             onCopyUpiId = {
                 rootScreen.copyToClipboard(label = SupportDestinations.UPI_ID, text = SupportDestinations.UPI_ID)
             },
@@ -108,30 +105,37 @@ private fun SupportUi(actions: SupportScreenActions) {
             .navigationBarsPadding()
             .verticalScroll(rememberScrollState())
     ) {
-        IvyToolbar(onBack = actions.onBack)
-
-        Text(
-            modifier = Modifier
-                .padding(horizontal = 32.dp)
-                .semantics { heading() },
-            text = stringResource(R.string.support_my_work),
-            style = UI.typo.h2.style(fontWeight = FontWeight.Black),
-        )
-
-        Spacer(Modifier.height(12.dp))
+        // The title sits beside the back button so the whole screen fits without scrolling on most phones.
+        IvyToolbar(onBack = actions.onBack) {
+            Spacer(Modifier.width(16.dp))
+            Text(
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { heading() },
+                text = stringResource(R.string.support_my_work),
+                style = UI.typo.b1.style(fontWeight = FontWeight.Black),
+            )
+            Spacer(Modifier.width(16.dp))
+        }
 
         Text(
             modifier = Modifier.padding(horizontal = 32.dp),
             text = stringResource(R.string.support_intro),
             style = UI.typo.b2.style(color = UI.colors.pureInverse, fontWeight = FontWeight.Normal)
-                .copy(lineHeight = 22.sp),
+                .copy(fontSize = 14.sp, lineHeight = 20.sp),
         )
 
         PaymentOptionsSection(actions = actions)
-        SupportContactSections(actions = actions)
-        ProjectContactSection(actions = actions)
 
-        Spacer(Modifier.height(48.dp))
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            modifier = Modifier.padding(horizontal = 32.dp),
+            text = stringResource(R.string.support_optional_note),
+            style = UI.typo.nC.style(color = UI.colors.gray, fontWeight = FontWeight.Normal),
+        )
+
+        Spacer(Modifier.height(16.dp))
     }
 }
 
@@ -143,8 +147,6 @@ fun SupportScreenUiTest(isDark: Boolean) {
             SupportScreenActions(
                 onBack = {},
                 onOpenUrl = {},
-                onOpenLink = { _, _ -> },
-                onCopy = {},
                 onCopyUpiId = {},
                 onOpenUpiApp = {},
                 onShareQr = {},

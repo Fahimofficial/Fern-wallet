@@ -56,7 +56,9 @@ import com.ivy.wallet.ui.theme.White
 import kotlinx.coroutines.delay
 
 private const val CopiedFeedbackDurationMs = 2_000L
-private val QrDisplaySize = 232.dp
+
+// About 13 px per QR module on a typical phone: still easy to scan from another phone.
+private val QrDisplaySize = 140.dp
 
 @Composable
 internal fun UpiCard(actions: SupportScreenActions) {
@@ -66,27 +68,29 @@ internal fun UpiCard(actions: SupportScreenActions) {
             .fillMaxWidth()
             .clip(UI.shapes.r4)
             .background(UI.colors.medium, UI.shapes.r4)
-            .padding(horizontal = 20.dp, vertical = 20.dp),
+            .padding(16.dp),
     ) {
-        UpiCardHeader()
-        Spacer(Modifier.height(16.dp))
-
-        UpiPayeePaymentQrCodeImage(Modifier.align(Alignment.CenterHorizontally))
-        Spacer(Modifier.height(16.dp))
+        // The QR code shares a row with the heading and scan hint, so the card needs no full-width QR block.
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            UpiPayeePaymentQrCodeImage()
+            Spacer(Modifier.width(16.dp))
+            UpiCardHeader(Modifier.weight(1f))
+        }
+        Spacer(Modifier.height(12.dp))
 
         UpiIdentityDetails()
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
         UpiActionsButtons(actions)
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
         UpiVerificationHint()
     }
 }
 
 @Composable
-private fun UpiCardHeader() {
-    Column {
+private fun UpiCardHeader(modifier: Modifier = Modifier) {
+    Column(modifier) {
         Text(
             modifier = Modifier.semantics { heading() },
             text = stringResource(R.string.support_upi),
@@ -238,10 +242,10 @@ private fun RowScope.SupportPillButton(
                     modifier = Modifier.size(18.dp),
                 )
                 Spacer(Modifier.width(6.dp))
+                // Wraps instead of truncating, so large font sizes still show the whole label.
                 Text(
                     text = shownText,
                     style = UI.typo.c.style(color = content, fontWeight = FontWeight.Bold),
-                    maxLines = 1,
                 )
             }
         }

@@ -31,10 +31,11 @@ object UpstreamLinks {
 }
 
 /**
- * "Support my work" configuration: the developer's own payment and contact details.
+ * Help & Support and "Support My Work" configuration: project help links, the developer's
+ * contact page and payment details.
  *
- * This is the only place these values live. The Support screen, its QR code and the Settings
- * entry all read from here, so updating a link is a one-line change.
+ * This is the only place these values live. The Help & Support and Support My Work screens and
+ * the UPI QR code all read from here, so updating a link is a one-line change.
  *
  * Nothing here is sent anywhere by the app: links open in apps the user picks, and the UPI QR
  * code is generated on the device.
@@ -42,37 +43,20 @@ object UpstreamLinks {
 object SupportDestinations {
     const val DEVELOPER_NAME = "SimplyFahim"
 
-    /** Ko-fi profile (account "SimplyFahim"). */
-    const val KOFI_URL = "https://ko-fi.com/simplyfahim"
+    /** Fern Wallet's Telegram group: questions, feedback and help. */
+    const val TELEGRAM_COMMUNITY = "https://t.me/Fernwallet"
 
-    /** The developer's personal website. Not a project page. */
-    const val WEBSITE = "https://SimplyFahim.pages.dev"
+    /** Public issue tracker: bug reports and feature requests. */
+    const val REPORT_BUG = FernLinks.NEW_ISSUE
 
-    /** The developer's GitHub profile, listing all public projects. */
-    const val GITHUB_PROFILE = "https://github.com/SimplyFahimOfficial/"
+    /** Fern Wallet's page on the developer's website: project links, downloads and resources. */
+    const val PROJECT_WEBSITE = "https://simplyfahim.pages.dev/fernwallet"
 
-    /** This app's own repository. */
-    const val APP_REPOSITORY = FernLinks.REPOSITORY
+    /** The developer's contact page (website, email and social links). Kept off the app on purpose. */
+    const val CONTACT_DEVELOPER = "https://simplyfahim.pages.dev/contactme"
 
-    /** Fern Wallet's Telegram group (updates, help, feedback): the primary contact. */
-    const val TELEGRAM_GROUP_USERNAME = "Fernwallet"
-
-    /** Personal contact, shown with less emphasis than the group. */
-    const val INSTAGRAM_HANDLE = "SimplyFahimofficial"
-    val EMAILS: List<String> = listOf("simplyfahimofficial@gmail.com")
-
-    /** TODO: set the personal Telegram username (without `@`). Its tile is hidden while this is null. */
-    val PERSONAL_TELEGRAM_USERNAME: String? = null
-
-    const val EMAIL_SUBJECT = "Fern Wallet feedback"
-
-    fun telegramUrl(username: String): String = "https://t.me/${username.removePrefix("@")}"
-
-    fun instagramUrl(handle: String): String = "https://instagram.com/${handle.removePrefix("@")}"
-
-    /** `mailto:` link with a short subject, e.g. `mailto:a@b.c?subject=Fern%20Wallet%20feedback`. */
-    fun mailtoUri(email: String, subject: String = EMAIL_SUBJECT): String =
-        "mailto:$email?subject=${encodeQueryValue(subject)}"
+    /** Every other way to pay. The website lists the providers, so the app needs no per-provider buttons. */
+    const val MORE_WAYS_TO_PAY = "https://simplyfahim.pages.dev/pay-options"
 
     /** Public UPI ID (VPA) and the payee name UPI apps show before the user confirms. */
     const val UPI_ID = "SimplyFahim@sbi"
@@ -84,7 +68,7 @@ object SupportDestinations {
      * `upi://pay?pa=SimplyFahim@sbi&pn=Md%20Fahim&cu=INR`.
      *
      * No amount (`am`) is ever set: the user enters it and confirms in their own UPI app.
-     * The same string is used for the "Open UPI app" intent and as the QR code payload.
+     * The same string is used for the "Pay with UPI" intent and as the QR code payload.
      * `@` is kept literal (it is valid in a URI query and is what bank-issued UPI QR codes use);
      * any other character outside the RFC 3986 unreserved set is percent-encoded.
      */

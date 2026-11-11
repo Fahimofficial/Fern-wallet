@@ -36,6 +36,7 @@ import com.ivy.navigation.EditPlannedScreen
 import com.ivy.navigation.EditTransactionScreen
 import com.ivy.navigation.ExchangeRatesScreen
 import com.ivy.navigation.FeaturesScreen
+import com.ivy.navigation.HelpSupportScreen
 import com.ivy.navigation.ImportScreen
 import com.ivy.navigation.LoanDetailsScreen
 import com.ivy.navigation.LoansScreen
@@ -60,6 +61,7 @@ import com.ivy.reports.ReportScreen
 import com.ivy.search.SearchScreen
 import com.ivy.settings.SettingsScreen
 import com.ivy.settings.appearance.AppearanceScreenImpl
+import com.ivy.settings.support.HelpSupportScreenImpl
 import com.ivy.settings.support.SupportScreenImpl
 import com.ivy.transaction.EditTransactionScreen
 import com.ivy.transactions.TransactionsScreen
@@ -95,6 +97,7 @@ fun BoxWithConstraintsScope.IvyNavGraph(screen: Screen?) {
         FeaturesScreen -> FeaturesScreenImpl()
         AttributionsScreen -> AttributionsScreenImpl()
         ContributorsScreen -> ContributorsScreenImpl()
+        HelpSupportScreen -> HelpSupportScreenImpl()
         SupportScreen -> SupportScreenImpl()
         AppearanceScreen -> AppearanceScreenImpl()
         ReleasesScreen -> ReleasesScreenImpl()
