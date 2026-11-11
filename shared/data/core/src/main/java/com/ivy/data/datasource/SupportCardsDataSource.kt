@@ -4,7 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -12,19 +12,23 @@ import javax.inject.Inject
 /**
  * What the Home menu remembers about its Help & Support / Support My Work cards.
  *
+ * An install stamp is the time the app was last installed or updated (see `PackageInfo.lastUpdateTime`).
+ * It changes with every fresh install and every update, even one that keeps the same version code.
+ *
  * @property permanentSupportCard whether the always-on Support My Work card is wanted (Appearance switch).
- * @property helpDismissedIn app version code in which the one-time Help & Support card was dismissed.
- * @property supportDismissedIn app version code in which the one-time Support My Work card was dismissed.
+ * @property helpDismissedFor install stamp for which the one-time Help & Support card was dismissed.
+ * @property supportDismissedFor install stamp for which the one-time Support My Work card was dismissed.
  */
 data class SupportCardsPrefs(
     val permanentSupportCard: Boolean,
-    val helpDismissedIn: Int?,
-    val supportDismissedIn: Int?,
+    val helpDismissedFor: Long?,
+    val supportDismissedFor: Long?,
 )
 
 /**
- * Persists [SupportCardsPrefs]. The two one-time cards store the version code they were dismissed
- * in, separately, so each comes back by itself after an app update and neither affects the other.
+ * Persists [SupportCardsPrefs]. The two one-time cards store the install stamp they were dismissed
+ * for, separately, so each comes back by itself after the next install or update and neither
+ * affects the other.
  */
 class SupportCardsDataSource @Inject constructor(
     private val dataStore: DataStore<Preferences>
@@ -32,8 +36,8 @@ class SupportCardsDataSource @Inject constructor(
     val prefs: Flow<SupportCardsPrefs> = dataStore.data.map {
         SupportCardsPrefs(
             permanentSupportCard = it[PermanentSupportCardKey] ?: true,
-            helpDismissedIn = it[HelpDismissedInKey],
-            supportDismissedIn = it[SupportDismissedInKey],
+            helpDismissedFor = it[HelpDismissedForKey],
+            supportDismissedFor = it[SupportDismissedForKey],
         )
     }
 
@@ -41,17 +45,20 @@ class SupportCardsDataSource @Inject constructor(
         dataStore.edit { it[PermanentSupportCardKey] = enabled }
     }
 
-    suspend fun dismissHelpCard(versionCode: Int) {
-        dataStore.edit { it[HelpDismissedInKey] = versionCode }
+    suspend fun dismissHelpCard(installStamp: Long) {
+        dataStore.edit { it[HelpDismissedForKey] = installStamp }
     }
 
-    suspend fun dismissSupportCard(versionCode: Int) {
-        dataStore.edit { it[SupportDismissedInKey] = versionCode }
+    suspend fun dismissSupportCard(installStamp: Long) {
+        dataStore.edit { it[SupportDismissedForKey] = installStamp }
     }
 
     companion object {
         private val PermanentSupportCardKey = booleanPreferencesKey("home_support_card_enabled")
-        private val HelpDismissedInKey = intPreferencesKey("home_help_card_dismissed_version")
-        private val SupportDismissedInKey = intPreferencesKey("home_support_card_dismissed_version")
+
+        // New key names: the version-code ints saved by the first release of these cards are ignored,
+        // so the cards show once more after this update.
+        private val HelpDismissedForKey = longPreferencesKey("home_help_card_dismissed_install")
+        private val SupportDismissedForKey = longPreferencesKey("home_support_card_dismissed_install")
     }
 }

@@ -65,19 +65,20 @@ data class SupportCardsUi(
 }
 
 /**
- * The one-time cards show until dismissed in the running app version [versionCode], so they come
- * back after every fresh install and update. Each is dismissed on its own. The permanent card
- * follows its switch and steps aside while the one-time Support My Work card is up, so the two
- * never appear together.
+ * The one-time cards show until dismissed for the running install, identified by [installStamp]
+ * (when the app was last installed or updated), so they come back after every fresh install and
+ * every update, even one that keeps the same version code. Each is dismissed on its own. The
+ * permanent card follows its switch and steps aside while the one-time Support My Work card is
+ * up, so the two never appear together.
  *
  * [prefs] is null until stored values are read: nothing is shown rather than a card that was
  * already dismissed flashing in.
  */
-fun supportCardsUi(prefs: SupportCardsPrefs?, versionCode: Int): SupportCardsUi {
+fun supportCardsUi(prefs: SupportCardsPrefs?, installStamp: Long): SupportCardsUi {
     if (prefs == null) return SupportCardsUi.Hidden
-    val highlightedSupport = prefs.supportDismissedIn != versionCode
+    val highlightedSupport = prefs.supportDismissedFor != installStamp
     return SupportCardsUi(
-        help = prefs.helpDismissedIn != versionCode,
+        help = prefs.helpDismissedFor != installStamp,
         highlightedSupport = highlightedSupport,
         permanentSupport = prefs.permanentSupportCard && !highlightedSupport,
     )
@@ -125,7 +126,7 @@ internal fun SupportCards(
                     icon = R.drawable.ic_vue_messages_msg,
                     title = stringResource(R.string.help_support),
                     subtitle = stringResource(R.string.home_help_card_description),
-                    highlighted = false,
+                    highlighted = true,
                     onClick = { nav.navigateTo(HelpSupportScreen) },
                     onDismiss = onDismissHelp,
                     contentTag = HelpCardTag,
@@ -179,7 +180,7 @@ internal fun SupportCards(
 /**
  * A short card with a round icon, a title and a line of text, and its own dismiss button. The tap
  * area and the dismiss button are siblings, so a screen reader reaches each one separately.
- * [highlighted] gives it the accent-tinted fill and a filled accent icon badge.
+ * [highlighted] gives it the accent-tinted fill and a filled accent icon badge; both one-time cards use it.
  */
 @Composable
 private fun CompactCard(

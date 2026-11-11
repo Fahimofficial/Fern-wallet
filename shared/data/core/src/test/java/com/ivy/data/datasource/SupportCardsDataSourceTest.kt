@@ -24,9 +24,9 @@ class SupportCardsDataSourceTest {
     /** Defaults of a fresh install; [SupportCardsPrefs] itself has none. */
     private fun prefs(
         permanentSupportCard: Boolean = true,
-        helpDismissedIn: Int? = null,
-        supportDismissedIn: Int? = null,
-    ) = SupportCardsPrefs(permanentSupportCard, helpDismissedIn, supportDismissedIn)
+        helpDismissedFor: Long? = null,
+        supportDismissedFor: Long? = null,
+    ) = SupportCardsPrefs(permanentSupportCard, helpDismissedFor, supportDismissedFor)
 
     private fun dataSource() = SupportCardsDataSource(
         PreferenceDataStoreFactory.create(scope = scope, produceFile = { file })
@@ -39,8 +39,8 @@ class SupportCardsDataSourceTest {
     fun `defaults on a fresh install`() = runTest {
         dataSource().prefs.first() shouldBe prefs(
             permanentSupportCard = true,
-            helpDismissedIn = null,
-            supportDismissedIn = null,
+            helpDismissedFor = null,
+            supportDismissedFor = null,
         )
     }
 
@@ -48,25 +48,25 @@ class SupportCardsDataSourceTest {
     fun `the two one-time cards are dismissed independently`() = runTest {
         val dataSource = dataSource()
 
-        dataSource.dismissHelpCard(206)
-        dataSource.prefs.first() shouldBe prefs(helpDismissedIn = 206, supportDismissedIn = null)
+        dataSource.dismissHelpCard(1_000L)
+        dataSource.prefs.first() shouldBe prefs(helpDismissedFor = 1_000L, supportDismissedFor = null)
 
-        dataSource.dismissSupportCard(207)
-        dataSource.prefs.first() shouldBe prefs(helpDismissedIn = 206, supportDismissedIn = 207)
+        dataSource.dismissSupportCard(2_000L)
+        dataSource.prefs.first() shouldBe prefs(helpDismissedFor = 1_000L, supportDismissedFor = 2_000L)
     }
 
     @Test
     fun `the permanent card switch does not touch the dismissals`() = runTest {
         val dataSource = dataSource()
-        dataSource.dismissHelpCard(206)
-        dataSource.dismissSupportCard(206)
+        dataSource.dismissHelpCard(1_000L)
+        dataSource.dismissSupportCard(1_000L)
 
         dataSource.setPermanentSupportCard(false)
 
         dataSource.prefs.first() shouldBe prefs(
             permanentSupportCard = false,
-            helpDismissedIn = 206,
-            supportDismissedIn = 206,
+            helpDismissedFor = 1_000L,
+            supportDismissedFor = 1_000L,
         )
     }
 
@@ -75,8 +75,8 @@ class SupportCardsDataSourceTest {
         val firstRun = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
         SupportCardsDataSource(PreferenceDataStoreFactory.create(scope = firstRun, produceFile = { file })).apply {
             setPermanentSupportCard(false)
-            dismissHelpCard(206)
-            dismissSupportCard(205)
+            dismissHelpCard(1_000L)
+            dismissSupportCard(500L)
         }
         firstRun.cancel() // the app process ends; a file allows only one open DataStore
 
@@ -87,8 +87,8 @@ class SupportCardsDataSourceTest {
 
         restarted.prefs.first() shouldBe prefs(
             permanentSupportCard = false,
-            helpDismissedIn = 206,
-            supportDismissedIn = 205,
+            helpDismissedFor = 1_000L,
+            supportDismissedFor = 500L,
         )
         secondRun.cancel()
     }

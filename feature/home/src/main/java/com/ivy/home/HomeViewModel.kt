@@ -111,10 +111,11 @@ class HomeViewModel @Inject constructor(
     private val supportCardsDataSource: SupportCardsDataSource,
     @ApplicationContext appContext: Context,
 ) : ComposeViewModel<HomeState, HomeEvent>() {
-    // The one-time cards come back whenever this changes: a fresh install or an update.
+    // When the app was last installed or updated. The one-time cards come back whenever it changes,
+    // which a version code can't promise: test builds and re-installs keep the same one.
     @Suppress("DEPRECATION") // the Flags overload needs API 33; this works on every supported version
-    private val versionCode = appContext.packageManager
-        .getPackageInfo(appContext.packageName, 0).longVersionCode.toInt()
+    private val installStamp = appContext.packageManager
+        .getPackageInfo(appContext.packageName, 0).lastUpdateTime
 
     init {
         // e.g. a deleted transaction restored by Undo while Home is already showing.
@@ -194,7 +195,7 @@ class HomeViewModel @Inject constructor(
             expanded = getExpanded(),
             hideIncome = getHideIncome(),
             celebrateSavingsGoal = celebrateSavingsGoal,
-            supportCards = supportCardsUi(supportCardsPrefs, versionCode),
+            supportCards = supportCardsUi(supportCardsPrefs, installStamp),
         )
     }
 
@@ -293,8 +294,8 @@ class HomeViewModel @Inject constructor(
                 is HomeEvent.DeleteTransaction -> deleteTransaction(event.transaction)
                 HomeEvent.ToggleHideBalance -> toggleHideBalance()
                 HomeEvent.SavingsGoalCelebrated -> savingsGoalCelebrated()
-                HomeEvent.DismissHelpCard -> supportCardsDataSource.dismissHelpCard(versionCode)
-                HomeEvent.DismissSupportCard -> supportCardsDataSource.dismissSupportCard(versionCode)
+                HomeEvent.DismissHelpCard -> supportCardsDataSource.dismissHelpCard(installStamp)
+                HomeEvent.DismissSupportCard -> supportCardsDataSource.dismissSupportCard(installStamp)
             }
         }
     }

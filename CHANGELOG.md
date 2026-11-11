@@ -28,9 +28,10 @@ First Fern Wallet changes on top of Ivy Wallet `2025.07.17 (206)`.
 ### Home menu cards
 - The "Fern Wallet is open-source" card is gone from the Home menu.
 - After a fresh install and after every app update, the menu shows two short cards you can dismiss
-  with the ✕: **Help & Support** (opens the Help & Support page) and a highlighted
-  **Support My Work** (accent-tinted, with a round icon badge). Each is remembered separately per
-  app version, so dismissing one never hides the other, and both come back after the next update.
+  with the ✕: **Help & Support** (opens the Help & Support page) and **Support My Work**. Both are
+  accent-tinted with a round icon badge. They stay until you dismiss them. Each is remembered
+  separately for the current install, so dismissing one never hides the other, and both come back
+  after the next install or update, even one that keeps the same version number.
 - **Settings → Appearance → Home menu → Show Support My Work card** keeps or removes the permanent
   Support My Work card. It doesn't affect the one-time cards. While the one-time Support My Work
   card is showing, the permanent one steps aside, so you never see two.
