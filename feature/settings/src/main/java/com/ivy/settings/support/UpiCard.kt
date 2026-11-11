@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -36,8 +37,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -47,10 +51,15 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.ivy.base.legacy.Theme
 import com.ivy.base.links.SupportDestinations
 import com.ivy.design.l0_system.UI
 import com.ivy.design.l0_system.style
+import com.ivy.legacy.IvyWalletPreview
 import com.ivy.ui.R
 import com.ivy.wallet.ui.theme.White
 import kotlinx.coroutines.delay
@@ -59,6 +68,14 @@ private const val CopiedFeedbackDurationMs = 2_000L
 
 // About 13 px per QR module on a typical phone: still easy to scan from another phone.
 private val QrDisplaySize = 140.dp
+private val QrTilePadding = 8.dp
+
+// Enlarged QR: the white tile is at most 420dp, and always fits the window with the Close button.
+private val EnlargedCardPadding = 20.dp
+private const val EnlargedWidthReservedDp = 80 // card padding and a margin on each side
+private const val EnlargedHeightReservedDp = 280 // card padding, gap, Close button and system bars
+private const val EnlargedMinSideDp = 160
+private const val EnlargedMaxSideDp = 420
 
 @Composable
 internal fun UpiCard(actions: SupportScreenActions) {
@@ -160,31 +177,113 @@ private fun UpiVerificationHint() {
     )
 }
 
+/** Test tag of the small QR code that opens the enlarged one. */
+internal const val UpiQrTag = "support_upi_qr"
+
+private fun createUpiQrBitmap(): ImageBitmap =
+    UpiQrCode.toBitmap(UpiQrCode.encode(SupportDestinations.upiPaymentUri())).asImageBitmap()
+
+// A white tile and unfiltered scaling keep the QR modules sharp and scanner-readable.
+@Composable
+private fun UpiQrTile(bitmap: ImageBitmap, imageSize: Dp, modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color.White)
+            .padding(QrTilePadding),
+    ) {
+        Image(
+            bitmap = bitmap,
+            contentDescription = null,
+            modifier = Modifier.size(imageSize),
+            contentScale = ContentScale.FillBounds,
+            filterQuality = FilterQuality.None,
+        )
+    }
+}
+
 @Composable
 private fun UpiPayeePaymentQrCodeImage(modifier: Modifier = Modifier) {
-    val bitmap = remember {
-        UpiQrCode.toBitmap(UpiQrCode.encode(SupportDestinations.upiPaymentUri())).asImageBitmap()
-    }
+    var enlarged by rememberSaveable { mutableStateOf(false) }
     val description = stringResource(
         R.string.support_upi_qr_description,
         SupportDestinations.UPI_ID,
         SupportDestinations.UPI_PAYEE_NAME,
     )
-    // A white tile and unfiltered scaling keep the QR modules sharp and scanner-readable.
-    Box(
-        modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color.White)
-            .padding(8.dp)
+    val qrBitmap = remember { createUpiQrBitmap() }
+    UpiQrTile(
+        bitmap = qrBitmap,
+        imageSize = QrDisplaySize,
+        modifier = modifier
+            .testTag(UpiQrTag)
+            .clickable(role = Role.Button, onClickLabel = stringResource(R.string.support_enlarge_qr)) {
+                enlarged = true
+            }
             .semantics(mergeDescendants = true) { contentDescription = description },
+    )
+    if (enlarged) {
+        UpiQrEnlargedDialog(onClose = { enlarged = false })
+    }
+}
+
+/** The QR code at a size that scans from across a table, with Close below it. Back also closes it. */
+@Composable
+private fun UpiQrEnlargedDialog(onClose: () -> Unit) {
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        Image(
-            bitmap = bitmap,
-            contentDescription = null,
-            modifier = Modifier.size(QrDisplaySize),
-            contentScale = ContentScale.FillBounds,
-            filterQuality = FilterQuality.None,
+        UpiQrEnlarged(onClose = onClose)
+    }
+}
+
+@Composable
+internal fun UpiQrEnlarged(onClose: () -> Unit) {
+    val config = LocalConfiguration.current
+    // Fits the narrower side of the window, and leaves room for the Close button in landscape.
+    val side = minOf(config.screenWidthDp - EnlargedWidthReservedDp, config.screenHeightDp - EnlargedHeightReservedDp)
+        .coerceIn(EnlargedMinSideDp, EnlargedMaxSideDp)
+        .dp
+    val description = stringResource(
+        R.string.support_upi_qr_description,
+        SupportDestinations.UPI_ID,
+        SupportDestinations.UPI_PAYEE_NAME,
+    )
+    val qrBitmap = remember { createUpiQrBitmap() }
+    Column(
+        modifier = Modifier
+            .width(side + EnlargedCardPadding * 2)
+            .clip(UI.shapes.r4)
+            .background(UI.colors.medium, UI.shapes.r4)
+            .padding(EnlargedCardPadding),
+    ) {
+        UpiQrTile(
+            bitmap = qrBitmap,
+            imageSize = side - QrTilePadding * 2,
+            modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = description },
         )
+        Spacer(Modifier.height(16.dp))
+        Row {
+            SupportPillButton(
+                icon = R.drawable.ic_outline_clear_24,
+                text = stringResource(R.string.close),
+                primary = true,
+                onClick = onClose,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CenteredUpiQrEnlarged(modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) { UpiQrEnlarged(onClose = {}) }
+}
+
+/** For screenshot testing */
+@Composable
+fun UpiQrEnlargedUiTest(isDark: Boolean) {
+    IvyWalletPreview(theme = if (isDark) Theme.DARK else Theme.LIGHT) {
+        CenteredUpiQrEnlarged()
     }
 }
 

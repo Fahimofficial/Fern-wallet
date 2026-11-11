@@ -57,6 +57,8 @@ import com.ivy.navigation.ReleasesScreen
 import com.ivy.navigation.AppearanceScreen
 import com.ivy.navigation.navigation
 import com.ivy.navigation.screenScopedViewModel
+import com.ivy.settings.support.LinkEmphasis
+import com.ivy.settings.support.SupportDestinationLinkRow
 import com.ivy.ui.R
 import com.ivy.wallet.domain.data.IvyCurrency
 import com.ivy.wallet.ui.theme.Gradient
@@ -469,14 +471,15 @@ private fun BoxWithConstraintsScope.UI(
 
             Spacer(Modifier.height(16.dp))
 
-            SettingsDefaultButton(
+            // The one entry for help and support, so it stands out from the plain rows around it.
+            SupportDestinationLinkRow(
                 icon = R.drawable.ic_vue_messages_msg,
-                iconPadding = 6.dp,
-                text = stringResource(R.string.help_support),
+                title = stringResource(R.string.help_support),
                 description = stringResource(R.string.help_support_entry_description),
-            ) {
-                nav.navigateTo(HelpSupportScreen)
-            }
+                external = false,
+                onClick = { nav.navigateTo(HelpSupportScreen) },
+                emphasis = LinkEmphasis.Filled,
+            )
         }
 
         item {

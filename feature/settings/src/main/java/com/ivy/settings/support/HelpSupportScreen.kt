@@ -107,6 +107,7 @@ internal fun HelpSupportUi(onOpenUrl: (String) -> Unit) {
                 external = false,
                 onClick = { nav.navigateTo(SupportScreen) },
                 modifier = Modifier.testTag(SupportMyWorkRowTag),
+                emphasis = LinkEmphasis.Filled,
             )
         }
 
