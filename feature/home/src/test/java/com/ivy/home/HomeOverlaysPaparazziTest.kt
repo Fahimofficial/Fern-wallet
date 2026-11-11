@@ -25,4 +25,11 @@ class HomeOverlaysPaparazziTest(
             HomeUiTest(theme == PaparazziTheme.Dark, overlay = HomeSampleOverlay.MoreMenu)
         }
     }
+
+    @Test
+    fun `snapshot more menu after the one-time cards are dismissed`() {
+        snapshot(theme) {
+            HomeUiTest(theme == PaparazziTheme.Dark, overlay = HomeSampleOverlay.MoreMenuCardsDismissed)
+        }
+    }
 }

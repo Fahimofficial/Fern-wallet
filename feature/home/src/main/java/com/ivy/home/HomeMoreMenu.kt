@@ -71,7 +71,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -86,12 +85,10 @@ import com.ivy.design.system.appearance.ColorToken
 import com.ivy.design.system.appearance.FernTheme
 import com.ivy.design.system.appearance.get
 import com.ivy.domain.RootScreen
-import com.ivy.legacy.Constants
 import com.ivy.legacy.ivyWalletCtx
 import com.ivy.legacy.utils.clickableNoIndication
 import com.ivy.legacy.utils.lerp
 import com.ivy.legacy.utils.navigationBarInset
-import com.ivy.legacy.utils.openUrl
 import com.ivy.legacy.utils.rememberInteractionSource
 import com.ivy.legacy.utils.rememberSwipeListenerState
 import com.ivy.legacy.utils.statusBarInset
@@ -134,6 +131,9 @@ fun BoxWithConstraintsScope.MoreMenu(
     modifier: Modifier = Modifier,
     plannedDue: Int = 0,
     topCategory: TopCategory? = null,
+    supportCards: SupportCardsUi = SupportCardsUi.Hidden,
+    onDismissHelpCard: () -> Unit = {},
+    onDismissSupportCard: () -> Unit = {},
     celebrateGoal: Boolean = false,
     onGoalCelebrated: () -> Unit = {},
     // False on tabs the hub doesn't belong to: the chevron fades out and takes no input.
@@ -231,6 +231,9 @@ fun BoxWithConstraintsScope.MoreMenu(
                 onCurrencyClick = onCurrencyClick,
                 plannedDue = plannedDue,
                 topCategory = topCategory,
+                supportCards = supportCards,
+                onDismissHelpCard = onDismissHelpCard,
+                onDismissSupportCard = onDismissSupportCard,
                 celebrateGoal = celebrateGoal,
                 onGoalCelebrated = onGoalCelebrated,
                 tileWave = !startedOpen,
@@ -409,6 +412,9 @@ private fun ColumnScope.Content(
     onCurrencyClick: () -> Unit,
     plannedDue: Int,
     topCategory: TopCategory?,
+    supportCards: SupportCardsUi,
+    onDismissHelpCard: () -> Unit,
+    onDismissSupportCard: () -> Unit,
     celebrateGoal: Boolean,
     onGoalCelebrated: () -> Unit,
     tileWave: Boolean,
@@ -445,14 +451,14 @@ private fun ColumnScope.Content(
 
     Spacer(Modifier.height(16.dp))
 
-    OpenSource()
-
-    Spacer(Modifier.height(12.dp))
-
-    SupportMyWork()
+    // Each card carries its own 12dp gap below it, so a hidden card leaves no empty space.
+    SupportCards(
+        ui = supportCards,
+        onDismissHelp = onDismissHelpCard,
+        onDismissSupport = onDismissSupportCard,
+    )
 
     if (topCategory != null) {
-        Spacer(Modifier.height(12.dp))
         MonthlyTopCategoryInsightCard(topCategory)
     }
 
@@ -496,28 +502,9 @@ private fun SearchButton(
     }
 }
 
-@Composable
-private fun OpenSource() {
-    val uriHandler = LocalUriHandler.current
-    LinkCard(
-        content = LinkCardData(
-            icon = R.drawable.github_logo,
-            iconTint = UI.colors.pureInverse,
-            title = stringResource(R.string.ivy_wallet_open_source),
-            subtitle = Constants.URL_IVY_WALLET_REPO,
-            subtitleColor = UI.colors.gray,
-            trailingIcon = R.drawable.ic_arrow_right,
-            pulseIcon = false,
-        ),
-        modifier = Modifier.testTag("home_open_source_card"),
-    ) {
-        openUrl(uriHandler = uriHandler, url = Constants.URL_IVY_WALLET_REPO)
-    }
-}
-
 // Shortcut to the in-app Support My Work screen, the same one Settings → Help & Support opens.
 @Composable
-private fun SupportMyWork() {
+internal fun SupportMyWork() {
     val nav = navigation()
     LinkCard(
         content = LinkCardData(

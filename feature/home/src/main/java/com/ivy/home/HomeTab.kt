@@ -276,6 +276,9 @@ fun BoxWithConstraintsScope.HomeUi(
         topCategory = remember(uiState.history, uiState.baseData.categories) {
             topExpenseCategory(uiState.history, uiState.baseData.categories)
         },
+        supportCards = uiState.supportCards,
+        onDismissHelpCard = { onEvent(HomeEvent.DismissHelpCard) },
+        onDismissSupportCard = { onEvent(HomeEvent.DismissSupportCard) },
         available = tabSelected,
         celebrateGoal = uiState.celebrateSavingsGoal,
         onGoalCelebrated = { onEvent(HomeEvent.SavingsGoalCelebrated) },
@@ -498,13 +501,20 @@ private const val BarsToggleDeltaPx = 4f
 // (the screen's own state doesn't survive navigating away); move to saved state if that changes.
 private var homeEntrancePlayed = false
 
+private val HomeSampleOverlay.isMoreMenu: Boolean
+    get() = this == HomeSampleOverlay.MoreMenu || this == HomeSampleOverlay.MoreMenuCardsDismissed
+
 private fun TimePeriod.monthIndex(): Int? =
     month?.let { month -> year?.let { year -> year * MonthsInYear + month.monthValue } }
 
 private const val MonthsInYear = 12
 
-/** Which overlay to show on top of the Home sample (screenshots / previews). */
-enum class HomeSampleOverlay { None, PeriodPicker, MoreMenu }
+/**
+ * Which overlay to show on top of the Home sample (screenshots / previews). [MoreMenu] is the menu
+ * as a fresh install or update shows it; [MoreMenuCardsDismissed] after both one-time cards were
+ * dismissed, with the permanent Support My Work card.
+ */
+enum class HomeSampleOverlay { None, PeriodPicker, MoreMenu, MoreMenuCardsDismissed }
 
 /**
  * Home screen with generic sample data (no real names, accounts or amounts).
@@ -592,10 +602,15 @@ fun BoxWithConstraintsScope.HomeSampleUi(
                 hideIncome = false,
                 expanded = true,
                 celebrateSavingsGoal = false,
+                supportCards = if (overlay == HomeSampleOverlay.MoreMenuCardsDismissed) {
+                    SupportCardsUi(help = false, highlightedSupport = false, permanentSupport = true)
+                } else {
+                    SupportCardsUi(help = true, highlightedSupport = true, permanentSupport = false)
+                },
             ),
             onEvent = {},
             initialPeriodModalOpen = overlay == HomeSampleOverlay.PeriodPicker,
-            initialMoreMenuExpanded = if (overlay == HomeSampleOverlay.MoreMenu) true else null,
+            initialMoreMenuExpanded = if (overlay.isMoreMenu) true else null,
             tabSelected = tabSelected,
             animateInitialHistory = false,
             modifier = modifier,

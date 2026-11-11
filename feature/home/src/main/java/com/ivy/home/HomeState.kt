@@ -36,4 +36,6 @@ data class HomeState(
     val expanded: Boolean,
     /** The savings goal is reached and this goal amount hasn't been celebrated yet. */
     val celebrateSavingsGoal: Boolean,
+    /** Which Help & Support / Support My Work cards the more menu shows. */
+    val supportCards: SupportCardsUi,
 )
