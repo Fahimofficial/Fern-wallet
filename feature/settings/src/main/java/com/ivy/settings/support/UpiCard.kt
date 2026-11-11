@@ -180,17 +180,8 @@ private fun UpiVerificationHint() {
 /** Test tag of the small QR code that opens the enlarged one. */
 internal const val UpiQrTag = "support_upi_qr"
 
-@Composable
-private fun rememberUpiQrBitmap(): ImageBitmap = remember {
+private fun createUpiQrBitmap(): ImageBitmap =
     UpiQrCode.toBitmap(UpiQrCode.encode(SupportDestinations.upiPaymentUri())).asImageBitmap()
-}
-
-@Composable
-private fun upiQrDescription(): String = stringResource(
-    R.string.support_upi_qr_description,
-    SupportDestinations.UPI_ID,
-    SupportDestinations.UPI_PAYEE_NAME,
-)
 
 // A white tile and unfiltered scaling keep the QR modules sharp and scanner-readable.
 @Composable
@@ -214,9 +205,14 @@ private fun UpiQrTile(bitmap: ImageBitmap, imageSize: Dp, modifier: Modifier = M
 @Composable
 private fun UpiPayeePaymentQrCodeImage(modifier: Modifier = Modifier) {
     var enlarged by rememberSaveable { mutableStateOf(false) }
-    val description = upiQrDescription()
+    val description = stringResource(
+        R.string.support_upi_qr_description,
+        SupportDestinations.UPI_ID,
+        SupportDestinations.UPI_PAYEE_NAME,
+    )
+    val qrBitmap = remember { createUpiQrBitmap() }
     UpiQrTile(
-        bitmap = rememberUpiQrBitmap(),
+        bitmap = qrBitmap,
         imageSize = QrDisplaySize,
         modifier = modifier
             .testTag(UpiQrTag)
@@ -248,7 +244,12 @@ internal fun UpiQrEnlarged(onClose: () -> Unit) {
     val side = minOf(config.screenWidthDp - EnlargedWidthReservedDp, config.screenHeightDp - EnlargedHeightReservedDp)
         .coerceIn(EnlargedMinSideDp, EnlargedMaxSideDp)
         .dp
-    val description = upiQrDescription()
+    val description = stringResource(
+        R.string.support_upi_qr_description,
+        SupportDestinations.UPI_ID,
+        SupportDestinations.UPI_PAYEE_NAME,
+    )
+    val qrBitmap = remember { createUpiQrBitmap() }
     Column(
         modifier = Modifier
             .width(side + EnlargedCardPadding * 2)
@@ -257,7 +258,7 @@ internal fun UpiQrEnlarged(onClose: () -> Unit) {
             .padding(EnlargedCardPadding),
     ) {
         UpiQrTile(
-            bitmap = rememberUpiQrBitmap(),
+            bitmap = qrBitmap,
             imageSize = side - QrTilePadding * 2,
             modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = description },
         )
