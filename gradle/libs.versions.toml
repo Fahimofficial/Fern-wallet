@@ -153,7 +153,8 @@ detekt-ruleset-ivy-explicit = { module = "com.github.Ivy-Apps:detekt-explicit", 
 slack-lint-compose = { module = "com.slack.lint.compose:compose-lint-checks", version = "1.6.1" }
 
 # KSP
-ksp-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version = "2.3.13" }
+# KSP 2.3.13 has a regression (google/ksp#3286) that makes Hilt miss classpath types such as Context; stay on 2.3.12 until a fixed release.
+ksp-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version = "2.3.12" }
 
 # Modules Graph
 module-graph-plugin = { module = "com.jraska.module.graph.assertion:plugin", version = "2.9.1" }
