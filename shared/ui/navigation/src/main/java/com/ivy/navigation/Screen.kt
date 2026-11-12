@@ -13,7 +13,9 @@ sealed interface Screen {
     /**
      * Marks whether a given screen is a legacy Ivy Wallet one.
      * If it's a legacy screen, it automatically adds a Surface to make it work.
-     * Do NOT mark new Material3 screens as legacy.
+     * Do NOT mark new Material3 screens as legacy: give them an opaque root instead (a Scaffold,
+     * or `Modifier.background(UI.colors.pure)`). A transparent screen shows the one behind it
+     * through the transition.
      */
     val isLegacy: Boolean
         get() = false

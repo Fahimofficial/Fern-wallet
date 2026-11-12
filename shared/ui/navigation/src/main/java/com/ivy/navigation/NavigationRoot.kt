@@ -128,7 +128,14 @@ fun NavigationRoot(
                         }
                         val behind = shown.id < other.id
                         val covered by visibility.animateFloat(
-                            transitionSpec = { IvyMotion.recedeSpec() },
+                            transitionSpec = {
+                                // Arriving = back reveals this screen; it must land with the leaving one.
+                                if (targetState == EnterExitState.Visible) {
+                                    IvyMotion.recedeBackSpec()
+                                } else {
+                                    IvyMotion.recedeSpec()
+                                }
+                            },
                             label = "screen_recede",
                         ) { state ->
                             if (state == EnterExitState.Visible || !behind) 0f else 1f

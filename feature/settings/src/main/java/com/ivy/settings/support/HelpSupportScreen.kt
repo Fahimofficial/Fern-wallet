@@ -1,6 +1,7 @@
 package com.ivy.settings.support
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -53,6 +54,8 @@ internal fun HelpSupportUi(onOpenUrl: (String) -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
+            // Non-legacy screens get no Surface: without this the screen behind shows through it.
+            .background(UI.colors.pure)
             .statusBarsPadding()
             .navigationBarsPadding()
             .verticalScroll(rememberScrollState())

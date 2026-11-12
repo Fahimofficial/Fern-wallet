@@ -3,6 +3,7 @@ package com.ivy.settings.support
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -101,6 +102,8 @@ private fun SupportUi(actions: SupportScreenActions) {
     Column(
         Modifier
             .fillMaxSize()
+            // Non-legacy screens get no Surface: without this the screen behind shows through it.
+            .background(UI.colors.pure)
             .statusBarsPadding()
             .navigationBarsPadding()
             .verticalScroll(rememberScrollState())

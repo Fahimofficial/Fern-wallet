@@ -179,6 +179,13 @@ object IvyMotion {
     /** Timing of the screen behind as it recedes or comes back; same as the front screen's entrance. */
     fun <T> recedeSpec(): FiniteAnimationSpec<T> = enterSpec(Duration.Long)
 
+    /**
+     * The screen behind coming back to full size when the screen in front leaves. Lasts as long as
+     * that exit ([Duration.Exit]), so the two land together instead of the back layer still
+     * settling after the front one is gone. Decelerates, so it comes to rest without a jolt.
+     */
+    fun <T> recedeBackSpec(): FiniteAnimationSpec<T> = enterSpec(Duration.Exit)
+
     /** Fade-through for switching between sibling destinations (bottom-bar tabs). */
     fun fadeThrough(): ContentTransform = ContentTransform(
         targetContentEnter = fadeIn(fadeThroughIn()),
