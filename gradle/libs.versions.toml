@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.4.21"
 kotlin-coroutines = "1.11.0"
-ktor = "3.6.0"
+ktor = "3.6.1"
 arrow = "2.0.0"
 kotest = "6.2.6"
 # https://developer.android.com/jetpack/androidx/releases/compose
@@ -35,7 +35,7 @@ android-gradle-plugin = { module = "com.android.tools.build:gradle", version = "
 # plugins request: jackson 2.22.2/2.16.0 (GHSA-p6pp-m3f8-5c89, GHSA-7hhh-6rmp-j9qf, GHSA-wv8q-qhhj-9h54,
 # GHSA-cxp5-3px4-pw24) and guava 33.7.1 (GHSA-xxph-c9ww-hj94). Applied in the root build.gradle.kts.
 build-classpath-jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version = "2.22.4" }
-build-classpath-guava = { module = "com.google.guava:guava", version = "33.7.2-jre" }
+build-classpath-guava = { module = "com.google.guava:guava", version = "33.8.0-jre" }
 
 # Kotlin
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -153,6 +153,7 @@ detekt-ruleset-ivy-explicit = { module = "com.github.Ivy-Apps:detekt-explicit", 
 slack-lint-compose = { module = "com.slack.lint.compose:compose-lint-checks", version = "1.6.1" }
 
 # KSP
+# KSP 2.3.13 has a regression (google/ksp#3286) that makes Hilt miss classpath types such as Context; stay on 2.3.12 until a fixed release.
 ksp-plugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version = "2.3.12" }
 
 # Modules Graph
